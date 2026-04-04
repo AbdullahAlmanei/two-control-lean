@@ -1,0 +1,10 @@
+name = "two-control-lean"
+version = "0.1.0"
+defaultTargets = ["two-control-lean"]
+
+[[lean_lib]]
+name = "TwoControlLean"
+
+[[lean_exe]]
+name = "two-control-lean"
+root = "Main"
