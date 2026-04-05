@@ -25,7 +25,7 @@ baseurl: "" # the subpath of your site, e.g. /blog
 url: "" # the base hostname & protocol for your site, e.g. http://example.com
 twitter_username:
 github_username: 
-repository: /
+# repository is auto-detected from GITHUB_REPOSITORY env var in CI
 
 # Build settings
 remote_theme: pages-themes/cayman@v0.2.0 
