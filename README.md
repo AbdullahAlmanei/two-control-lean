@@ -3,6 +3,8 @@
 A Lean + Blueprint project for translating and reconstructing the proof of
 "Optimal implementation of quantum gates with two controls".
 
+Visit [this](https://abdullahalmanei.github.io/two-control-lean/) page to view the current status of the proof.
+
 ## Structure
 - `TwoControl/`: Lean formalization
 - `blueprint/`: Blueprint proof map and dependency graph
