@@ -1,13 +1,10 @@
 name = "two-control-lean"
 version = "0.1.0"
-
-[package]
-name = "two-control-lean"
-version = "0.1.0"
+defaultTargets = ["TwoControl"]
 
 [[lean_lib]]
 name = "TwoControl"
-defaultTargets = ["TwoControl"]
+
 
 [[require]]
 name = "checkdecls"
@@ -17,3 +14,7 @@ git = "https://github.com/PatrickMassot/checkdecls.git"
 name = "«doc-gen4»"
 git = "https://github.com/leanprover/doc-gen4"
 rev = "main"
+
+[[require]]
+name = "mathlib"
+git = "https://github.com/leanprover-community/mathlib4"

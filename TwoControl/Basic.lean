@@ -1,5 +1,7 @@
+import TwoControl.Prelude
+
 namespace TwoControl
 
--- Shared imports will go here later.
+-- Re-exports from Prelude for downstream consumers.
 
 end TwoControl

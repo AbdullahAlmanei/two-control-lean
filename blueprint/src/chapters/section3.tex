@@ -1,0 +1,91 @@
+\section{Section 3: The conditions on the eigenvalues}
+
+\begin{lemma}
+  \label{lem:s3_1}
+  \lean{TwoControl.section3_lemma_3_1}
+  \leanok
+  Suppose $u_0, u_1$ are complex numbers with $|u_0| = |u_1| = 1$.
+  An $8 \times 8$ unitary $U$ commutes with
+  $\operatorname{Diag}(u_0, u_1) \otimes I_2 \otimes I_2$
+  if and only if either $u_0 = u_1$ or
+  $U = |0\rangle\langle 0| \otimes V_{00} + |1\rangle\langle 1| \otimes V_{11}$
+  for some $4 \times 4$ unitaries $V_{00}, V_{11}$.
+\end{lemma}
+
+\begin{proof}
+  Decompose $U$ into a $2 \times 2$ block matrix of $4 \times 4$ submatrices
+  $U = |0\rangle\langle 0| \otimes V_{00}
+     + |0\rangle\langle 1| \otimes V_{01}
+     + |1\rangle\langle 0| \otimes V_{10}
+     + |1\rangle\langle 1| \otimes V_{11}$.
+  Similarly decompose $\operatorname{Diag}(u_0, u_1) \otimes I_2 \otimes I_2$
+  as a block-diagonal matrix with blocks $u_0 \cdot I_4$ and $u_1 \cdot I_4$.
+  Compute $UW$ and $WU$ and compare blocks:
+  commutativity forces $u_1 \cdot V_{01} = u_0 \cdot V_{01}$
+  and $u_0 \cdot V_{10} = u_1 \cdot V_{10}$.
+  When $u_0 \neq u_1$, scalar cancellation implies $V_{01} = V_{10} = 0$,
+  giving the block-diagonal form.
+  Unitarity of $U$ then forces $V_{00}$ and $V_{11}$ to be individually unitary.
+  The converse is straightforward.
+\end{proof}
+
+\begin{lemma}
+  \label{lem:s3_2}
+  \lean{TwoControl.section3_lemma_3_2}
+  \leanok
+  Suppose $u_0, u_1$ are complex numbers with $|u_0| = |u_1| = 1$.
+  There exist $2 \times 2$ unitaries $P, Q$ such that the eigenvalues
+  of $P \otimes Q$ are $\{1, 1, u_0, u_1\}$ (as a multiset, up to permutation)
+  if and only if either $u_0 = u_1$ or $u_0 u_1 = 1$.
+\end{lemma}
+
+\begin{proof}
+  (\emph{Forward direction.})
+  Diagonalize $P$ and $Q$ via the spectral theorem
+  to write $P = V_P D_P V_P^\dagger$ and $Q = V_Q D_Q V_Q^\dagger$.
+  The eigenvalues of $P \otimes Q$ are the pairwise products
+  of eigenvalues of $P$ and $Q$.
+  These four products must be a permutation of $\{1, 1, u_0, u_1\}$.
+  Exhaustive case analysis over all $24$ permutations of four elements
+  shows each case yields either $u_0 = u_1$ or $u_0 u_1 = 1$.
+
+  (\emph{Backward direction.})
+  If $u_0 = u_1$, take $P = \operatorname{Diag}(1, u_1)$ and $Q = I_2$.
+  If $u_0 u_1 = 1$, take $P = \operatorname{Diag}(1, u_0)$
+  and $Q = \operatorname{Diag}(1, u_1)$
+  with a suitable diagonalizing unitary.
+\end{proof}
+
+\begin{lemma}
+  \label{lem:s3_3}
+  \lean{TwoControl.section3_lemma_3_3}
+  \leanok
+  Suppose $u_0, u_1$ are complex numbers with $|u_0| = |u_1| = 1$.
+  There exist a $2 \times 2$ unitary $P$ and complex numbers $c, d$
+  such that the eigenvalues of
+  $(I_2 \otimes P) \cdot C(\operatorname{Diag}(u_0, u_1))$
+  are $\{c, c, d, d\}$ (each with multiplicity two)
+  if and only if either $u_0 = u_1$ or $u_0 u_1 = 1$.
+  Here $C(\operatorname{Diag}(u_0, u_1))$ denotes the
+  controlled-$\operatorname{Diag}(u_0, u_1)$ gate.
+\end{lemma}
+
+\begin{proof}
+  (\emph{Forward direction.})
+  Rewrite $(I_2 \otimes P) \cdot C(\operatorname{Diag}(u_0, u_1))$
+  as the direct sum $P \oplus (P \cdot \operatorname{Diag}(u_0, u_1))$.
+  Diagonalize $P$ and $P \cdot \operatorname{Diag}(u_0, u_1)$
+  separately via the spectral theorem.
+  The eigenvalues of the direct sum are related by a permutation
+  to those of $\operatorname{Diag}(c, d, c, d)$.
+  Exhaustive case analysis on all $24$ permutations of four eigenvalues:
+  if both eigenvalues of $P$ equal the same value $c$,
+  then $P$ is a scalar multiple of the identity,
+  and a cancellation argument forces $u_0 = u_1$.
+  In the remaining cases, a determinant argument
+  using $\det(AB) = \det(A) \cdot \det(B)$ yields $u_0 u_1 = 1$.
+
+  (\emph{Backward direction.})
+  If $u_0 = u_1$, take $P = I_2$.
+  If $u_0 u_1 = 1$, take $P = \operatorname{Diag}(1, u_0)$.
+\end{proof}

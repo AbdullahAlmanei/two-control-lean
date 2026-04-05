@@ -1,0 +1,52 @@
+\section{Section 5: The first main lemma}
+
+\begin{lemma}
+  \label{lem:s5_1}
+  \lean{TwoControl.section5_lemma_5_1}
+  \leanok
+  Suppose $u_0, u_1$ are complex numbers with $|u_0| = |u_1| = 1$.
+  There exist $2$-qubit unitaries $U_1, U_2, U_3, U_4$ such that
+  $U_1^{BC}\, U_2^{AC}\, U_3^{AB}\, U_4^{BC} = CC(\operatorname{Diag}(u_0, u_1))$
+  if and only if either $u_0 = u_1$ or $u_0 u_1 = 1$.
+\end{lemma}
+
+\begin{proof}
+  \uses{lem:s3_1, lem:s4_1}
+  (\emph{Forward direction.})
+  Rearrange to isolate
+  $U_2^{AC}\, U_3^{AB}
+    = (U_1^{BC})^\dagger\, CC(\operatorname{Diag}(u_0, u_1))\, (U_4^{BC})^\dagger$.
+  Each of $(U_1^{BC})^\dagger$, $CC(\operatorname{Diag}(u_0, u_1))$,
+  and $(U_4^{BC})^\dagger$ commutes with
+  $\operatorname{Diag}(u_0, u_1) \otimes I_{BC}$,
+  so $U_2^{AC}\, U_3^{AB}$ commutes with
+  $\operatorname{Diag}(u_0, u_1) \otimes I_2 \otimes I_2$.
+  By Lemma~\ref{lem:s3_1}, either $u_0 = u_1$ (done),
+  or $U_2^{AC}\, U_3^{AB}
+    = |0\rangle\langle 0| \otimes V_0 + |1\rangle\langle 1| \otimes V_1$
+  for $4 \times 4$ unitaries $V_0, V_1$.
+  By Lemma~A.24, this refines to
+  $U_2^{AC}\, U_3^{AB}
+    = |0\rangle\langle 0| \otimes P_0 \otimes Q_0
+    + |1\rangle\langle 1| \otimes P_1 \otimes Q_1$
+  for $2 \times 2$ unitaries $P_0, Q_0, P_1, Q_1$.
+  Substituting back gives
+  $CC(\operatorname{Diag}(u_0, u_1))
+    = |0\rangle\langle 0| \otimes U_1 (P_0 \otimes Q_0) U_4
+    + |1\rangle\langle 1| \otimes U_1 (P_1 \otimes Q_1) U_4$.
+  By Lemma~\ref{lem:s4_1}, either $u_0 = u_1$ or $u_0 u_1 = 1$.
+
+  (\emph{Backward direction, case $u_0 = u_1$.})
+  Set $U = C(\operatorname{Diag}(1, u_1))$ and verify
+  $I^{BC}\, I^{AC}\, U^{AB}\, I^{BC} = CC(\operatorname{Diag}(u_1, u_1))$
+  by direct computation.
+
+  (\emph{Backward direction, case $u_0 u_1 = 1$.})
+  Define $V = \operatorname{Diag}(1, 1, 1, u_1)$
+  and $W = \operatorname{Diag}(1, 1, 1, u_0)$,
+  and let $U$ be the permutation matrix swapping the second and fourth
+  basis vectors.
+  Verify $U^{BC}\, V^{AC}\, W^{AB}\, U^{BC}
+    = CC(\operatorname{Diag}(u_0, u_1))$
+  by direct computation, using $u_0 u_1 = 1$ to simplify diagonal entries.
+\end{proof}

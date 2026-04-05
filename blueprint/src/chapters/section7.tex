@@ -1,0 +1,163 @@
+\section{Section 7: The main theorem}
+
+Throughout this section, for complex numbers $u_0, u_1$ with
+$|u_0| = |u_1| = 1$, we define
+$R(u_0, u_1) = \{(u_0, u_1),\; (1, u_0^* u_1)\}$.
+
+\begin{lemma}
+  \label{lem:s7_1}
+  \lean{TwoControl.section7_lemma_7_1}
+  \leanok
+  Suppose $u_0, u_1$ are complex numbers with $|u_0| = |u_1| = 1$.
+  For a $2$-qubit unitary $W$ and a $3$-qubit unitary $U$,
+  if $CC(\operatorname{Diag}(u_0, u_1)) = W^{AB} \cdot U$,
+  then there exists a $2$-qubit unitary $V$ such that
+  $CC(\operatorname{Diag}(1, u_0^* u_1)) = V^{AB} \cdot U$.
+\end{lemma}
+
+\begin{proof}
+  Set $V = C(\operatorname{Diag}(1, u_0^*)) \cdot W$.
+  Then $V$ is a $2$-qubit unitary.
+  Expand $V^{AB} \cdot U$ using the hypothesis
+  $W^{AB} \cdot U = CC(\operatorname{Diag}(u_0, u_1))$ to obtain
+  $V^{AB} \cdot U
+    = C(\operatorname{Diag}(1, u_0^*))^{AB}
+      \cdot CC(\operatorname{Diag}(u_0, u_1))$.
+  Both factors are diagonal in the computational basis,
+  so the product is verified entry-by-entry:
+  the diagonal entries combine to give
+  $CC(\operatorname{Diag}(1, u_0^* u_1))$.
+\end{proof}
+
+\begin{lemma}
+  \label{lem:s7_2}
+  \lean{TwoControl.section7_lemma_7_2}
+  \leanok
+  Suppose $u_0, u_1$ are complex numbers with $|u_0| = |u_1| = 1$.
+  If there exists a product of at most four elements of
+  $G_2 \setminus G_1$ and any number of elements of $G_1$ that equals
+  $CC(\operatorname{Diag}(u_0, u_1))$, then either:
+  \begin{enumerate}
+    \item there exist $2$-qubit unitaries $U_1, U_2, U_3, U_4$
+      and $(u_2, u_3) \in R(u_0, u_1)$ such that
+      $U_1^{BC}\, U_2^{AC}\, U_3^{AB}\, U_4^{BC}
+        = CC(\operatorname{Diag}(u_2, u_3))$,
+      or
+    \item there exist $2$-qubit unitaries $U_1, U_2, U_3, U_4$
+      and $(u_2, u_3) \in R(u_0, u_1)$ such that
+      $U_1^{AC}\, U_2^{BC}\, U_3^{AC}\, U_4^{BC}
+        = CC(\operatorname{Diag}(u_2, u_3))$.
+  \end{enumerate}
+\end{lemma}
+
+\begin{proof}
+  \uses{lem:s7_1}
+  The proof proceeds in four steps.
+
+  (\emph{Step 1.})
+  Each element of $G_1$ can be absorbed into an adjacent
+  element of $G_2 \setminus G_1$, reducing to at most four
+  factors from $G_2 \setminus G_1$.
+
+  (\emph{Step 2.})
+  By padding with identity factors if fewer than four
+  $G_2 \setminus G_1$ factors remain, write the product
+  as exactly four canonical factors $V_1 V_2 V_3 V_4$,
+  where each $V_i$ is of the form $U^{XY}$ for some pair $XY$.
+
+  (\emph{Step 3.})
+  Using the swap conjugation identities (Lemma~A.12), reduce
+  to the case where $V_4$ has label $BC$.
+  This may change the diagonal parameters from $(u_0, u_1)$
+  to $(1, u_0^* u_1)$ via Lemma~\ref{lem:s7_1},
+  so the new parameters $(u_2, u_3) \in R(u_0, u_1)$.
+
+  (\emph{Step 4.})
+  Using Lemma~A.13 and the swap conjugation identities,
+  case-analyse over the labels of $V_1, V_2, V_3$ to reduce
+  to one of the two canonical forms stated in the conclusion.
+\end{proof}
+
+\begin{lemma}
+  \label{lem:s7_3}
+  \lean{TwoControl.section7_lemma_7_3}
+  \leanok
+  Suppose $u_0, u_1$ are complex numbers with $|u_0| = |u_1| = 1$.
+  Suppose $(u_2, u_3) \in R(u_0, u_1)$.
+  If $u_2 = u_3$ or $u_2 u_3 = 1$,
+  then $u_0 = u_1$ or $u_0 u_1 = 1$.
+\end{lemma}
+
+\begin{proof}
+  Since $(u_2, u_3) \in R(u_0, u_1)$, either
+  $(u_2, u_3) = (u_0, u_1)$ or $(u_2, u_3) = (1, u_0^* u_1)$.
+  Cross with the hypothesis $u_2 = u_3$ or $u_2 u_3 = 1$
+  to obtain four subcases.
+  In the case $(u_2, u_3) = (u_0, u_1)$, the conclusion holds
+  immediately.
+  In the case $(u_2, u_3) = (1, u_0^* u_1)$ with $u_2 = u_3$,
+  we get $u_0^* u_1 = 1$, so $u_0 u_1 = |u_0|^2 u_0 u_1 / u_0 u_1$;
+  using $|u_0| = 1$ gives $u_0 = u_1$.
+  In the case $(u_2, u_3) = (1, u_0^* u_1)$ with $u_2 u_3 = 1$,
+  we get $u_0^* u_1 = 1$, hence $u_0 = u_1$.
+\end{proof}
+
+\begin{theorem}
+  \label{thm:s7_4}
+  \lean{TwoControl.section7_theorem_7_4}
+  \leanok
+  Suppose $u_0, u_1$ are complex numbers with $|u_0| = |u_1| = 1$.
+  There exists a product of at most four elements of
+  $G_2 \setminus G_1$ and any number of elements of $G_1$ that equals
+  $CC(\operatorname{Diag}(u_0, u_1))$ if and only if
+  either $u_0 = u_1$ or $u_0 u_1 = 1$.
+\end{theorem}
+
+\begin{proof}
+  \uses{lem:s7_2, lem:s5_1, lem:s6_4, lem:s7_3}
+  (\emph{Forward direction.})
+  By Lemma~\ref{lem:s7_2}, the hypothesis reduces to one of two
+  canonical forms with parameters $(u_2, u_3) \in R(u_0, u_1)$.
+  In form~(1), $U_1^{BC}\, U_2^{AC}\, U_3^{AB}\, U_4^{BC}
+    = CC(\operatorname{Diag}(u_2, u_3))$,
+  so by Lemma~\ref{lem:s5_1} either $u_2 = u_3$ or $u_2 u_3 = 1$.
+  In form~(2), $U_1^{AC}\, U_2^{BC}\, U_3^{AC}\, U_4^{BC}
+    = CC(\operatorname{Diag}(u_2, u_3))$,
+  so by Lemma~\ref{lem:s6_4} either $u_2 = u_3$ or $u_2 u_3 = 1$.
+  In either case, Lemma~\ref{lem:s7_3} lifts the conclusion to
+  $u_0 = u_1$ or $u_0 u_1 = 1$.
+
+  (\emph{Backward direction.})
+  If $u_0 = u_1$ or $u_0 u_1 = 1$, Lemma~\ref{lem:s5_1} (backward)
+  provides a decomposition
+  $U_1^{BC}\, U_2^{AC}\, U_3^{AB}\, U_4^{BC}
+    = CC(\operatorname{Diag}(u_0, u_1))$,
+  each factor being an element of $G_2$.
+\end{proof}
+
+\begin{corollary}
+  \label{cor:s7_5}
+  \lean{TwoControl.section7_corollary_7_5}
+  \leanok
+  For a $1$-qubit unitary $U$, there exists a product of
+  at most four elements of $G_2 \setminus G_1$ and any number
+  of elements of $G_1$ that equals $CC(U)$ if and only if
+  either the eigenvalues of $U$ are equal or $\det(U) = 1$.
+\end{corollary}
+
+\begin{proof}
+  \uses{thm:s7_4}
+  By the spectral theorem (Theorem~A.3), write
+  $U = V \operatorname{Diag}(u_0, u_1) V^\dagger$
+  for a unitary $V$ and eigenvalues $u_0, u_1$ with $|u_0| = |u_1| = 1$.
+  Then $CC(U) = (I \otimes I \otimes V)\,
+    CC(\operatorname{Diag}(u_0, u_1))\,
+    (I \otimes I \otimes V^\dagger)$.
+  Since $I \otimes I \otimes V \in G_1$, conjugating by it
+  does not change the number of $G_2 \setminus G_1$ factors needed.
+  Apply Theorem~\ref{thm:s7_4} to $CC(\operatorname{Diag}(u_0, u_1))$
+  to conclude: the decomposition exists if and only if
+  $u_0 = u_1$ or $u_0 u_1 = 1$.
+  The condition $u_0 = u_1$ is equivalent to the eigenvalues being
+  equal, and $u_0 u_1 = \det(U) = 1$.
+\end{proof}

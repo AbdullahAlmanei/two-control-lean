@@ -1,0 +1,122 @@
+\section{Section 4: Four key building blocks}
+
+\begin{lemma}
+  \label{lem:s4_1}
+  \lean{TwoControl.section4_lemma_4_1}
+  \leanok
+  Suppose $u_0, u_1$ are complex numbers with $|u_0| = |u_1| = 1$.
+  There exist $4 \times 4$ unitary matrices $U, V$ and $2 \times 2$ unitary matrices $P_0, P_1, Q_0, Q_1$ such that
+  \[
+    |0\rangle\langle 0| \otimes U(P_0 \otimes Q_0)V
+    + |1\rangle\langle 1| \otimes U(P_1 \otimes Q_1)V
+    = CC(\operatorname{Diag}(u_0, u_1))
+  \]
+  if and only if either $u_0 = u_1$ or $u_0 u_1 = 1$.
+\end{lemma}
+
+\begin{proof}
+  \uses{lem:s3_2}
+  Forward direction: decompose $CC(\operatorname{Diag}(u_0, u_1))$ via direct sum into
+  $|0\rangle\langle 0| \otimes I_4 \oplus |1\rangle\langle 1| \otimes C(\operatorname{Diag}(u_0, u_1))$.
+  The hypothesis forces $U(P_0 \otimes Q_0)V = I_4$ and
+  $U(P_1 \otimes Q_1)V = C(\operatorname{Diag}(u_0, u_1))$.
+  Combining yields $\operatorname{Diag}(1, 1, u_0, u_1) = U((P_1 P_0^\dagger) \otimes (Q_1 Q_0^\dagger))U^\dagger$,
+  a similarity relation on a tensor product of $2 \times 2$ unitaries.
+  Apply Lemma~3.2 to conclude $u_0 = u_1$ or $u_0 u_1 = 1$.
+
+  Reverse direction: if $u_0 = u_1$, take $U = V = I_4$ and appropriate diagonal witnesses.
+  If $u_0 u_1 = 1$, use CNOT-based witnesses.
+\end{proof}
+
+\begin{lemma}
+  \label{lem:s4_2}
+  \lean{TwoControl.section4_lemma_4_2}
+  \leanok
+  Suppose $u_0, u_1$ are complex numbers with $|u_0| = |u_1| = 1$.
+  Suppose $Q$ is a $2 \times 2$ unitary and let $|\beta\rangle = Q|0\rangle$
+  and $|\beta^\perp\rangle = Q|1\rangle$.
+  There exist $2 \times 2$ unitary matrices $P_0, P_1$ such that
+  \[
+    I \otimes I \otimes |\beta\rangle\langle\beta|
+    + P_0 \otimes P_1 \otimes |\beta^\perp\rangle\langle\beta^\perp|
+    = CC(\operatorname{Diag}(u_0, u_1))
+  \]
+  if and only if $u_0 = 1$ and $u_1 = 1$.
+\end{lemma}
+
+\begin{proof}
+  Forward direction: case-split on the components $a, b$ of $|\beta\rangle$.
+  If $a = 0$ then $|\beta\rangle\langle\beta| = |1\rangle\langle 1|$ and
+  $|\beta^\perp\rangle\langle\beta^\perp| = |0\rangle\langle 0|$;
+  extracting diagonal entries of $CC(\operatorname{Diag}(u_0, u_1))$ forces $u_0 = 1$ and $u_1 = 1$.
+  The case $b = 0$ is symmetric.
+  If both $a \neq 0$ and $b \neq 0$, multiply both sides by $|1\rangle \otimes |1\rangle \otimes |\beta\rangle$;
+  the $|\beta^\perp\rangle$ term vanishes by orthogonality, yielding
+  $\operatorname{Diag}(u_0, u_1)|\beta\rangle = |\beta\rangle$,
+  so $u_0 = 1$ and $u_1 = 1$ by cancellation.
+
+  Reverse direction: take $P_0 = P_1 = I$ and use $Q|0\rangle\langle 0|Q^\dagger + Q|1\rangle\langle 1|Q^\dagger = I$.
+\end{proof}
+
+\begin{lemma}
+  \label{lem:s4_3}
+  \lean{TwoControl.section4_lemma_4_3}
+  \leanok
+  Suppose $u_0, u_1$ are complex numbers with $|u_0| = |u_1| = 1$.
+  There exist $4 \times 4$ unitary matrices $V_1, V_2, V_3, V_4$ and
+  $2 \times 2$ unitary matrices $P_0, P_1$, where
+  $V_1 = |0\rangle\langle 0| \otimes P_0 + |1\rangle\langle 1| \otimes P_1$,
+  such that
+  \[
+    (V_1)_{AC} \cdot (V_2)_{BC} \cdot (V_3)_{AC} \cdot (V_4)_{BC}
+    = CC(\operatorname{Diag}(u_0, u_1))
+  \]
+  if and only if either $u_0 = u_1$ or $u_0 u_1 = 1$.
+\end{lemma}
+
+\begin{proof}
+  \uses{lem:s3_3}
+  Forward direction: decompose $CC(\operatorname{Diag}(u_0, u_1))$ as
+  $|0\rangle\langle 0| \otimes I_4 + |1\rangle\langle 1| \otimes C(\operatorname{Diag}(u_0, u_1))$.
+  Since $V_1$ is controlled on qubit $A$, apply Lemma~A.27 to the alternating $AC/BC$ product
+  to extract $2 \times 2$ unitaries $Q_0, Q_1$ such that the three-factor product
+  $V_1 \cdot V_2 \cdot V_3$ decomposes blockwise.
+  Eliminate $V_4$ to obtain
+  $(I \otimes P_1) V_2 (I \otimes Q_1) = C(\operatorname{Diag}(u_0, u_1)) \cdot ((I \otimes P_0) V_2 (I \otimes Q_0))^\dagger$.
+  Apply the spectral theorem to $Q_1 Q_0^\dagger$ to obtain a diagonal matrix $D$, then
+  invoke Lemma~3.3 on the resulting eigenvalue condition.
+
+  Reverse direction: if $u_0 = u_1$, take $V_1 = I_4$, $V_2 = \text{swap}$,
+  $V_3 = C(\operatorname{Diag}(1, u_1))$, $V_4 = \text{swap}$.
+  If $u_0 u_1 = 1$, write $u_1 = e^{i\theta}$, set $u = e^{i\theta/2}$,
+  $P = \operatorname{Diag}(u^{-1}, u)$, and construct
+  $V_1 = V_3 = C(P)$ on $AC$,
+  $V_2 = |0\rangle\langle 0| \otimes \sigma_x + |1\rangle\langle 1| \otimes I$ on $BC$,
+  $V_4 = V_2^\dagger$.
+\end{proof}
+
+\begin{lemma}
+  \label{lem:s4_4}
+  \lean{TwoControl.section4_lemma_4_4}
+  \leanok
+  Suppose $u_0, u_1$ are complex numbers with $|u_0| = |u_1| = 1$.
+  There exist $4 \times 4$ unitary matrices $V_1, V_2, V_3, V_4$ and
+  $2 \times 2$ unitary matrices $P_0, P_1$, where
+  $V_4 = |0\rangle\langle 0| \otimes P_0 + |1\rangle\langle 1| \otimes P_1$,
+  such that
+  \[
+    (V_1)_{AC} \cdot (V_2)_{BC} \cdot (V_3)_{AC} \cdot (V_4)_{BC}
+    = CC(\operatorname{Diag}(u_0, u_1))
+  \]
+  if and only if either $u_0 = u_1$ or $u_0 u_1 = 1$.
+\end{lemma}
+
+\begin{proof}
+  \uses{lem:s4_3}
+  Follows from Lemma~4.3 by exchanging the roles of qubits $A$ and $B$
+  and taking the conjugate transpose of the entire product.
+  Given a decomposition with $V_1$ controlled, take adjoints of all factors
+  and reverse their order; the controlled structure migrates from $V_1$ to $V_4$.
+  The condition $u_0 = u_1$ or $u_0 u_1 = 1$ is preserved under conjugation
+  since $|u_0^*| = |u_0|$ and $u_0^* u_1^* = (u_0 u_1)^*$.
+\end{proof}

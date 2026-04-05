@@ -1,0 +1,168 @@
+\section{Section 6: The second main lemma}
+
+\begin{lemma}
+  \label{lem:s6_1}
+  \lean{TwoControl.section6_lemma_6_1}
+  \leanok
+  (Case analysis of a unitary.)
+  For a 2-qubit unitary $V$, either
+  $\exists |x\rangle : V(|x\rangle \otimes |0\rangle)$ is entangled, or
+  $\exists |\psi\rangle : \forall |x\rangle : \exists |z\rangle :
+    V(|x\rangle \otimes |0\rangle) = |z\rangle \otimes |\psi\rangle$, or
+  $\exists |\psi\rangle : \forall |x\rangle : \exists |z\rangle :
+    V(|x\rangle \otimes |0\rangle) = |\psi\rangle \otimes |z\rangle$.
+\end{lemma}
+
+\begin{proof}
+  Either $\exists |x\rangle$ such that $V(|x\rangle \otimes |0\rangle)$ is entangled,
+  or $\forall |x\rangle$, $V(|x\rangle \otimes |0\rangle)$ is not entangled
+  and hence is a tensor product.
+  In the second case, apply Lemma~A.23 to distinguish two sub-cases:
+  either the second factor is fixed
+  ($\exists |\psi\rangle : \forall |x\rangle : \exists |z\rangle :
+    V(|x\rangle \otimes |0\rangle) = |z\rangle \otimes |\psi\rangle$)
+  or the first factor is fixed
+  ($\exists |\psi\rangle : \forall |x\rangle : \exists |z\rangle :
+    V(|x\rangle \otimes |0\rangle) = |\psi\rangle \otimes |z\rangle$).
+\end{proof}
+
+\begin{lemma}
+  \label{lem:s6_2}
+  \lean{TwoControl.section6_lemma_6_2}
+  \leanok
+  Suppose $u_0, u_1$ are complex numbers such that $|u_0| = |u_1| = 1$.
+  For 2-qubit unitaries $U_1, W_2, V_3, U_4$, if
+  \[
+    U_1^{AC}\, W_2^{BC}\, V_3^{AC}\, U_4^{BC} = CC(\operatorname{Diag}(u_0, u_1)),
+  \]
+  $V_3(|0\rangle \otimes |0\rangle) = |0\rangle \otimes |0\rangle$, and
+  for any $|x_A\rangle$:
+  $U_1^{AC}(|x_A\rangle \otimes |0_B\rangle \otimes |0_C\rangle)
+   = U_4^{BC\dagger}\, V_3^{AC\dagger}(|x_A\rangle \otimes |0_B\rangle \otimes |0_C\rangle)$,
+  then either $u_0 = u_1$ or $u_0 u_1 = 1$ or there exist 2-qubit unitaries
+  $W_1, W_3, W_4$ and a 1-qubit unitary $P_3$ such that
+  \[
+    U_1^{AC}\, W_2^{BC}\, V_3^{AC}\, U_4^{BC}
+    = W_1^{AC}\, W_2^{BC}\, W_3^{AC}\, W_4^{BC}
+  \]
+  and $W_3 = I \otimes |0\rangle\langle 0| + P_3 \otimes |1\rangle\langle 1|$.
+\end{lemma}
+
+\begin{proof}
+  \uses{lem:s6_1, lem:s4_4}
+  Apply Lemma~\ref{lem:s6_1} to $V_3^\dagger$ for a three-case analysis.
+
+  \emph{Case~1} (entangled):
+  Use swap-based manipulation (Lemmas~A.10, A.12) to convert the AC-gate
+  identity to a BC-gate form.
+  Then Lemma~A.19 gives
+  $U_4^\dagger = |0\rangle\langle 0| \otimes Q_0 + |1\rangle\langle 1| \otimes Q_1$.
+  Conclude $u_0 = u_1$ or $u_0 u_1 = 1$ via Lemma~\ref{lem:s4_4}.
+
+  \emph{Case~2} ($V_3^\dagger(|x\rangle \otimes |0\rangle) = |z\rangle \otimes |\psi\rangle$):
+  Lemma~A.31 directly gives the decomposition with
+  $W_3 = I \otimes |0\rangle\langle 0| + P_3 \otimes |1\rangle\langle 1|$.
+
+  \emph{Case~3} ($V_3^\dagger(|x\rangle \otimes |0\rangle) = |\psi\rangle \otimes (P_0 |x\rangle)$):
+  Use Lemma~A.25 to extract $P_0$.
+  Derive $\forall |x\rangle : \exists |w\rangle :
+  U_4^\dagger(|0\rangle \otimes (P_0 |x\rangle)) = |0\rangle \otimes |w\rangle$
+  via Lemma~A.22.
+  Then Lemma~A.17 gives
+  $U_4^\dagger = |0\rangle\langle 0| \otimes Q_0 + |1\rangle\langle 1| \otimes Q_1$.
+  Conclude via Lemma~\ref{lem:s4_4}.
+\end{proof}
+
+\begin{lemma}
+  \label{lem:s6_3}
+  \lean{TwoControl.section6_lemma_6_3}
+  \leanok
+  Suppose $u_0, u_1$ are complex numbers such that $|u_0| = |u_1| = 1$.
+  For 2-qubit unitaries $V_1, V_2, V_3, V_4$, if
+  \[
+    V_1^{AC}\, V_2^{BC}\, V_3^{AC}\, V_4^{BC} = CC(\operatorname{Diag}(u_0, u_1)),
+  \]
+  $\exists |\psi\rangle : \forall |x\rangle : \exists |z\rangle :
+    V_2(|x\rangle \otimes |0\rangle) = |z\rangle \otimes |\psi\rangle$,
+  and $V_3(|0\rangle \otimes |0\rangle) = |0\rangle \otimes |0\rangle$,
+  then either $u_0 = u_1$ or $u_0 u_1 = 1$ or there exist 2-qubit unitaries
+  $W_1, W_2, W_3, W_4$ and 1-qubit unitaries $P_1, P_2, P_3, P_4, Q$ such that
+  \begin{align*}
+    W_1^{AC}\, W_2^{BC}\, W_3^{AC}\, W_4^{BC} &= CC(\operatorname{Diag}(u_0, u_1)), \\
+    W_1 &= I \otimes |\beta\rangle\langle 0| + P_1 \otimes |\beta^\perp\rangle\langle 1|, \\
+    W_2 &= I \otimes |0\rangle\langle 0| + P_2 \otimes |1\rangle\langle 1|, \\
+    W_3 &= I \otimes |0\rangle\langle 0| + P_3 \otimes |1\rangle\langle 1|, \\
+    W_4 &= I \otimes |0\rangle\langle\beta| + P_4 \otimes |1\rangle\langle\beta^\perp|,
+  \end{align*}
+  where $|\beta\rangle = Q|0\rangle$ and $|\beta^\perp\rangle = Q|1\rangle$.
+\end{lemma}
+
+\begin{proof}
+  \uses{lem:s6_2}
+  Use Lemma~A.30 on the $V_2$ assumption to rewrite the product as
+  $U_1^{AC}\, W_2^{BC}\, V_3^{AC}\, U_4^{BC}$
+  with $W_2 = I \otimes |0\rangle\langle 0| + P_2 \otimes |1\rangle\langle 1|$.
+  From $W_2(|0\rangle \otimes |0\rangle) = |0\rangle \otimes |0\rangle$ and
+  Lemma~A.29, derive
+  $\forall |x_A\rangle :
+   U_1^{AC}(|x_A\rangle \otimes |0_B\rangle \otimes |0_C\rangle)
+   = U_4^{BC\dagger}\, V_3^{AC\dagger}(|x_A\rangle \otimes |0_B\rangle \otimes |0_C\rangle)$.
+  Apply Lemma~\ref{lem:s6_2} to get a three-way disjunction.
+
+  In the third case, use Lemma~A.28 and~A.22 to derive
+  $\forall |z\rangle : W_4^\dagger(|z\rangle \otimes |0\rangle) = |z\rangle \otimes |\beta\rangle$
+  for a fixed $|\beta\rangle$ (via Lemma~A.26).
+  Define $Q = |\beta\rangle\langle 0| + |\beta^\perp\rangle\langle 1|$
+  and verify $Q$ is unitary.
+  Show $W_4 \cdot (I \otimes Q)(|z\rangle \otimes |0\rangle) = |z\rangle \otimes |0\rangle$;
+  apply Lemma~A.18 to derive
+  $W_4 = I \otimes |0\rangle\langle\beta| + P_4 \otimes |1\rangle\langle\beta^\perp|$.
+  Similarly derive
+  $W_1 = I \otimes |\beta\rangle\langle 0| + P_1 \otimes |\beta^\perp\rangle\langle 1|$
+  using Lemma~A.29 and Lemma~A.18.
+\end{proof}
+
+\begin{lemma}
+  \label{lem:s6_4}
+  \lean{TwoControl.section6_lemma_6_4}
+  \leanok
+  (The second main lemma.)
+  Suppose $u_0, u_1$ are complex numbers such that $|u_0| = |u_1| = 1$.
+  There exist 2-qubit unitaries $U_1, U_2, U_3, U_4$ such that
+  \[
+    U_1^{AC}\, U_2^{BC}\, U_3^{AC}\, U_4^{BC} = CC(\operatorname{Diag}(u_0, u_1))
+  \]
+  if and only if either $u_0 = u_1$ or $u_0 u_1 = 1$.
+\end{lemma}
+
+\begin{proof}
+  \uses{lem:s6_1, lem:s6_3, lem:s4_2, lem:s4_3}
+  (\emph{Forward direction.})
+  Use Lemma~A.32 to obtain $V_1, V_2, V_3, V_4$ with
+  $V_3(|0\rangle \otimes |0\rangle) = |0\rangle \otimes |0\rangle$ and
+  $V_1^{AC}\, V_2^{BC}\, V_3^{AC}\, V_4^{BC} = CC(\operatorname{Diag}(u_0, u_1))$.
+  Apply Lemma~A.28 to derive
+  $V_1^{AC}\, V_2^{BC}(|0_A\rangle \otimes |x_B\rangle \otimes |0_C\rangle)
+   = V_4^{BC\dagger}(|0_A\rangle \otimes |x_B\rangle \otimes |0_C\rangle)$.
+  Three-case analysis on $V_2$ via Lemma~\ref{lem:s6_1}.
+
+  \emph{Case~1} (entangled):
+  Lemma~A.19 gives $V_1 = |0\rangle\langle 0| \otimes P_0 + |1\rangle\langle 1| \otimes P_1$.
+  Conclude via Lemma~\ref{lem:s4_3}.
+
+  \emph{Case~2} ($V_2(|x\rangle \otimes |0\rangle) = |\psi\rangle \otimes |z\rangle$):
+  Lemma~A.33 gives the same block-diagonal form for $V_1$.
+  Conclude via Lemma~\ref{lem:s4_3}.
+
+  \emph{Case~3} ($V_2(|x\rangle \otimes |0\rangle) = |z\rangle \otimes |\psi\rangle$):
+  Apply Lemma~\ref{lem:s6_3} to get the structured decomposition with
+  $W_1, \ldots, W_4$.
+  Compute
+  $CC(\operatorname{Diag}(u_0, u_1))
+   = I \otimes I \otimes |\beta\rangle\langle\beta|
+   + (P_1 P_3) \otimes (P_2 P_4) \otimes |\beta^\perp\rangle\langle\beta^\perp|$.
+  Conclude $u_0 = u_1$ via Lemma~\ref{lem:s4_2}.
+
+  (\emph{Backward direction.})
+  Use the right-to-left direction of Lemma~\ref{lem:s4_3}.
+\end{proof}
