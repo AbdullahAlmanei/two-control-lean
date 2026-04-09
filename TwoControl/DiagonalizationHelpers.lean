@@ -30,6 +30,34 @@ lemma diag2_kron_diag2 (a b c d : ℂ) :
   fin_cases i₁ <;> fin_cases i₂ <;> fin_cases j₁ <;> fin_cases j₂ <;>
     simp [diag2, diag4, finProdFinEquiv]
 
+@[simp] private lemma finProdFinEquiv_00 : (@finProdFinEquiv 2 2 (0, 0) : Fin 4) = 0 := by
+  native_decide
+
+@[simp] private lemma finProdFinEquiv_01 : (@finProdFinEquiv 2 2 (0, 1) : Fin 4) = 1 := by
+  native_decide
+
+@[simp] private lemma finProdFinEquiv_10 : (@finProdFinEquiv 2 2 (1, 0) : Fin 4) = 2 := by
+  native_decide
+
+@[simp] private lemma finProdFinEquiv_11 : (@finProdFinEquiv 2 2 (1, 1) : Fin 4) = 3 := by
+  native_decide
+
+lemma controlledGate_diag2_eq (u₀ u₁ : ℂ) :
+    controlledGate (diag2 u₀ u₁) = diag4 1 1 u₀ u₁ := by
+  ext i j
+  obtain ⟨⟨i₁, i₂⟩, rfl⟩ := (@finProdFinEquiv 2 2).surjective i
+  obtain ⟨⟨j₁, j₂⟩, rfl⟩ := (@finProdFinEquiv 2 2).surjective j
+  fin_cases i₁ <;> fin_cases i₂ <;> fin_cases j₁ <;> fin_cases j₂ <;>
+    try simp [controlledGate, TwoControl.kron, Matrix.reindex_apply, Matrix.kroneckerMap_apply,
+      proj0, proj1, ketbra, ket0, ket1, diag2, diag4]
+  all_goals
+    first
+    | rw [finProdFinEquiv_00]
+    | rw [finProdFinEquiv_01]
+    | rw [finProdFinEquiv_10]
+    | rw [finProdFinEquiv_11]
+  all_goals simp
+
 private lemma mem_unitary_of_mem_unitaryGroup {n : ℕ} {U : Square n}
     (hU : U ∈ Matrix.unitaryGroup (Fin n) ℂ) : U ∈ unitary (Square n) := by
   rw [Unitary.mem_iff]
@@ -60,6 +88,12 @@ lemma unitary_conj_mem_unitaryGroup {n : ℕ} {P U : Square n}
         simp [Matrix.conjTranspose_mul, mul_assoc]
       _ = U† * (P * P†) * U := by simp [hUleft, mul_assoc]
       _ = 1 := by simp [hPleft, hUright]
+
+lemma conjTranspose_mem_unitaryGroup {n : ℕ} {U : Square n}
+    (hU : U ∈ Matrix.unitaryGroup (Fin n) ℂ) :
+    U† ∈ Matrix.unitaryGroup (Fin n) ℂ := by
+  simpa [Matrix.conjTranspose, star_eq_conjTranspose] using
+    (Matrix.map_star_mem_unitaryGroup_iff).2 ((Matrix.transpose_mem_unitaryGroup_iff).2 hU)
 
 private lemma diag2_norms_of_mem_unitaryGroup {a b : ℂ}
     (h : diag2 a b ∈ Matrix.unitaryGroup (Fin 2) ℂ) :

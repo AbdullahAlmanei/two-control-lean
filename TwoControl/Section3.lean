@@ -444,12 +444,6 @@ lemma section3_lemma_3_2 (u₀ u₁ : ℂ) (hu₀ : ‖u₀‖ = 1) (hu₁ : ‖
     · simpa using tensor_witness_of_eq u₀ hu₀
     · exact tensor_witness_of_mul_eq_one u₀ u₁ hu₀ hu₁ hmul
 
-private lemma conjTranspose_mem_unitaryGroup {n : ℕ} {U : Square n}
-    (hU : U ∈ Matrix.unitaryGroup (Fin n) ℂ) :
-    U† ∈ Matrix.unitaryGroup (Fin n) ℂ := by
-  simpa [Matrix.conjTranspose, star_eq_conjTranspose] using
-    (Matrix.map_star_mem_unitaryGroup_iff).2 ((Matrix.transpose_mem_unitaryGroup_iff).2 hU)
-
 private lemma diag2_same_eq_smul_one (a : ℂ) :
     diag2 a a = a • (1 : Square 2) := by
   ext i j
@@ -558,22 +552,6 @@ private lemma one_kron_diag2 (c d : ℂ) :
     (1 : Square 2) ⊗ₖ diag2 c d = diag4 c d c d := by
   rw [← diag2_one_one]
   simpa using diag2_kron_diag2 1 1 c d
-
-private lemma controlledGate_diag2_eq (u₀ u₁ : ℂ) :
-    controlledGate (diag2 u₀ u₁) = diag4 1 1 u₀ u₁ := by
-  ext i j
-  obtain ⟨⟨i₁, i₂⟩, rfl⟩ := (@finProdFinEquiv 2 2).surjective i
-  obtain ⟨⟨j₁, j₂⟩, rfl⟩ := (@finProdFinEquiv 2 2).surjective j
-  fin_cases i₁ <;> fin_cases i₂ <;> fin_cases j₁ <;> fin_cases j₂ <;>
-    try simp [controlledGate, TwoControl.kron, Matrix.reindex_apply, Matrix.kroneckerMap_apply,
-      proj0, proj1, ketbra, ket0, ket1, diag2, diag4]
-  all_goals
-    first
-    | rw [finProdFinEquiv_00]
-    | rw [finProdFinEquiv_01]
-    | rw [finProdFinEquiv_10]
-    | rw [finProdFinEquiv_11]
-  all_goals simp
 
 private lemma one_kron_mul_controlledGate_diag2 (P : Square 2) (u₀ u₁ : ℂ) :
     (1 : Square 2) ⊗ₖ P * controlledGate (diag2 u₀ u₁) =
