@@ -23,3 +23,23 @@ leanblueprint serve
 ```
 
 Local API docs are written to `.lake/build/doc/`.
+
+`leanblueprint serve` only serves the blueprint itself.
+
+To preview the full local site, including the homepage and API docs:
+
+```bash
+cd home_page
+bundle install
+cd ..
+scripts/serve_local_site.sh
+```
+
+This serves a combined local site at `http://127.0.0.1:8000/` by default.
+
+You can also serve just the API docs with:
+
+```bash
+cd .lake/build/doc
+python3 -m http.server 8001
+```
