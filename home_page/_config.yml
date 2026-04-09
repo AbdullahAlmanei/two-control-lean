@@ -22,9 +22,9 @@ title: Two Control Quantum Gates
 #email: your-email@example.com
 description: by AbdullahAlmanei
 baseurl: "" # the subpath of your site, e.g. /blog
-url: "" # the base hostname & protocol for your site, e.g. http://example.com
+url: "https://abdullahalmanei.github.io/two-control-lean" # the base hostname & protocol for your site, e.g. http://example.com
 twitter_username:
-github_username: 
+github_username: AbdullahAlmanei
 repository: AbdullahAlmanei/two-control-lean
 
 # Build settings

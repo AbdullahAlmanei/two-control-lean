@@ -16,6 +16,10 @@ Visit [this](https://abdullahalmanei.github.io/two-control-lean/) page to view t
 ```bash
 source .venv/bin/activate
 lake build
+lake build TwoControl:docs
 leanblueprint checkdecls
 leanblueprint web
 leanblueprint serve
+```
+
+Local API docs are written to `.lake/build/doc/`.
