@@ -16,6 +16,7 @@ $R(u_0, u_1) = \{(u_0, u_1),\; (1, u_0^* u_1)\}$.
 \end{lemma}
 
 \begin{proof}
+  \leanok
   Set $V = C(\operatorname{Diag}(1, u_0^*)) \cdot W$.
   Then $V$ is a $2$-qubit unitary.
   Expand $V^{AB} \cdot U$ using the hypothesis
@@ -51,6 +52,7 @@ $R(u_0, u_1) = \{(u_0, u_1),\; (1, u_0^* u_1)\}$.
 \end{lemma}
 
 \begin{proof}
+  \leanok
   \uses{lem:s7_1}
   The proof proceeds in four steps.
 
@@ -89,6 +91,7 @@ $R(u_0, u_1) = \{(u_0, u_1),\; (1, u_0^* u_1)\}$.
 \end{lemma}
 
 \begin{proof}
+  \leanok
   Since $(u_2, u_3) \in R(u_0, u_1)$, either
   $(u_2, u_3) = (u_0, u_1)$ or $(u_2, u_3) = (1, u_0^* u_1)$.
   Cross with the hypothesis $u_2 = u_3$ or $u_2 u_3 = 1$
@@ -114,6 +117,7 @@ $R(u_0, u_1) = \{(u_0, u_1),\; (1, u_0^* u_1)\}$.
 \end{theorem}
 
 \begin{proof}
+  \leanok
   \uses{lem:s7_2, lem:s5_1, lem:s6_4, lem:s7_3}
   (\emph{Forward direction.})
   By Lemma~\ref{lem:s7_2}, the hypothesis reduces to one of two
@@ -146,6 +150,7 @@ $R(u_0, u_1) = \{(u_0, u_1),\; (1, u_0^* u_1)\}$.
 \end{corollary}
 
 \begin{proof}
+  \leanok
   \uses{thm:s7_4}
   By the spectral theorem (Theorem~A.3), write
   $U = V \operatorname{Diag}(u_0, u_1) V^\dagger$
