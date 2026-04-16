@@ -440,18 +440,18 @@ lemma section7_lemma_7_2 (u₀ u₁ : ℂ) (hu₀ : ‖u₀‖ = 1) (_hu₁ : �
   rcases hW₁ with ⟨A, hA, hW₁ab | hW₁ac | hW₁bc⟩
   · rcases hW₂ with ⟨B, hB, hW₂ab | hW₂ac | hW₂bc⟩
     · rcases hW₃ with ⟨C, hC, hW₃ab | hW₃ac | hW₃bc⟩
-        · refine ⟨u₂, u₃, 1, 1, A * B * C, W₄, hPair, Submonoid.one_mem _,
+      · refine ⟨u₂, u₃, 1, 1, A * B * C, W₄, hPair, Submonoid.one_mem _,
           Submonoid.one_mem _, Submonoid.mul_mem _ (Submonoid.mul_mem _ hA hB) hC,
           hW₄, Or.inl ?_⟩
         simpa [hW₁ab, hW₂ab, hW₃ab, mul_assoc] using hEq
       · have hStart :
           ccu (diag2 u₂ u₃) = abgate (A * B) * (acgate C * bcgate W₄) := by
-            calc
-              ccu (diag2 u₂ u₃) = W₁ * W₂ * W₃ * bcgate W₄ := by simpa using hEq.symm
-              _ = abgate A * abgate B * acgate C * bcgate W₄ := by
-                    rw [hW₁ab, hW₂ab, hW₃ac]
-              _ = abgate (A * B) * (acgate C * bcgate W₄) := by
-                    simp [mul_assoc]
+          calc
+            ccu (diag2 u₂ u₃) = W₁ * W₂ * W₃ * bcgate W₄ := by simpa using hEq.symm
+            _ = abgate A * abgate B * acgate C * bcgate W₄ := by
+                  rw [hW₁ab, hW₂ab, hW₃ac]
+            _ = abgate (A * B) * (acgate C * bcgate W₄) := by
+                  simp [mul_assoc]
         rcases section7_lemma_7_1_left u₂ u₃ hu₂ (A * B) (Submonoid.mul_mem _ hA hB)
           (acgate C * bcgate W₄) hStart with ⟨V, hV, hVeq⟩
         have hWord :
@@ -466,17 +466,17 @@ lemma section7_lemma_7_2 (u₀ u₁ : ℂ) (hu₀ : ‖u₀‖ = 1) (_hu₁ : �
                   exact swapbc_conj_word_abacbc V C W₄
           _ = swapbc * ccu (diag2 1 (starRingEnd ℂ u₂ * u₃)) * swapbc := by rw [hWord]
           _ = ccu (diag2 1 (starRingEnd ℂ u₂ * u₃)) := by rw [swapbc_conj_ccu_diag2_one]
-        · refine ⟨u₂, u₃, 1, 1, A * B, C * W₄, hPair, Submonoid.one_mem _,
+      · refine ⟨u₂, u₃, 1, 1, A * B, C * W₄, hPair, Submonoid.one_mem _,
           Submonoid.one_mem _, Submonoid.mul_mem _ hA hB, Submonoid.mul_mem _ hC hW₄,
           Or.inl ?_⟩
         simpa [hW₁ab, hW₂ab, hW₃bc, mul_assoc] using hEq
     · rcases hW₃ with ⟨C, hC, hW₃ab | hW₃ac | hW₃bc⟩
       · have hStart :
           ccu (diag2 u₂ u₃) = abgate A * (acgate B * abgate C * bcgate W₄) := by
-            calc
-              ccu (diag2 u₂ u₃) = W₁ * W₂ * W₃ * bcgate W₄ := by simpa using hEq.symm
-              _ = abgate A * acgate B * abgate C * bcgate W₄ := by rw [hW₁ab, hW₂ac, hW₃ab]
-              _ = abgate A * (acgate B * abgate C * bcgate W₄) := by simp [mul_assoc]
+          calc
+            ccu (diag2 u₂ u₃) = W₁ * W₂ * W₃ * bcgate W₄ := by simpa using hEq.symm
+            _ = abgate A * acgate B * abgate C * bcgate W₄ := by rw [hW₁ab, hW₂ac, hW₃ab]
+            _ = abgate A * (acgate B * abgate C * bcgate W₄) := by simp [mul_assoc]
         rcases section7_lemma_7_1_left u₂ u₃ hu₂ A hA
           (acgate B * abgate C * bcgate W₄) hStart with ⟨V, hV, hVeq⟩
         have hWord :
@@ -505,10 +505,10 @@ lemma section7_lemma_7_2 (u₀ u₁ : ℂ) (hu₀ : ‖u₀‖ = 1) (_hu₁ : �
           _ = ccu (diag2 1 (starRingEnd ℂ u₂ * u₃)) := hConj
       · have hStart :
           ccu (diag2 u₂ u₃) = abgate A * (acgate (B * C) * bcgate W₄) := by
-            calc
-              ccu (diag2 u₂ u₃) = W₁ * W₂ * W₃ * bcgate W₄ := by simpa using hEq.symm
-              _ = abgate A * acgate B * acgate C * bcgate W₄ := by rw [hW₁ab, hW₂ac, hW₃ac]
-              _ = abgate A * (acgate (B * C) * bcgate W₄) := by simp [mul_assoc]
+          calc
+            ccu (diag2 u₂ u₃) = W₁ * W₂ * W₃ * bcgate W₄ := by simpa using hEq.symm
+            _ = abgate A * acgate B * acgate C * bcgate W₄ := by rw [hW₁ab, hW₂ac, hW₃ac]
+            _ = abgate A * (acgate (B * C) * bcgate W₄) := by simp [mul_assoc]
         rcases section7_lemma_7_1_left u₂ u₃ hu₂ A hA
           (acgate (B * C) * bcgate W₄) hStart with ⟨V, hV, hVeq⟩
         have hWord :
@@ -526,10 +526,10 @@ lemma section7_lemma_7_2 (u₀ u₁ : ℂ) (hu₀ : ‖u₀‖ = 1) (_hu₁ : �
           _ = ccu (diag2 1 (starRingEnd ℂ u₂ * u₃)) := by rw [swapbc_conj_ccu_diag2_one]
       · have hStart :
           ccu (diag2 u₂ u₃) = abgate A * (acgate B * bcgate (C * W₄)) := by
-            calc
-              ccu (diag2 u₂ u₃) = W₁ * W₂ * W₃ * bcgate W₄ := by simpa using hEq.symm
-              _ = abgate A * acgate B * bcgate C * bcgate W₄ := by rw [hW₁ab, hW₂ac, hW₃bc]
-              _ = abgate A * (acgate B * bcgate (C * W₄)) := by simp [mul_assoc]
+          calc
+            ccu (diag2 u₂ u₃) = W₁ * W₂ * W₃ * bcgate W₄ := by simpa using hEq.symm
+            _ = abgate A * acgate B * bcgate C * bcgate W₄ := by rw [hW₁ab, hW₂ac, hW₃bc]
+            _ = abgate A * (acgate B * bcgate (C * W₄)) := by simp [mul_assoc]
         rcases section7_lemma_7_1_left u₂ u₃ hu₂ A hA
           (acgate B * bcgate (C * W₄)) hStart with ⟨V, hV, hVeq⟩
         have hWord :
@@ -548,10 +548,10 @@ lemma section7_lemma_7_2 (u₀ u₁ : ℂ) (hu₀ : ‖u₀‖ = 1) (_hu₁ : �
     · rcases hW₃ with ⟨C, hC, hW₃ab | hW₃ac | hW₃bc⟩
       · have hStart :
           ccu (diag2 u₂ u₃) = abgate A * (bcgate B * abgate C * bcgate W₄) := by
-            calc
-              ccu (diag2 u₂ u₃) = W₁ * W₂ * W₃ * bcgate W₄ := by simpa using hEq.symm
-              _ = abgate A * bcgate B * abgate C * bcgate W₄ := by rw [hW₁ab, hW₂bc, hW₃ab]
-              _ = abgate A * (bcgate B * abgate C * bcgate W₄) := by simp [mul_assoc]
+          calc
+            ccu (diag2 u₂ u₃) = W₁ * W₂ * W₃ * bcgate W₄ := by simpa using hEq.symm
+            _ = abgate A * bcgate B * abgate C * bcgate W₄ := by rw [hW₁ab, hW₂bc, hW₃ab]
+            _ = abgate A * (bcgate B * abgate C * bcgate W₄) := by simp [mul_assoc]
         rcases section7_lemma_7_1_left u₂ u₃ hu₂ A hA
           (bcgate B * abgate C * bcgate W₄) hStart with ⟨V, hV, hVeq⟩
         have hWord :
@@ -568,10 +568,10 @@ lemma section7_lemma_7_2 (u₀ u₁ : ℂ) (hu₀ : ‖u₀‖ = 1) (_hu₁ : �
           _ = ccu (diag2 1 (starRingEnd ℂ u₂ * u₃)) := by rw [swapbc_conj_ccu_diag2_one]
       · have hStart :
           ccu (diag2 u₂ u₃) = abgate A * (bcgate B * acgate C * bcgate W₄) := by
-            calc
-              ccu (diag2 u₂ u₃) = W₁ * W₂ * W₃ * bcgate W₄ := by simpa using hEq.symm
-              _ = abgate A * bcgate B * acgate C * bcgate W₄ := by rw [hW₁ab, hW₂bc, hW₃ac]
-              _ = abgate A * (bcgate B * acgate C * bcgate W₄) := by simp [mul_assoc]
+          calc
+            ccu (diag2 u₂ u₃) = W₁ * W₂ * W₃ * bcgate W₄ := by simpa using hEq.symm
+            _ = abgate A * bcgate B * acgate C * bcgate W₄ := by rw [hW₁ab, hW₂bc, hW₃ac]
+            _ = abgate A * (bcgate B * acgate C * bcgate W₄) := by simp [mul_assoc]
         rcases section7_lemma_7_1_left u₂ u₃ hu₂ A hA
           (bcgate B * acgate C * bcgate W₄) hStart with ⟨V, hV, hVeq⟩
         have hWord :
@@ -615,16 +615,16 @@ lemma section7_lemma_7_2 (u₀ u₁ : ℂ) (hu₀ : ‖u₀‖ = 1) (_hu₁ : �
               = acgate V * bcgate (swap2 * B * swap2) * abgate C * bcgate (swap2 * W₄ * swap2) :=
                   hNorm.symm
           _ = ccu (diag2 1 (starRingEnd ℂ u₂ * u₃)) := hConj
-        · refine ⟨u₂, u₃, 1, 1, A, B * C * W₄, hPair, Submonoid.one_mem _,
+      · refine ⟨u₂, u₃, 1, 1, A, B * C * W₄, hPair, Submonoid.one_mem _,
           Submonoid.one_mem _, hA, Submonoid.mul_mem _ (Submonoid.mul_mem _ hB hC) hW₄,
           Or.inl ?_⟩
         simpa [hW₁ab, hW₂bc, hW₃bc, mul_assoc] using hEq
   · rcases hW₂ with ⟨B, hB, hW₂ab | hW₂ac | hW₂bc⟩
     · rcases hW₃ with ⟨C, hC, hW₃ab | hW₃ac | hW₃bc⟩
-        · refine ⟨u₂, u₃, 1, A, B * C, W₄, hPair, Submonoid.one_mem _, hA,
+      · refine ⟨u₂, u₃, 1, A, B * C, W₄, hPair, Submonoid.one_mem _, hA,
           Submonoid.mul_mem _ hB hC, hW₄, Or.inl ?_⟩
         simpa [hW₁ac, hW₂ab, hW₃ab, mul_assoc] using hEq
-        · refine ⟨u₂, u₃, A * swap2, swap2 * B * swap2, swap2 * C, W₄, hPair,
+      · refine ⟨u₂, u₃, A * swap2, swap2 * B * swap2, swap2 * C, W₄, hPair,
           Submonoid.mul_mem _ hA swap2_unitary, swap2_conj_unitary hB,
           Submonoid.mul_mem _ swap2_unitary hC, hW₄, Or.inr ?_⟩
         calc
@@ -633,23 +633,23 @@ lemma section7_lemma_7_2 (u₀ u₁ : ℂ) (hu₀ : ‖u₀‖ = 1) (_hu₁ : �
                   symm
                   exact normalize_word_acabac A B C W₄
           _ = ccu (diag2 u₂ u₃) := by simpa [hW₁ac, hW₂ab, hW₃ac, mul_assoc] using hEq
-        · refine ⟨u₂, u₃, 1, A, B, C * W₄, hPair, Submonoid.one_mem _, hA, hB,
+      · refine ⟨u₂, u₃, 1, A, B, C * W₄, hPair, Submonoid.one_mem _, hA, hB,
           Submonoid.mul_mem _ hC hW₄, Or.inl ?_⟩
         simpa [hW₁ac, hW₂ab, hW₃bc, mul_assoc] using hEq
     · rcases hW₃ with ⟨C, hC, hW₃ab | hW₃ac | hW₃bc⟩
-        · refine ⟨u₂, u₃, 1, A * B, C, W₄, hPair, Submonoid.one_mem _,
+      · refine ⟨u₂, u₃, 1, A * B, C, W₄, hPair, Submonoid.one_mem _,
           Submonoid.mul_mem _ hA hB, hC, hW₄, Or.inl ?_⟩
         simpa [hW₁ac, hW₂ac, hW₃ab, mul_assoc] using hEq
-        · refine ⟨u₂, u₃, 1, A * B * C, 1, W₄, hPair, Submonoid.one_mem _,
+      · refine ⟨u₂, u₃, 1, A * B * C, 1, W₄, hPair, Submonoid.one_mem _,
           Submonoid.mul_mem _ (Submonoid.mul_mem _ hA hB) hC, Submonoid.one_mem _,
           hW₄, Or.inl ?_⟩
         simpa [hW₁ac, hW₂ac, hW₃ac, mul_assoc] using hEq
-        · refine ⟨u₂, u₃, 1, A * B, 1, C * W₄, hPair, Submonoid.one_mem _,
+      · refine ⟨u₂, u₃, 1, A * B, 1, C * W₄, hPair, Submonoid.one_mem _,
           Submonoid.mul_mem _ hA hB, Submonoid.one_mem _, Submonoid.mul_mem _ hC hW₄,
           Or.inl ?_⟩
         simpa [hW₁ac, hW₂ac, hW₃bc, mul_assoc] using hEq
     · rcases hW₃ with ⟨C, hC, hW₃ab | hW₃ac | hW₃bc⟩
-        · refine ⟨u₂, u₃, A, B * swap2, C, swap2 * W₄, hPair, hA,
+      · refine ⟨u₂, u₃, A, B * swap2, C, swap2 * W₄, hPair, hA,
           Submonoid.mul_mem _ hB swap2_unitary, hC,
           Submonoid.mul_mem _ swap2_unitary hW₄, Or.inr ?_⟩
         calc
@@ -660,16 +660,16 @@ lemma section7_lemma_7_2 (u₀ u₁ : ℂ) (hu₀ : ‖u₀‖ = 1) (_hu₁ : �
           _ = ccu (diag2 u₂ u₃) := by simpa [hW₁ac, hW₂bc, hW₃ab, mul_assoc] using hEq
       · refine ⟨u₂, u₃, A, B, C, W₄, hPair, hA, hB, hC, hW₄, Or.inr ?_⟩
         simpa [hW₁ac, hW₂bc, hW₃ac, mul_assoc] using hEq
-        · refine ⟨u₂, u₃, 1, A, 1, B * C * W₄, hPair, Submonoid.one_mem _, hA,
+      · refine ⟨u₂, u₃, 1, A, 1, B * C * W₄, hPair, Submonoid.one_mem _, hA,
           Submonoid.one_mem _, Submonoid.mul_mem _ (Submonoid.mul_mem _ hB hC) hW₄,
           Or.inl ?_⟩
         simpa [hW₁ac, hW₂bc, hW₃bc, mul_assoc] using hEq
   · rcases hW₂ with ⟨B, hB, hW₂ab | hW₂ac | hW₂bc⟩
     · rcases hW₃ with ⟨C, hC, hW₃ab | hW₃ac | hW₃bc⟩
-        · refine ⟨u₂, u₃, A, 1, B * C, W₄, hPair, hA, Submonoid.one_mem _,
+      · refine ⟨u₂, u₃, A, 1, B * C, W₄, hPair, hA, Submonoid.one_mem _,
           Submonoid.mul_mem _ hB hC, hW₄, Or.inl ?_⟩
         simpa [hW₁bc, hW₂ab, hW₃ab, mul_assoc] using hEq
-        · refine ⟨u₂, u₃, A * swap2, B, C, swap2 * W₄, hPair,
+      · refine ⟨u₂, u₃, A * swap2, B, C, swap2 * W₄, hPair,
           Submonoid.mul_mem _ hA swap2_unitary, hB, hC,
           Submonoid.mul_mem _ swap2_unitary hW₄, Or.inl ?_⟩
         calc
@@ -678,26 +678,26 @@ lemma section7_lemma_7_2 (u₀ u₁ : ℂ) (hu₀ : ‖u₀‖ = 1) (_hu₁ : �
                   symm
                   exact normalize_word_bcabac A B C W₄
           _ = ccu (diag2 u₂ u₃) := by simpa [hW₁bc, hW₂ab, hW₃ac, mul_assoc] using hEq
-        · refine ⟨u₂, u₃, A, 1, B, C * W₄, hPair, hA, Submonoid.one_mem _, hB,
+      · refine ⟨u₂, u₃, A, 1, B, C * W₄, hPair, hA, Submonoid.one_mem _, hB,
           Submonoid.mul_mem _ hC hW₄, Or.inl ?_⟩
         simpa [hW₁bc, hW₂ab, hW₃bc, mul_assoc] using hEq
     · rcases hW₃ with ⟨C, hC, hW₃ab | hW₃ac | hW₃bc⟩
       · refine ⟨u₂, u₃, A, B, C, W₄, hPair, hA, hB, hC, hW₄, Or.inl ?_⟩
         simpa [hW₁bc, hW₂ac, hW₃ab, mul_assoc] using hEq
-        · refine ⟨u₂, u₃, A, B * C, 1, W₄, hPair, hA, Submonoid.mul_mem _ hB hC,
+      · refine ⟨u₂, u₃, A, B * C, 1, W₄, hPair, hA, Submonoid.mul_mem _ hB hC,
           Submonoid.one_mem _, hW₄, Or.inl ?_⟩
         simpa [hW₁bc, hW₂ac, hW₃ac, mul_assoc] using hEq
-        · refine ⟨u₂, u₃, A, B, 1, C * W₄, hPair, hA, hB, Submonoid.one_mem _,
+      · refine ⟨u₂, u₃, A, B, 1, C * W₄, hPair, hA, hB, Submonoid.one_mem _,
           Submonoid.mul_mem _ hC hW₄, Or.inl ?_⟩
         simpa [hW₁bc, hW₂ac, hW₃bc, mul_assoc] using hEq
     · rcases hW₃ with ⟨C, hC, hW₃ab | hW₃ac | hW₃bc⟩
-        · refine ⟨u₂, u₃, A * B, 1, C, W₄, hPair, Submonoid.mul_mem _ hA hB,
+      · refine ⟨u₂, u₃, A * B, 1, C, W₄, hPair, Submonoid.mul_mem _ hA hB,
           Submonoid.one_mem _, hC, hW₄, Or.inl ?_⟩
         simpa [hW₁bc, hW₂bc, hW₃ab, mul_assoc] using hEq
-        · refine ⟨u₂, u₃, A * B, C, 1, W₄, hPair, Submonoid.mul_mem _ hA hB, hC,
+      · refine ⟨u₂, u₃, A * B, C, 1, W₄, hPair, Submonoid.mul_mem _ hA hB, hC,
           Submonoid.one_mem _, hW₄, Or.inl ?_⟩
         simpa [hW₁bc, hW₂bc, hW₃ac, mul_assoc] using hEq
-        · refine ⟨u₂, u₃, A * B * C, 1, 1, W₄, hPair,
+      · refine ⟨u₂, u₃, A * B * C, 1, 1, W₄, hPair,
           Submonoid.mul_mem _ (Submonoid.mul_mem _ hA hB) hC,
           Submonoid.one_mem _, Submonoid.one_mem _, hW₄, Or.inl ?_⟩
         simpa [hW₁bc, hW₂bc, hW₃bc, mul_assoc] using hEq
