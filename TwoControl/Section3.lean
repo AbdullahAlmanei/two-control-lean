@@ -147,11 +147,6 @@ lemma section3_lemma_3_1 (u₀ u₁ : ℂ) (_hu₀ : ‖u₀‖ = 1) (_hu₁ : �
         _ = blockify W * blockify U := by rw [hUb, hWb]
         _ = blockify (W * U) := by rw [TwoControl.blockify_mul]
 
-private lemma diag2_one_right_kron (u : ℂ) :
-    diag2 1 u ⊗ₖ (1 : Square 2) = diag4 1 1 u u := by
-  rw [← diag2_one_one]
-  simpa using diag2_kron_diag2 1 u 1 1
-
 private lemma tensor_witness_of_eq (u : ℂ) (hu : ‖u‖ = 1) :
     ∃ (P Q : Square 2) (V : Square 4),
       P ∈ Matrix.unitaryGroup (Fin 2) ℂ ∧
@@ -162,7 +157,7 @@ private lemma tensor_witness_of_eq (u : ℂ) (hu : ‖u‖ = 1) :
   · exact diag2_unitary 1 u (by simp) hu
   · exact Submonoid.one_mem _
   · exact Submonoid.one_mem _
-  · simp [diag2_one_right_kron]
+  · simp [DiagonalizationHelpers.diag2_one_right_kron]
 
 private lemma tensor_witness_of_mul_eq_one
     (u₀ u₁ : ℂ) (hu₀ : ‖u₀‖ = 1) (hu₁ : ‖u₁‖ = 1) (h : u₀ * u₁ = 1) :

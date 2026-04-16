@@ -201,6 +201,24 @@ theorem block_diagonal_unitary {n : ℕ} (A D : Square n)
          ⟨by simpa [star_eq_conjTranspose] using hDleft,
             by simpa [star_eq_conjTranspose] using hDright⟩⟩
 
+theorem upper_block_zero_of_unitary {n : ℕ} (A B D : Square n)
+    (h : Matrix.fromBlocks A B 0 D ∈ Matrix.unitaryGroup (Fin n ⊕ Fin n) ℂ) :
+    B = 0 := by
+  have hleft' : (Matrix.fromBlocks A B 0 D)† * Matrix.fromBlocks A B 0 D = 1 := by
+    simpa [Matrix.star_eq_conjTranspose] using (Matrix.mem_unitaryGroup_iff'.mp h)
+  rw [Matrix.fromBlocks_conjTranspose, Matrix.fromBlocks_multiply] at hleft'
+  simp only [Matrix.conjTranspose_zero, Matrix.zero_mul, Matrix.mul_zero, add_zero] at hleft'
+  rw [block_one_eq] at hleft'
+  rcases Matrix.fromBlocks_inj.mp hleft' with ⟨hAleft, hAB, _, _⟩
+  have hA : A ∈ Matrix.unitaryGroup (Fin n) ℂ := by
+    exact Matrix.mem_unitaryGroup_iff'.2 (by simpa [Matrix.star_eq_conjTranspose] using hAleft)
+  have hAright : A * A† = 1 := by
+    simpa [Matrix.star_eq_conjTranspose] using (Matrix.mem_unitaryGroup_iff.mp hA)
+  calc
+    B = (A * A†) * B := by rw [hAright]; simp
+    _ = A * (A† * B) := by simp [mul_assoc]
+    _ = 0 := by rw [hAB]; simp
+
 theorem fromBlocks_diagonal_unitary {n : ℕ} (A D : Square n)
     (hA : A ∈ Matrix.unitaryGroup (Fin n) ℂ)
     (hD : D ∈ Matrix.unitaryGroup (Fin n) ℂ) :
@@ -218,6 +236,10 @@ theorem fromBlocks_diagonal_unitary {n : ℕ} (A D : Square n)
     simp [hAleft, hDleft]
   · rw [star_eq_conjTranspose, Matrix.fromBlocks_conjTranspose, Matrix.fromBlocks_multiply, block_one_eq]
     simp [hAright, hDright]
+
+theorem proj0_add_proj1 : proj0 + proj1 = (1 : Square 2) := by
+  ext i j
+  fin_cases i <;> fin_cases j <;> simp [proj0, proj1, ketbra, ket0, ket1]
 
 end BlockHelpers
 

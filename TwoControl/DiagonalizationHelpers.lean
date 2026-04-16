@@ -46,6 +46,11 @@ lemma one_kron_diag2 (c d : ℂ) :
   rw [← diag2_one_one]
   simpa using diag2_kron_diag2 1 1 c d
 
+lemma diag2_one_right_kron (u : ℂ) :
+    diag2 1 u ⊗ₖ (1 : Square 2) = diag4 1 1 u u := by
+  rw [← diag2_one_one]
+  simpa using diag2_kron_diag2 1 u 1 1
+
 end DiagonalizationHelpers
 
 @[simp] private lemma finProdFinEquiv_00 : (@finProdFinEquiv 2 2 (0, 0) : Fin 4) = 0 := by
