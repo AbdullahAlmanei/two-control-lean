@@ -49,6 +49,15 @@ theorem one_kron_one (m n : ℕ) :
   exact Matrix.submatrix_one_equiv
     (finProdFinEquiv.symm : Fin (m * n) ≃ Fin m × Fin n)
 
+namespace BlockHelpers
+
+theorem finProd_assoc_222 (a b c : Fin 2) :
+    (@finProdFinEquiv 4 2 (@finProdFinEquiv 2 2 (a, b), c) : Fin 8) =
+      @finProdFinEquiv 2 4 (a, @finProdFinEquiv 2 2 (b, c)) := by
+  fin_cases a <;> fin_cases b <;> fin_cases c <;> decide
+
+end BlockHelpers
+
 /-! ### Matrix units on the first qubit -/
 
 /-- The matrix unit `|0⟩⟨1|`. -/
@@ -165,6 +174,52 @@ theorem blockify_mem_unitaryGroup_iff (U : Square (2 * n)) :
     constructor
     · simpa [blockify_conjTranspose] using congrArg (blockify (n := n)) hleft
     · simpa [blockify_conjTranspose] using congrArg (blockify (n := n)) hright
+
+namespace BlockHelpers
+
+theorem block_one_eq (n : ℕ) :
+    (1 : BlockMatrix n) = Matrix.fromBlocks (1 : Square n) 0 0 (1 : Square n) := by
+  ext i j
+  rcases i with i | i <;> rcases j with j | j <;> simp [Matrix.one_apply]
+
+theorem block_diagonal_unitary {n : ℕ} (A D : Square n)
+    (h : Matrix.fromBlocks A 0 0 D ∈ Matrix.unitaryGroup (Fin n ⊕ Fin n) ℂ) :
+    A ∈ Matrix.unitaryGroup (Fin n) ℂ ∧ D ∈ Matrix.unitaryGroup (Fin n) ℂ := by
+  rcases h with ⟨hleft, hright⟩
+  have hleft' := hleft
+  rw [star_eq_conjTranspose, Matrix.fromBlocks_conjTranspose, Matrix.fromBlocks_multiply] at hleft'
+  simp only [Matrix.conjTranspose_zero, Matrix.zero_mul, Matrix.mul_zero, zero_add, add_zero] at hleft'
+  rw [block_one_eq] at hleft'
+  have hright' := hright
+  rw [star_eq_conjTranspose, Matrix.fromBlocks_conjTranspose, Matrix.fromBlocks_multiply] at hright'
+  simp only [Matrix.conjTranspose_zero, Matrix.zero_mul, Matrix.mul_zero, zero_add, add_zero] at hright'
+  rw [block_one_eq] at hright'
+  rcases Matrix.fromBlocks_inj.mp hleft' with ⟨hAleft, _, _, hDleft⟩
+  rcases Matrix.fromBlocks_inj.mp hright' with ⟨hAright, _, _, hDright⟩
+  exact ⟨⟨by simpa [star_eq_conjTranspose] using hAleft,
+            by simpa [star_eq_conjTranspose] using hAright⟩,
+         ⟨by simpa [star_eq_conjTranspose] using hDleft,
+            by simpa [star_eq_conjTranspose] using hDright⟩⟩
+
+theorem fromBlocks_diagonal_unitary {n : ℕ} (A D : Square n)
+    (hA : A ∈ Matrix.unitaryGroup (Fin n) ℂ)
+    (hD : D ∈ Matrix.unitaryGroup (Fin n) ℂ) :
+    Matrix.fromBlocks A 0 0 D ∈ Matrix.unitaryGroup (Fin n ⊕ Fin n) ℂ := by
+  have hAleft : A† * A = 1 := by
+    simpa [star_eq_conjTranspose, Matrix.mem_unitaryGroup_iff'] using hA
+  have hAright : A * A† = 1 := by
+    simpa [star_eq_conjTranspose, Matrix.mem_unitaryGroup_iff] using hA
+  have hDleft : D† * D = 1 := by
+    simpa [star_eq_conjTranspose, Matrix.mem_unitaryGroup_iff'] using hD
+  have hDright : D * D† = 1 := by
+    simpa [star_eq_conjTranspose, Matrix.mem_unitaryGroup_iff] using hD
+  constructor
+  · rw [star_eq_conjTranspose, Matrix.fromBlocks_conjTranspose, Matrix.fromBlocks_multiply, block_one_eq]
+    simp [hAleft, hDleft]
+  · rw [star_eq_conjTranspose, Matrix.fromBlocks_conjTranspose, Matrix.fromBlocks_multiply, block_one_eq]
+    simp [hAright, hDright]
+
+end BlockHelpers
 
 /-! ### Bridge lemmas between block matrices and `proj`/`kron` syntax -/
 

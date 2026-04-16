@@ -21,6 +21,15 @@ lemma diag2_unitary (a b : ℂ) (ha : ‖a‖ = 1) (hb : ‖b‖ = 1) :
   ext i j
   fin_cases i <;> fin_cases j <;> simp [diag2, Complex.conj_mul', ha, hb]
 
+namespace DiagonalizationHelpers
+
+lemma diag2_same_eq_smul_one (a : ℂ) :
+    diag2 a a = a • (1 : Square 2) := by
+  ext i j
+  fin_cases i <;> fin_cases j <;> simp [diag2]
+
+end DiagonalizationHelpers
+
 lemma diag2_kron_diag2 (a b c d : ℂ) :
     diag2 a b ⊗ₖ diag2 c d = diag4 (a * c) (a * d) (b * c) (b * d) := by
   ext i j
@@ -29,6 +38,15 @@ lemma diag2_kron_diag2 (a b c d : ℂ) :
   rw [TwoControl.kron_apply]
   fin_cases i₁ <;> fin_cases i₂ <;> fin_cases j₁ <;> fin_cases j₂ <;>
     simp [diag2, diag4, finProdFinEquiv]
+
+namespace DiagonalizationHelpers
+
+lemma one_kron_diag2 (c d : ℂ) :
+    (1 : Square 2) ⊗ₖ diag2 c d = diag4 c d c d := by
+  rw [← diag2_one_one]
+  simpa using diag2_kron_diag2 1 1 c d
+
+end DiagonalizationHelpers
 
 @[simp] private lemma finProdFinEquiv_00 : (@finProdFinEquiv 2 2 (0, 0) : Fin 4) = 0 := by
   native_decide
@@ -57,6 +75,74 @@ lemma controlledGate_diag2_eq (u₀ u₁ : ℂ) :
     | rw [finProdFinEquiv_10]
     | rw [finProdFinEquiv_11]
   all_goals simp
+
+namespace DiagonalizationHelpers
+
+lemma det_diag2 (a b : ℂ) : (diag2 a b).det = a * b := by
+  simp [diag2, Matrix.det_diagonal]
+
+lemma det_of_unitary_diag2_decomp {A : Square 2} {a b : ℂ} {U : Square 2}
+    (hU : U ∈ Matrix.unitaryGroup (Fin 2) ℂ)
+    (hA : A = U * diag2 a b * U†) :
+    A.det = a * b := by
+  have hdetU : U.det * star U.det = 1 := by
+    exact (Unitary.mem_iff_self_mul_star).mp (Matrix.det_of_mem_unitary hU)
+  calc
+    A.det = (U * diag2 a b * U†).det := by rw [hA]
+    _ = U.det * (diag2 a b).det * star U.det := by
+      rw [Matrix.det_mul, Matrix.det_mul, Matrix.det_conjTranspose]
+    _ = (U.det * star U.det) * (a * b) := by
+      rw [det_diag2]
+      ring
+    _ = a * b := by rw [hdetU, one_mul]
+
+end DiagonalizationHelpers
+
+namespace DiagonalizationHelpers
+
+lemma diag4_unitary (a b c d : ℂ)
+    (ha : ‖a‖ = 1) (hb : ‖b‖ = 1) (hc : ‖c‖ = 1) (hd : ‖d‖ = 1) :
+    diag4 a b c d ∈ Matrix.unitaryGroup (Fin 4) ℂ := by
+  rw [Matrix.mem_unitaryGroup_iff']
+  ext i j
+  fin_cases i <;> fin_cases j <;> simp [diag4, Complex.conj_mul', ha, hb, hc, hd]
+
+lemma diag4_repeat_norms_of_mem_unitaryGroup {c d : ℂ}
+    (h : diag4 c d c d ∈ Matrix.unitaryGroup (Fin 4) ℂ) :
+    ‖c‖ = 1 ∧ ‖d‖ = 1 := by
+  have h' : (diag4 c d c d)† * diag4 c d c d = 1 := by
+    simpa [star_eq_conjTranspose, Matrix.mem_unitaryGroup_iff'] using h
+  have h00 : (starRingEnd ℂ) c * c = 1 := by
+    simpa [diag4, Matrix.mul_apply, Fin.sum_univ_succ] using congrFun (congrFun h' 0) 0
+  have h11 : (starRingEnd ℂ) d * d = 1 := by
+    simpa [diag4, Matrix.mul_apply, Fin.sum_univ_succ] using congrFun (congrFun h' 1) 1
+  have hcNormSq : Complex.normSq c = 1 := by
+    apply Complex.ofReal_injective
+    simpa [Complex.normSq_eq_conj_mul_self] using h00
+  have hdNormSq : Complex.normSq d = 1 := by
+    apply Complex.ofReal_injective
+    simpa [Complex.normSq_eq_conj_mul_self] using h11
+  have hcSq : ‖c‖ ^ 2 = 1 := by
+    simpa [Complex.normSq_eq_norm_sq] using hcNormSq
+  have hdSq : ‖d‖ ^ 2 = 1 := by
+    simpa [Complex.normSq_eq_norm_sq] using hdNormSq
+  have hc_nonneg : 0 ≤ ‖c‖ := norm_nonneg c
+  have hd_nonneg : 0 ≤ ‖d‖ := norm_nonneg d
+  constructor
+  · have hsq : ‖c‖ ^ 2 = 1 ^ 2 := by simpa using hcSq
+    rcases sq_eq_sq_iff_eq_or_eq_neg.mp hsq with hEq | hEq
+    · exact hEq
+    · exfalso
+      have : (0 : ℝ) ≤ -1 := by simpa [hEq] using hc_nonneg
+      linarith
+  · have hsq : ‖d‖ ^ 2 = 1 ^ 2 := by simpa using hdSq
+    rcases sq_eq_sq_iff_eq_or_eq_neg.mp hsq with hEq | hEq
+    · exact hEq
+    · exfalso
+      have : (0 : ℝ) ≤ -1 := by simpa [hEq] using hd_nonneg
+      linarith
+
+end DiagonalizationHelpers
 
 private lemma mem_unitary_of_mem_unitaryGroup {n : ℕ} {U : Square n}
     (hU : U ∈ Matrix.unitaryGroup (Fin n) ℂ) : U ∈ unitary (Square n) := by

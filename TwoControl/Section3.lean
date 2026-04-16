@@ -1,5 +1,8 @@
 import TwoControl.BlockHelpers
 import TwoControl.DiagonalizationHelpers
+import TwoControl.KronHelpers
+import TwoControl.SwapHelpers
+import TwoControl.GateHelpers
 import Mathlib.Analysis.InnerProductSpace.JointEigenspace
 import Mathlib.Analysis.Matrix.Hermitian
 import Mathlib.Analysis.CStarAlgebra.Spectrum
@@ -12,36 +15,14 @@ open Module.End
 
 namespace TwoControl
 
-private lemma finProd_assoc_222 (a b c : Fin 2) :
-    (@finProdFinEquiv 4 2 (@finProdFinEquiv 2 2 (a, b), c) : Fin 8) =
-      @finProdFinEquiv 2 4 (a, @finProdFinEquiv 2 2 (b, c)) := by
-  fin_cases a <;> fin_cases b <;> fin_cases c <;> decide
-
-private lemma kron_one_assoc (A : Square 2) :
-    (A ⊗ₖ (1 : Square 2)) ⊗ₖ (1 : Square 2) = A ⊗ₖ (1 : Square 4) := by
-  ext i j
-  obtain ⟨⟨i12, i3⟩, rfl⟩ := (@finProdFinEquiv 4 2).surjective i
-  obtain ⟨⟨j12, j3⟩, rfl⟩ := (@finProdFinEquiv 4 2).surjective j
-  obtain ⟨⟨i1, i2⟩, rfl⟩ := (@finProdFinEquiv 2 2).surjective i12
-  obtain ⟨⟨j1, j2⟩, rfl⟩ := (@finProdFinEquiv 2 2).surjective j12
-  rw [TwoControl.kron_apply, TwoControl.kron_apply]
-  rw [finProd_assoc_222 i1 i2 i3, finProd_assoc_222 j1 j2 j3, TwoControl.kron_apply]
-  rw [← TwoControl.one_kron_one 2 2, TwoControl.kron_apply]
-  simp [mul_assoc]
-
 private lemma blockify_W (u₀ u₁ : ℂ) :
     blockify (n := 4) (diag2 u₀ u₁ ⊗ₖ (1 : Square 4)) =
       Matrix.fromBlocks (u₀ • (1 : Square 4)) 0 0 (u₁ • (1 : Square 4)) := by
   simpa using blockify_diag2_kron_one (n := 4) u₀ u₁
 
-private lemma block_one_eq (n : ℕ) :
-    (1 : BlockMatrix n) = Matrix.fromBlocks (1 : Square n) 0 0 (1 : Square n) := by
-  ext i j
-  rcases i with i | i <;> rcases j with j | j <;> simp [Matrix.one_apply]
-
 private lemma block_scalar_eq (u : ℂ) (n : ℕ) :
     Matrix.fromBlocks (u • (1 : Square n)) 0 0 (u • (1 : Square n)) = u • (1 : BlockMatrix n) := by
-  rw [block_one_eq]
+  rw [BlockHelpers.block_one_eq]
   symm
   simpa using (Matrix.fromBlocks_smul u (1 : Square n) (0 : Square n) (0 : Square n) (1 : Square n))
 
@@ -53,25 +34,6 @@ private lemma smul_eq_smul_implies_zero {n : ℕ} {a b : ℂ} {M : Square n}
   have hzero : (a - b) * M i j = 0 := by
     rw [sub_mul, hij, sub_self]
   exact (mul_eq_zero.mp hzero).resolve_left (sub_ne_zero.mpr hab)
-
-private lemma block_diagonal_unitary {n : ℕ} (A D : Square n)
-    (h : Matrix.fromBlocks A 0 0 D ∈ Matrix.unitaryGroup (Fin n ⊕ Fin n) ℂ) :
-    A ∈ Matrix.unitaryGroup (Fin n) ℂ ∧ D ∈ Matrix.unitaryGroup (Fin n) ℂ := by
-  rcases h with ⟨hleft, hright⟩
-  have hleft' := hleft
-  rw [star_eq_conjTranspose, Matrix.fromBlocks_conjTranspose, Matrix.fromBlocks_multiply] at hleft'
-  simp only [Matrix.conjTranspose_zero, Matrix.zero_mul, Matrix.mul_zero, zero_add, add_zero] at hleft'
-  rw [block_one_eq] at hleft'
-  have hright' := hright
-  rw [star_eq_conjTranspose, Matrix.fromBlocks_conjTranspose, Matrix.fromBlocks_multiply] at hright'
-  simp only [Matrix.conjTranspose_zero, Matrix.zero_mul, Matrix.mul_zero, zero_add, add_zero] at hright'
-  rw [block_one_eq] at hright'
-  rcases Matrix.fromBlocks_inj.mp hleft' with ⟨hAleft, _, _, hDleft⟩
-  rcases Matrix.fromBlocks_inj.mp hright' with ⟨hAright, _, _, hDright⟩
-  exact ⟨⟨by simpa [star_eq_conjTranspose] using hAleft,
-            by simpa [star_eq_conjTranspose] using hAright⟩,
-         ⟨by simpa [star_eq_conjTranspose] using hDleft,
-            by simpa [star_eq_conjTranspose] using hDright⟩⟩
 
 /-- **Lemma 3.1** (Commutativity characterization).
     Suppose `u₀, u₁` are unit complex numbers.
@@ -91,7 +53,7 @@ lemma section3_lemma_3_1 (u₀ u₁ : ℂ) (_hu₀ : ‖u₀‖ = 1) (_hu₁ : �
   set W : Square 8 := (((diag2 u₀ u₁ ⊗ₖ (1 : Square 2)) : Square 4) ⊗ₖ (1 : Square 2))
   change U * W = W * U ↔ _
   have hWb : blockify W = Matrix.fromBlocks (u₀ • (1 : Square 4)) 0 0 (u₁ • (1 : Square 4)) := by
-    simpa [W, kron_one_assoc] using blockify_W u₀ u₁
+    simpa [W, KronHelpers.kron_one_assoc] using blockify_W u₀ u₁
   constructor
   · intro hcomm
     by_cases heq : u₀ = u₁
@@ -135,7 +97,8 @@ lemma section3_lemma_3_1 (u₀ u₁ : ℂ) (_hu₀ : ‖u₀‖ = 1) (_hu₁ : �
         simpa [Ub] using (blockify_mem_unitaryGroup_iff (n := 4) (U := U)).2 hU
       have hUb_diag_unitary : Matrix.fromBlocks U00 0 0 U11 ∈ Matrix.unitaryGroup (Fin 4 ⊕ Fin 4) ℂ := by
         simpa [hUb_diag] using hUb_unitary
-      have ⟨hU00_unitary, hU11_unitary⟩ := block_diagonal_unitary U00 U11 hUb_diag_unitary
+      have ⟨hU00_unitary, hU11_unitary⟩ :=
+        BlockHelpers.block_diagonal_unitary U00 U11 hUb_diag_unitary
       have hU_form : U = proj0 ⊗ₖ U00 + proj1 ⊗ₖ U11 := by
         calc
           U = unblockify Ub := by
@@ -189,31 +152,6 @@ private lemma diag2_one_right_kron (u : ℂ) :
   rw [← diag2_one_one]
   simpa using diag2_kron_diag2 1 u 1 1
 
-private def notc : Square 4 :=
-  Matrix.of ![![1, 0, 0, 0],
-              ![0, 0, 0, 1],
-              ![0, 0, 1, 0],
-              ![0, 1, 0, 0]]
-
-private lemma notc_conjTranspose : notc† = notc := by
-  ext i j
-  fin_cases i <;> fin_cases j <;> simp [notc]
-
-private lemma notc_mul_notc : notc * notc = (1 : Square 4) := by
-  ext i j
-  fin_cases i <;> fin_cases j <;> simp [notc]
-
-private lemma notc_unitary : notc ∈ Matrix.unitaryGroup (Fin 4) ℂ := by
-  rw [Matrix.mem_unitaryGroup_iff, show star notc = notc by
-    simpa [star_eq_conjTranspose] using notc_conjTranspose, notc_mul_notc]
-
-private lemma notc_conj_diag4 (a b c d : ℂ) :
-    notc * diag4 a b c d * notc† = diag4 a d c b := by
-  rw [notc_conjTranspose]
-  ext i j
-  fin_cases i <;> fin_cases j <;>
-    simp [Matrix.mul_apply, Matrix.vecMul_diagonal, Fin.sum_univ_succ, notc, diag4]
-
 private lemma tensor_witness_of_eq (u : ℂ) (hu : ‖u‖ = 1) :
     ∃ (P Q : Square 2) (V : Square 4),
       P ∈ Matrix.unitaryGroup (Fin 2) ℂ ∧
@@ -233,15 +171,15 @@ private lemma tensor_witness_of_mul_eq_one
       Q ∈ Matrix.unitaryGroup (Fin 2) ℂ ∧
       V ∈ Matrix.unitaryGroup (Fin 4) ℂ ∧
       P ⊗ₖ Q = V * diag4 1 1 u₀ u₁ * V† := by
-  refine ⟨diag2 1 u₀, diag2 1 u₁, notc, ?_, ?_, notc_unitary, ?_⟩
+  refine ⟨diag2 1 u₀, diag2 1 u₁, GateHelpers.notc, ?_, ?_, GateHelpers.notc_unitary, ?_⟩
   · exact diag2_unitary 1 u₀ (by simp) hu₀
   · exact diag2_unitary 1 u₁ (by simp) hu₁
   · calc
       diag2 1 u₀ ⊗ₖ diag2 1 u₁ = diag4 1 u₁ u₀ 1 := by
         simpa [h] using diag2_kron_diag2 1 u₀ 1 u₁
-      _ = notc * diag4 1 1 u₀ u₁ * notc† := by
+      _ = GateHelpers.notc * diag4 1 1 u₀ u₁ * GateHelpers.notc† := by
         symm
-        simpa using notc_conj_diag4 1 1 u₀ u₁
+        simpa using GateHelpers.notc_conj_diag4 1 1 u₀ u₁
 
 private lemma eq_or_mul_eq_one_of_three_multiset
     {x y z u₀ u₁ : ℂ}
@@ -444,78 +382,6 @@ lemma section3_lemma_3_2 (u₀ u₁ : ℂ) (hu₀ : ‖u₀‖ = 1) (hu₁ : ‖
     · simpa using tensor_witness_of_eq u₀ hu₀
     · exact tensor_witness_of_mul_eq_one u₀ u₁ hu₀ hu₁ hmul
 
-private lemma diag2_same_eq_smul_one (a : ℂ) :
-    diag2 a a = a • (1 : Square 2) := by
-  ext i j
-  fin_cases i <;> fin_cases j <;> simp [diag2]
-
-private lemma kron_smul_right (A : Square m) (c : ℂ) (B : Square n) :
-    A ⊗ₖ (c • B) = c • (A ⊗ₖ B) := by
-  ext i j
-  obtain ⟨⟨i₁, i₂⟩, rfl⟩ := (@finProdFinEquiv m n).surjective i
-  obtain ⟨⟨j₁, j₂⟩, rfl⟩ := (@finProdFinEquiv m n).surjective j
-  simp [TwoControl.kron_apply, mul_left_comm]
-
-private lemma det_diag2 (a b : ℂ) : (diag2 a b).det = a * b := by
-  simp [diag2, Matrix.det_diagonal]
-
-private lemma det_of_unitary_diag2_decomp {A : Square 2} {a b : ℂ} {U : Square 2}
-    (hU : U ∈ Matrix.unitaryGroup (Fin 2) ℂ)
-    (hA : A = U * diag2 a b * U†) :
-    A.det = a * b := by
-  have hdetU : U.det * star U.det = 1 := by
-    exact (Unitary.mem_iff_self_mul_star).mp (Matrix.det_of_mem_unitary hU)
-  calc
-    A.det = (U * diag2 a b * U†).det := by rw [hA]
-    _ = U.det * (diag2 a b).det * star U.det := by
-      rw [Matrix.det_mul, Matrix.det_mul, Matrix.det_conjTranspose]
-    _ = (U.det * star U.det) * (a * b) := by
-      rw [det_diag2]
-      ring
-    _ = a * b := by rw [hdetU, one_mul]
-
-private lemma diag4_unitary (a b c d : ℂ)
-    (ha : ‖a‖ = 1) (hb : ‖b‖ = 1) (hc : ‖c‖ = 1) (hd : ‖d‖ = 1) :
-    diag4 a b c d ∈ Matrix.unitaryGroup (Fin 4) ℂ := by
-  rw [Matrix.mem_unitaryGroup_iff']
-  ext i j
-  fin_cases i <;> fin_cases j <;> simp [diag4, Complex.conj_mul', ha, hb, hc, hd]
-
-private lemma diag4_repeat_norms_of_mem_unitaryGroup {c d : ℂ}
-    (h : diag4 c d c d ∈ Matrix.unitaryGroup (Fin 4) ℂ) :
-    ‖c‖ = 1 ∧ ‖d‖ = 1 := by
-  have h' : (diag4 c d c d)† * diag4 c d c d = 1 := by
-    simpa [star_eq_conjTranspose, Matrix.mem_unitaryGroup_iff'] using h
-  have h00 : (starRingEnd ℂ) c * c = 1 := by
-    simpa [diag4, Matrix.mul_apply, Fin.sum_univ_succ] using congrFun (congrFun h' 0) 0
-  have h11 : (starRingEnd ℂ) d * d = 1 := by
-    simpa [diag4, Matrix.mul_apply, Fin.sum_univ_succ] using congrFun (congrFun h' 1) 1
-  have hcNormSq : Complex.normSq c = 1 := by
-    apply Complex.ofReal_injective
-    simpa [Complex.normSq_eq_conj_mul_self] using h00
-  have hdNormSq : Complex.normSq d = 1 := by
-    apply Complex.ofReal_injective
-    simpa [Complex.normSq_eq_conj_mul_self] using h11
-  have hcSq : ‖c‖ ^ 2 = 1 := by
-    simpa [Complex.normSq_eq_norm_sq] using hcNormSq
-  have hdSq : ‖d‖ ^ 2 = 1 := by
-    simpa [Complex.normSq_eq_norm_sq] using hdNormSq
-  have hc_nonneg : 0 ≤ ‖c‖ := norm_nonneg c
-  have hd_nonneg : 0 ≤ ‖d‖ := norm_nonneg d
-  constructor
-  · have hsq : ‖c‖ ^ 2 = 1 ^ 2 := by simpa using hcSq
-    rcases sq_eq_sq_iff_eq_or_eq_neg.mp hsq with hEq | hEq
-    · exact hEq
-    · exfalso
-      have : (0 : ℝ) ≤ -1 := by simpa [hEq] using hc_nonneg
-      linarith
-  · have hsq : ‖d‖ ^ 2 = 1 ^ 2 := by simpa using hdSq
-    rcases sq_eq_sq_iff_eq_or_eq_neg.mp hsq with hEq | hEq
-    · exact hEq
-    · exfalso
-      have : (0 : ℝ) ≤ -1 := by simpa [hEq] using hd_nonneg
-      linarith
-
 @[simp] private lemma finProdFinEquiv_00 : (@finProdFinEquiv 2 2 (0, 0) : Fin 4) = 0 := by
   native_decide
 
@@ -548,34 +414,11 @@ private lemma diag4_repeat_norms_of_mem_unitaryGroup {c d : ℂ}
   rw [finProdFinEquiv_11]
   rfl
 
-private lemma one_kron_diag2 (c d : ℂ) :
-    (1 : Square 2) ⊗ₖ diag2 c d = diag4 c d c d := by
-  rw [← diag2_one_one]
-  simpa using diag2_kron_diag2 1 1 c d
-
 private lemma one_kron_mul_controlledGate_diag2 (P : Square 2) (u₀ u₁ : ℂ) :
     (1 : Square 2) ⊗ₖ P * controlledGate (diag2 u₀ u₁) =
       proj0 ⊗ₖ P + proj1 ⊗ₖ (P * diag2 u₀ u₁) := by
   rw [controlledGate, Matrix.mul_add, ← kron_mul_two, ← kron_mul_two]
   simp
-
-private lemma fromBlocks_diagonal_unitary {n : ℕ} (A D : Square n)
-    (hA : A ∈ Matrix.unitaryGroup (Fin n) ℂ)
-    (hD : D ∈ Matrix.unitaryGroup (Fin n) ℂ) :
-    Matrix.fromBlocks A 0 0 D ∈ Matrix.unitaryGroup (Fin n ⊕ Fin n) ℂ := by
-  have hAleft : A† * A = 1 := by
-    simpa [star_eq_conjTranspose, Matrix.mem_unitaryGroup_iff'] using hA
-  have hAright : A * A† = 1 := by
-    simpa [star_eq_conjTranspose, Matrix.mem_unitaryGroup_iff] using hA
-  have hDleft : D† * D = 1 := by
-    simpa [star_eq_conjTranspose, Matrix.mem_unitaryGroup_iff'] using hD
-  have hDright : D * D† = 1 := by
-    simpa [star_eq_conjTranspose, Matrix.mem_unitaryGroup_iff] using hD
-  constructor
-  · rw [star_eq_conjTranspose, Matrix.fromBlocks_conjTranspose, Matrix.fromBlocks_multiply, block_one_eq]
-    simp [hAleft, hDleft]
-  · rw [star_eq_conjTranspose, Matrix.fromBlocks_conjTranspose, Matrix.fromBlocks_multiply, block_one_eq]
-    simp [hAright, hDright]
 
 private lemma blockify_diag4 (a b c d : ℂ) :
     blockify (n := 2) (diag4 a b c d) =
@@ -648,25 +491,6 @@ private lemma repeated_pair_complement {a b e f c d : ℂ}
             simpa using (Multiset.cons_swap b a (0 : Multiset ℂ))
     exact (Multiset.cons_inj_right b).mp ((Multiset.cons_inj_right a).mp hcons)
 
-private lemma swap2_conjTranspose : swap2† = swap2 := by
-  ext i j
-  fin_cases i <;> fin_cases j <;> simp [swap2]
-
-private lemma swap2_mul_swap2 : swap2 * swap2 = (1 : Square 4) := by
-  ext i j
-  fin_cases i <;> fin_cases j <;> simp [swap2]
-
-private lemma swap2_unitary : swap2 ∈ Matrix.unitaryGroup (Fin 4) ℂ := by
-  rw [Matrix.mem_unitaryGroup_iff, show star swap2 = swap2 by
-    simpa [star_eq_conjTranspose] using swap2_conjTranspose, swap2_mul_swap2]
-
-private lemma swap2_conj_diag4 (a b c d : ℂ) :
-    swap2 * diag4 a b c d * swap2† = diag4 a c b d := by
-  rw [swap2_conjTranspose]
-  ext i j
-  fin_cases i <;> fin_cases j <;>
-    simp [Matrix.mul_apply, Matrix.vecMul_diagonal, Fin.sum_univ_succ, swap2, diag4]
-
 private def cnot : Square 4 :=
   Matrix.of ![![1, 0, 0, 0],
               ![0, 1, 0, 0],
@@ -713,7 +537,7 @@ lemma section3_lemma_3_3 (u₀ u₁ : ℂ) (hu₀ : ‖u₀‖ = 1) (hu₁ : ‖
     let W : Square 4 := unblockify (n := 2) (Matrix.fromBlocks UP 0 0 UQ)
     have hW : W ∈ Matrix.unitaryGroup (Fin 4) ℂ := by
       apply (blockify_mem_unitaryGroup_iff (n := 2) (U := W)).1
-      simpa [W] using fromBlocks_diagonal_unitary UP UQ hUP hUQ
+      simpa [W] using BlockHelpers.fromBlocks_diagonal_unitary UP UQ hUP hUQ
     have hWblock : blockify (n := 2) W = Matrix.fromBlocks UP 0 0 UQ := by
       simp [W]
     have hBlock :
@@ -754,7 +578,8 @@ lemma section3_lemma_3_3 (u₀ u₁ : ℂ) (hu₀ : ‖u₀‖ = 1) (hu₁ : ‖
         calc
           P = UP * diag2 a b * UP† := hPdiag
           _ = UP * diag2 a a * UP† := by rw [hab]
-          _ = UP * (a • (1 : Square 2)) * UP† := by rw [diag2_same_eq_smul_one]
+              _ = UP * (a • (1 : Square 2)) * UP† := by
+                rw [DiagonalizationHelpers.diag2_same_eq_smul_one]
           _ = a • (UP * UP†) := by simp
           _ = a • (1 : Square 2) := by
             have hUU : UP * UP† = 1 := by
@@ -769,7 +594,7 @@ lemma section3_lemma_3_3 (u₀ u₁ : ℂ) (hu₀ : ‖u₀‖ = 1) (hu₁ : ‖
           _ = proj0 ⊗ₖ (a • (1 : Square 2)) + proj1 ⊗ₖ (a • diag2 u₀ u₁) := by
             simp [hPscalar]
           _ = a • (proj0 ⊗ₖ (1 : Square 2) + proj1 ⊗ₖ diag2 u₀ u₁) := by
-                rw [kron_smul_right, kron_smul_right, smul_add]
+                rw [KronHelpers.kron_smul_right, KronHelpers.kron_smul_right, smul_add]
           _ = a • diag4 1 1 u₀ u₁ := by
             change a • controlledGate (diag2 u₀ u₁) = a • diag4 1 1 u₀ u₁
             rw [controlledGate_diag2_eq]
@@ -777,7 +602,7 @@ lemma section3_lemma_3_3 (u₀ u₁ : ℂ) (hu₀ : ‖u₀‖ = 1) (hu₁ : ‖
         kron_unitary_two (1 : Square 2) P (Submonoid.one_mem _) hP
       have hCtrl : controlledGate (diag2 u₀ u₁) ∈ Matrix.unitaryGroup (Fin 4) ℂ := by
         rw [controlledGate_diag2_eq]
-        exact diag4_unitary 1 1 u₀ u₁ (by simp) (by simp) hu₀ hu₁
+        exact DiagonalizationHelpers.diag4_unitary 1 1 u₀ u₁ (by simp) (by simp) hu₀ hu₁
       have hM : ((1 : Square 2) ⊗ₖ P * controlledGate (diag2 u₀ u₁)) ∈ Matrix.unitaryGroup (Fin 4) ℂ := by
         exact Submonoid.mul_mem _ hOneKronP hCtrl
       have hRep : diag4 c d c d ∈ Matrix.unitaryGroup (Fin 4) ℂ := by
@@ -795,7 +620,7 @@ lemma section3_lemma_3_3 (u₀ u₁ : ℂ) (hu₀ : ‖u₀‖ = 1) (hu₁ : ‖
                       = (U† * U) * diag4 c d c d * (U† * U) := by simp [mul_assoc]
                   _ = diag4 c d c d := by simp [hUleft]
         simpa [hconj] using unitary_conj_mem_unitaryGroup hM hU
-      have ⟨hc, hd⟩ := diag4_repeat_norms_of_mem_unitaryGroup hRep
+      have ⟨hc, hd⟩ := DiagonalizationHelpers.diag4_repeat_norms_of_mem_unitaryGroup hRep
       have ha0 : a ≠ 0 := by
         intro ha_zero
         have ha' := ha
@@ -841,7 +666,7 @@ lemma section3_lemma_3_3 (u₀ u₁ : ℂ) (hu₀ : ‖u₀‖ = 1) (hu₁ : ‖
                     = (U† * U) * diag4 q₀ q₁ q₀ q₁ * (U† * U) := by simp [mul_assoc]
                 _ = diag4 q₀ q₁ q₀ q₁ := by simp [hUleft]
       have hQeq : (1 : Square 2) ⊗ₖ diag2 q₀ q₁ = U† * diag4 1 1 u₀ u₁ * U := by
-        rw [one_kron_diag2]
+        rw [DiagonalizationHelpers.one_kron_diag2]
         exact hQconj.symm
       exact (section3_lemma_3_2 u₀ u₁ hu₀ hu₁).mp <| by
         refine ⟨1, diag2 q₀ q₁, U†, ?_, ?_, ?_, ?_⟩
@@ -856,12 +681,13 @@ lemma section3_lemma_3_3 (u₀ u₁ : ℂ) (hu₀ : ‖u₀‖ = 1) (hu₁ : ‖
           e * f = ({e, f} : Multiset ℂ).prod := by simp
           _ = ({a, b} : Multiset ℂ).prod := by rw [hEF]
           _ = a * b := by simp
-      have hdetP : P.det = a * b := det_of_unitary_diag2_decomp hUP hPdiag
-      have hdetPD : PD.det = e * f := det_of_unitary_diag2_decomp hUQ hPDdiag
+      have hdetP : P.det = a * b := DiagonalizationHelpers.det_of_unitary_diag2_decomp hUP hPdiag
+      have hdetPD : PD.det = e * f :=
+        DiagonalizationHelpers.det_of_unitary_diag2_decomp hUQ hPDdiag
       have hdetEq : PD.det = P.det := by rw [hdetPD, hprod, hdetP]
       have hdetCalc : PD.det = P.det * (u₀ * u₁) := by
         dsimp [PD]
-        rw [Matrix.det_mul, hdetP, det_diag2]
+        rw [Matrix.det_mul, hdetP, DiagonalizationHelpers.det_diag2]
       have hdetNonzero : P.det ≠ 0 := by
         rw [hdetP]
         apply mul_ne_zero
@@ -879,14 +705,14 @@ lemma section3_lemma_3_3 (u₀ u₁ : ℂ) (hu₀ : ‖u₀‖ = 1) (hu₁ : ‖
       exact Or.inr ((mul_left_cancel₀ hdetNonzero hcancel).symm)
   · intro h
     rcases h with rfl | hmul
-    · refine ⟨1, Submonoid.one_mem _, swap2, swap2_unitary, 1, u₀, ?_⟩
+    · refine ⟨1, Submonoid.one_mem _, swap2, SwapHelpers.swap2_unitary, 1, u₀, ?_⟩
       calc
         (1 : Square 2) ⊗ₖ (1 : Square 2) * controlledGate (diag2 u₀ u₀)
             = controlledGate (diag2 u₀ u₀) := by simp [TwoControl.one_kron_one 2 2]
         _ = diag4 1 1 u₀ u₀ := controlledGate_diag2_eq u₀ u₀
         _ = swap2 * diag4 1 u₀ 1 u₀ * swap2† := by
             symm
-            simpa using swap2_conj_diag4 1 u₀ 1 u₀
+            simpa using SwapHelpers.swap2_conj_diag4 1 u₀ 1 u₀
     · refine ⟨diag2 1 u₀, diag2_unitary 1 u₀ (by simp) hu₀, cnot, cnot_unitary, 1, u₀, ?_⟩
       calc
         (1 : Square 2) ⊗ₖ diag2 1 u₀ * controlledGate (diag2 u₀ u₁) = diag4 1 u₀ u₀ 1 := by
