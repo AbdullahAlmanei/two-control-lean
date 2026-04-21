@@ -7,24 +7,6 @@ open Matrix
 namespace TwoControl
 namespace CosineSine
 
-/-!
-This file exists to pin down the exact matrix objects for the appendix `cosinesine` lemma
-before any proof work starts.
-
-It will contain only the reusable definitions for the isolated cosine-sine development:
-
-- `blockDiag2`: the 2-by-2 block-diagonal outer factors from the Paige-Wei specialization.
-- `realDiag2`: real diagonal blocks, coerced into complex matrices.
-- `csBlockCore`: the square-block cosine-sine core as a `Square 4` matrix.
-- `ry`: the one-qubit `R_y` gate in the exact matrix convention used by the paper packet.
-- `conditionalRy`: the paper-facing middle factor `R_y(θ₀) ⊗ |0⟩⟨0| + R_y(θ₁) ⊗ |1⟩⟨1|`.
-
-Keeping these definitions in their own file lets us build only the cosine-sine modules while
-the statements and later proofs evolve.
--/
-
-/-- Two-by-two block-diagonal matrix over `Square 2`, written in the same gate language used
-in the paper. -/
 noncomputable def blockDiag2 (A B : Square 2) : Square 4 :=
   proj0 ⊗ₖ A + proj1 ⊗ₖ B
 

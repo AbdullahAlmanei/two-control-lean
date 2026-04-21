@@ -1029,11 +1029,6 @@ theorem squareBlockCSD_exists (V : Square 4)
       _ = P₁ * realDiag2 c₀ c₁ * Q₁ := by
         rw [hD₁eq]
         simp [mul_assoc]
-  refine ⟨P₀, P₁, Q₀, Q₁, c₀, c₁, s₀, s₁,
-    hP₀, hP₁, hQ₀, hQ₁,
-    hc₀_nonneg, hc₁_nonneg, hs₀_nonneg, hs₁_nonneg,
-    hcs₀, hcs₁, ?_⟩
-  apply blockify_injective (n := 2)
   have hBlockCore :
       blockify (n := 2) (csBlockCore c₀ c₁ s₀ s₁) =
         Matrix.fromBlocks
@@ -1107,8 +1102,7 @@ theorem csBlockCore_eq_conditionalRy
 
 /-- Paper-facing formulation of Lemma `cosinesine`.
 
-The matrix equation is written as `V = P * R * Q`, matching the specialization-and-translation
-packet rather than relying on circuit-diagram reading conventions. -/
+The matrix equation is written as `V = P * R * Q`. -/
 theorem cosinesine_exists (V : Square 4)
     (hV : V ∈ Matrix.unitaryGroup (Fin 4) ℂ) :
     ∃ (P₀ P₁ Q₀ Q₁ : Square 2) (θ₀ θ₁ : ℝ),
