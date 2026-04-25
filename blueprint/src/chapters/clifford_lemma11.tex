@@ -1,0 +1,147 @@
+\section{Clifford Lemma 11}
+
+This chapter isolates the paper-only dependency cone used for a first
+formal blueprint of Lemma 11 from the Clifford paper.
+The recursive $n$-qubit argument of Lemma 1 is intentionally excluded:
+the goal here is only the $2$-qubit synthesis theorem.
+
+\begin{lemma}
+  \label{lem:cliff_2_2q}
+  \lean{TwoControl.CosineSine.cosinesine_exists}
+  \leanok
+  For every $2$-qubit unitary $V$, there exist one-qubit unitaries
+  $P_0$, $P_1$, $Q_0$, $Q_1$ and real angles $\theta_0$, $\theta_1$
+  such that
+  \[
+    V = (\lvert 0 \rangle \langle 0 \rvert \otimes P_0
+         + \lvert 1 \rangle \langle 1 \rvert \otimes P_1)
+      \cdot (R_y(\theta_0) \otimes \lvert 0 \rangle \langle 0 \rvert
+         + R_y(\theta_1) \otimes \lvert 1 \rangle \langle 1 \rvert)
+      \cdot (\lvert 0 \rangle \langle 0 \rvert \otimes Q_0
+         + \lvert 1 \rangle \langle 1 \rvert \otimes Q_1).
+  \]
+\end{lemma}
+
+\begin{proof}
+  \leanok
+  This is the existing theorem
+  $\texttt{TwoControl.CosineSine.cosinesine\_exists}$,
+  reused as the $2$-qubit specialization of the cosine-sine decomposition.
+\end{proof}
+
+\begin{lemma}
+  \label{lem:cliff_3}
+  \lean{TwoControl.Clifford.lemma3_ry_via_rz}
+  \leanok
+  For every real angle $\alpha$,
+  \[
+    R_y(\alpha) = S^{\dagger} H R_z(-\alpha) H S.
+  \]
+\end{lemma}
+
+\begin{proof}
+  \leanok
+  Expand both sides as $2 \times 2$ matrices.
+  The equalities $H Z H = X$ and $S^{\dagger} X S = -Y$
+  reduce the right-hand side to the defining matrix of $R_y(\alpha)$.
+\end{proof}
+
+\begin{lemma}
+  \label{lem:cliff_4_2q}
+  \lean{TwoControl.Clifford.lemma4_demultiplex_two_qubit}
+  \leanok
+  Suppose $U_0$ and $U_1$ are one-qubit unitaries.
+  Then there exist one-qubit unitaries $P$ and $Q$ and real angles
+  $\alpha_0$, $\alpha_1$ such that
+  \[
+    \lvert 0 \rangle \langle 0 \rvert \otimes U_0
+      + \lvert 1 \rangle \langle 1 \rvert \otimes U_1
+    = (I \otimes Q)
+      \cdot (R_z(\alpha_0) \otimes \lvert 0 \rangle \langle 0 \rvert
+          + R_z(\alpha_1) \otimes \lvert 1 \rangle \langle 1 \rvert)
+      \cdot (I \otimes P).
+  \]
+\end{lemma}
+
+\begin{proof}
+  \leanok
+  \uses{lem:cliff_2_2q, lem:cliff_3}
+  Apply Lemma~\ref{lem:cliff_2_2q} to the block-diagonal gate
+  $\lvert 0 \rangle \langle 0 \rvert \otimes U_0
+    + \lvert 1 \rangle \langle 1 \rvert \otimes U_1$.
+  Because the gate is already block-diagonal, the cosine-sine witnesses can
+  be chosen so that the off-diagonal part is absorbed into local one-qubit
+  factors on the second qubit.
+  Lemma~\ref{lem:cliff_3} then converts the middle conditional-$R_y$ pair
+  into a conditional-$R_z$ pair.
+\end{proof}
+
+\begin{proposition}
+  \label{prop:cliff_controlled_rz}
+  \lean{TwoControl.Clifford.controlled_rz_pair_uses_standard_gates}
+  \leanok
+  For every real angles $\alpha_0$, $\alpha_1$, the two-qubit gate
+  \[
+    R_z(\alpha_0) \otimes \lvert 0 \rangle \langle 0 \rvert
+      + R_z(\alpha_1) \otimes \lvert 1 \rangle \langle 1 \rvert
+  \]
+  can be synthesized by a circuit built from
+  $\{C(X), H, T, R_z(\theta)\}$.
+\end{proposition}
+
+\begin{proof}
+  \leanok
+  Split the pair $(\alpha_0, \alpha_1)$ into its average part and its
+  half-difference.
+  The common phase is implemented by local $R_z$ gates, while the relative
+  phase is implemented by the standard two-$C(X)$ realization of a controlled
+  diagonal $R_z$ gate.
+  Since the gate set already contains $R_z(\theta)$, no approximation step is
+  needed.
+\end{proof}
+
+\begin{proposition}
+  \label{prop:cliff_1q_exact}
+  \lean{TwoControl.Clifford.one_qubit_exact_h_t_rz}
+  \leanok
+  Every one-qubit unitary can be synthesized by a circuit built from
+  $\{H, T, R_z(\theta)\}$.
+\end{proposition}
+
+\begin{proof}
+  \leanok
+  Use an Euler-angle decomposition of the unitary into
+  $R_z$ and $R_x$ rotations.
+  Each $R_x$ rotation is rewritten as $H R_z(\theta) H$,
+  so the whole circuit uses only $H$ and $R_z(\theta)$.
+  The gate $T$ is available in the allowed set and does not need special
+  treatment in this exact synthesis step.
+\end{proof}
+
+\begin{lemma}
+  \label{lem:cliff_11}
+  \lean{TwoControl.Clifford.lemma11_two_qubit_synthesis}
+  \leanok
+  For every two-qubit unitary $U$, there exists a circuit built from
+  $\{C(X), H, T, R_z(\theta)\}$ whose matrix is $U$.
+\end{lemma}
+
+\begin{proof}
+  \leanok
+  \uses{lem:cliff_2_2q, lem:cliff_3, lem:cliff_4_2q, prop:cliff_controlled_rz, prop:cliff_1q_exact}
+  Apply Lemma~\ref{lem:cliff_2_2q} to write
+  \[
+    U = P \cdot R \cdot Q,
+  \]
+  where $P$ and $Q$ are block-diagonal two-qubit gates built from one-qubit
+  unitaries and $R$ is a conditional-$R_y$ pair.
+  Use Lemma~\ref{lem:cliff_4_2q} to synthesize the side factors $P$ and $Q$.
+  Use Lemma~\ref{lem:cliff_3} to rewrite the middle conditional-$R_y$ pair in
+  terms of a conditional-$R_z$ pair plus local one-qubit gates.
+  Proposition~\ref{prop:cliff_controlled_rz} synthesizes the resulting
+  conditional-$R_z$ block using $C(X)$ and one-qubit gates from the target set.
+  Proposition~\ref{prop:cliff_1q_exact} synthesizes all remaining local
+  one-qubit factors.
+  Concatenating the resulting circuits gives a synthesis of $U$ over
+  $\{C(X), H, T, R_z(\theta)\}$.
+\end{proof}

@@ -1,5 +1,7 @@
 import TwoControl.Prelude
 import TwoControl.Definitions
+import TwoControl.CosineSine.Main
+import TwoControl.Clifford.Main
 import TwoControl.Section3
 import TwoControl.Section4
 import TwoControl.Section5

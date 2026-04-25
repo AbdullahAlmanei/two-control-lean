@@ -15,3 +15,9 @@ TwoControl.section7_lemma_7_2
 TwoControl.section7_lemma_7_3
 TwoControl.section7_theorem_7_4
 TwoControl.section7_corollary_7_5
+TwoControl.CosineSine.cosinesine_exists
+TwoControl.Clifford.lemma3_ry_via_rz
+TwoControl.Clifford.lemma4_demultiplex_two_qubit
+TwoControl.Clifford.controlled_rz_pair_uses_standard_gates
+TwoControl.Clifford.one_qubit_exact_h_t_rz
+TwoControl.Clifford.lemma11_two_qubit_synthesis
