@@ -104,18 +104,18 @@ the goal here is only the $2$-qubit synthesis theorem.
   \label{prop:cliff_1q_exact}
   \lean{TwoControl.Clifford.one_qubit_exact_h_t_rz}
   \leanok
-  Every one-qubit unitary can be synthesized by a circuit built from
-  $\{H, T, R_z(\theta)\}$.
+  Every one-qubit unitary can be synthesized, up to global phase, by a circuit
+  built from $\{H, T, R_z(\theta)\}$.
 \end{proposition}
 
 \begin{proof}
   \leanok
-  Use an Euler-angle decomposition of the unitary into
-  $R_z$ and $R_x$ rotations.
-  Each $R_x$ rotation is rewritten as $H R_z(\theta) H$,
-  so the whole circuit uses only $H$ and $R_z(\theta)$.
-  The gate $T$ is available in the allowed set and does not need special
-  treatment in this exact synthesis step.
+  Prepare the first column by an $R_z R_y$ circuit, diagonalize the remaining
+  one-qubit unitary, and rewrite the diagonal factor as a global phase times a
+  final $R_z$ rotation.
+  Lemma~\ref{lem:cliff_3} and the exact identities
+  $S = T^2$ and $S^\dagger = T^6$ express the needed $R_y$ gate using the
+  allowed primitives.
 \end{proof}
 
 \begin{lemma}
@@ -123,7 +123,8 @@ the goal here is only the $2$-qubit synthesis theorem.
   \lean{TwoControl.Clifford.lemma11_two_qubit_synthesis}
   \leanok
   For every two-qubit unitary $U$, there exists a circuit built from
-  $\{C(X), H, T, R_z(\theta)\}$ whose matrix is $U$.
+  $\{C(X), H, T, R_z(\theta)\}$ whose matrix is globally phase-equivalent to
+  $U$.
 \end{lemma}
 
 \begin{proof}
@@ -141,7 +142,8 @@ the goal here is only the $2$-qubit synthesis theorem.
   Proposition~\ref{prop:cliff_controlled_rz} synthesizes the resulting
   conditional-$R_z$ block using $C(X)$ and one-qubit gates from the target set.
   Proposition~\ref{prop:cliff_1q_exact} synthesizes all remaining local
-  one-qubit factors.
-  Concatenating the resulting circuits gives a synthesis of $U$ over
-  $\{C(X), H, T, R_z(\theta)\}$.
+  one-qubit factors up to global phase.
+  The accumulated scalar phases compose into a single global phase, so
+  concatenating the resulting circuits gives a synthesis of $U$ over
+  $\{C(X), H, T, R_z(\theta)\}$ up to global phase.
 \end{proof}
