@@ -6,6 +6,7 @@ import Mathlib.Analysis.SpecialFunctions.Complex.Circle
 
 open Matrix
 
+
 namespace TwoControl
 namespace Clifford
 

@@ -11,3 +11,4 @@ blueprint/print/
 *.out
 *.toc
 .DS_Store
+/.agent-shell/

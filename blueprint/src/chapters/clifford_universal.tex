@@ -1,0 +1,355 @@
+\section{Clifford+T universality}
+
+This chapter records the proof path from the exact two-qubit synthesis theorem
+of Lemma~\ref{lem:cliff_11} to the full Clifford+T universality theorem in
+the Clifford paper.  The Lean declarations in this chapter already exist.
+Nodes marked as not ready are intentionally scaffolded: their Lean declaration
+exists, but the proof is either currently by \texttt{sorry} or depends on a
+\texttt{sorry}-backed node.
+
+\begin{definition}
+  \label{def:cliff_circuit_vocab}
+  \lean{TwoControl.Clifford.Universal.circuitMatrix}
+  \leanok
+  A circuit is represented by a list of square matrices, composed from left to
+  right.  The same file defines the predicates
+  $\operatorname{CircuitOver}$, $\operatorname{Synthesizes}$, and
+  $\operatorname{SynthesizesUpToGlobalPhase}$ for exact and global-phase
+  synthesis over a selected gate set.
+\end{definition}
+
+\begin{definition}
+  \label{def:cliff_gate_sets}
+  \lean{TwoControl.Clifford.Universal.EasyGate}
+  \leanok
+  The universality track uses three gate-set predicates on $n$-qubit
+  matrices:
+  \[
+    \operatorname{EasyGate}_n,\qquad
+    \operatorname{CliffordTRzGate}_n,\qquad
+    \operatorname{CliffordTGate}_n.
+  \]
+  The easy gate set contains arbitrary embedded two-qubit gates together with
+  embedded $H$, $S$, $S^\dagger$, and $R_z(\theta)$ gates.  The intermediate
+  gate set contains embedded $C(X)$, $H$, $T$, and $R_z(\theta)$ gates.  The
+  final gate set removes $R_z(\theta)$.
+\end{definition}
+
+\begin{definition}
+  \label{def:cliff_ht_primitives}
+  \lean{TwoControl.Clifford.Universal.OneQubitHTPrimitive}
+  \leanok
+  The concrete primitive types for one-qubit $\{H,T\}$ circuits and local
+  two-qubit Clifford+T circuits package the finite fragments needed for
+  Lemma~12 and for embedded Clifford+T gates.
+\end{definition}
+
+\begin{definition}
+  \label{def:cliff_hs_distance}
+  \lean{TwoControl.Clifford.Universal.hsDistance}
+  \leanok
+  For $N \times N$ unitaries $U$ and $V$, the Hilbert-Schmidt distance used in
+  the Clifford paper is
+  \[
+    d(U,V)
+      =
+      \sqrt{1 - \frac{|\operatorname{Tr}(U^\dagger V)|^2}{N^2}}.
+  \]
+\end{definition}
+
+\begin{lemma}
+  \label{lem:cliff_hs_self}
+  \lean{TwoControl.Clifford.Universal.hsDistance_self}
+  \notready
+  For every unitary $U$, $d(U,U)=0$.
+\end{lemma}
+
+\begin{proof}
+  \notready
+  Expand the definition of $d$ and use
+  $\operatorname{Tr}(U^\dagger U)=\operatorname{Tr}(I_N)=N$.
+\end{proof}
+
+\begin{lemma}
+  \label{lem:cliff_hs_global_phase_zero}
+  \lean{TwoControl.Clifford.Universal.hsDistance_eq_zero_of_globalPhaseEquivalent}
+  \notready
+  If $U$ and $V$ differ only by global phase, then $d(U,V)=0$.
+\end{lemma}
+
+\begin{proof}
+  \notready
+  Write $V=cU$ with $|c|=1$.  Then
+  $\operatorname{Tr}(U^\dagger V)=c\operatorname{Tr}(I_N)$, so the absolute
+  value of the trace is $N$.
+\end{proof}
+
+\begin{lemma}
+  \label{lem:cliff_trace_inequality}
+  \lean{TwoControl.Clifford.Universal.trace_inequality}
+  \notready
+  For $N \times N$ unitaries $U$ and $V$,
+  \[
+    \sqrt{1 - \frac{|\operatorname{Tr}(UV)|^2}{N^2}}
+      \le
+    \sqrt{1 - \frac{|\operatorname{Tr}(U)|^2}{N^2}}
+      +
+    \sqrt{1 - \frac{|\operatorname{Tr}(V)|^2}{N^2}}.
+  \]
+\end{lemma}
+
+\begin{proof}
+  \notready
+  This is the trace inequality cited in the paper as Wang and Zhang~1994.
+  It is currently a standalone analytic dependency for the distance layer.
+\end{proof}
+
+\begin{lemma}
+  \label{lem:cliff_hs_product}
+  \lean{TwoControl.Clifford.Universal.hsDistance_mul_le}
+  \notready
+  For unitaries $U_1,U_2,V_1,V_2$,
+  \[
+    d(U_1U_2,V_1V_2) \le d(U_1,V_1)+d(U_2,V_2).
+  \]
+\end{lemma}
+
+\begin{proof}
+  \notready
+  \uses{lem:cliff_trace_inequality}
+  Rewrite
+  $\operatorname{Tr}((U_1U_2)^\dagger V_1V_2)$ cyclically as
+  $\operatorname{Tr}((U_1^\dagger V_1)(V_2U_2^\dagger))$, then apply
+  Lemma~\ref{lem:cliff_trace_inequality}.
+\end{proof}
+
+\begin{lemma}
+  \label{lem:cliff_hs_circuit_sum}
+  \lean{TwoControl.Clifford.Universal.hsDistance_circuitMatrix_le_sum}
+  \notready
+  If two circuits have the same length and corresponding gates are
+  $U_i$ and $V_i$, then the distance between the two circuit matrices is at
+  most $\sum_i d(U_i,V_i)$.
+\end{lemma}
+
+\begin{proof}
+  \notready
+  \uses{lem:cliff_hs_product}
+  Induct on the circuit length and apply Lemma~\ref{lem:cliff_hs_product} at
+  each multiplication step.
+\end{proof}
+
+\begin{lemma}
+  \label{lem:cliff_general_cs_step}
+  \lean{TwoControl.Clifford.Universal.general_cosine_sine_step}
+  \leanok
+  Every $n$-qubit unitary admits one recursive cosine-sine decomposition step:
+  two controlled $(n-1)$-qubit side factors and a multiplexed $R_y$ middle
+  factor.
+\end{lemma}
+
+\begin{proof}
+  \leanok
+  This is the $n$-qubit version of the cosine-sine decomposition used as
+  Lemma~2 in the paper.
+\end{proof}
+
+\begin{lemma}
+  \label{lem:cliff_general_demultiplexing}
+  \lean{TwoControl.Clifford.Universal.general_demultiplexing_step}
+  \leanok
+  A controlled choice between two $(n-1)$-qubit unitaries can be decomposed
+  into two $(n-1)$-qubit gates and a multiplexed $R_z$ factor.
+\end{lemma}
+
+\begin{proof}
+  \leanok
+  This is the $n$-qubit demultiplexing step cited from Shende, Bullock, and
+  Markov~2005.
+\end{proof}
+
+\begin{lemma}
+  \label{lem:cliff_controlled_rz_reduction}
+  \lean{TwoControl.Clifford.Universal.controlled_rz_reduction_step}
+  \leanok
+  A multiplexed $R_z$ gate controlled by $n-1$ qubits reduces to two
+  multiplexed $R_z$ gates controlled by $n-2$ qubits and two $C(X)$ gates.
+\end{lemma}
+
+\begin{proof}
+  \leanok
+  This is the recursive controlled-$R_z$ reduction cited from
+  M\"ott\"onen et al.~2004.
+\end{proof}
+
+\begin{lemma}
+  \label{lem:cliff_easy_decomposition}
+  \lean{TwoControl.Clifford.Universal.lemma1_decomposition_to_easy_gate_set}
+  \leanok
+  For any $n$-qubit unitary $U$, with $2 \le n$, there is an exact circuit for
+  $U$ built from arbitrary two-qubit gates and one-qubit gates
+  $H$, $S$, $S^\dagger$, and $R_z(\theta)$.
+\end{lemma}
+
+\begin{proof}
+  \leanok
+  \uses{lem:cliff_general_cs_step, lem:cliff_general_demultiplexing, lem:cliff_controlled_rz_reduction}
+  Recursively apply the cosine-sine step.  Convert each multiplexed $R_y$
+  factor to a multiplexed $R_z$ factor using Lemma~\ref{lem:cliff_3}.  Use the
+  demultiplexing step on the controlled side factors and the controlled-$R_z$
+  reduction step until only one- and two-qubit gates remain.
+\end{proof}
+
+\begin{lemma}
+  \label{lem:cliff_2q_clifford_rz}
+  \lean{TwoControl.Clifford.Universal.two_qubit_gate_has_clifford_rz_circuit}
+  \leanok
+  Every two-qubit unitary has a Clifford+$R_z$ circuit up to global phase.
+\end{lemma}
+
+\begin{proof}
+  \leanok
+  \uses{lem:cliff_11}
+  This is exactly Lemma~\ref{lem:cliff_11}, restated in the universality
+  namespace so later files can use the new gate-set vocabulary.
+\end{proof}
+
+\begin{proposition}
+  \label{prop:cliff_phaseS_embedded}
+  \lean{TwoControl.Clifford.Universal.embedded_phaseS_is_clifford_t}
+  \leanok
+  Every embedded $S$ gate is a Clifford+T gate sequence.
+\end{proposition}
+
+\begin{proof}
+  \leanok
+  Use the exact identity $S=T^2$, then lift the local one-qubit circuit to the
+  selected wire.
+\end{proof}
+
+\begin{proposition}
+  \label{prop:cliff_phaseSdagger_embedded}
+  \lean{TwoControl.Clifford.Universal.embedded_phaseSdagger_is_clifford_t}
+  \leanok
+  Every embedded $S^\dagger$ gate is a Clifford+T gate sequence.
+\end{proposition}
+
+\begin{proof}
+  \leanok
+  Use the exact identity $S^\dagger=T^6$, then lift the local one-qubit
+  circuit to the selected wire.
+\end{proof}
+
+\begin{lemma}
+  \label{lem:cliff_easy_factor_to_clifford_rz}
+  \lean{TwoControl.Clifford.Universal.easy_gate_factor_to_clifford_rz}
+  \leanok
+  Every single easy-gate factor can be replaced by a Clifford+$R_z$ circuit,
+  up to global phase.
+\end{lemma}
+
+\begin{proof}
+  \leanok
+  \uses{lem:cliff_2q_clifford_rz, prop:cliff_phaseS_embedded, prop:cliff_phaseSdagger_embedded}
+  For an arbitrary two-qubit factor, use
+  Lemma~\ref{lem:cliff_2q_clifford_rz}.  The $H$, $T$, and $R_z$ local cases
+  are already allowed.  The $S$ and $S^\dagger$ cases use the two exact
+  embedded phase propositions.
+\end{proof}
+
+\begin{lemma}
+  \label{lem:cliff_easy_circuit_to_clifford_rz}
+  \lean{TwoControl.Clifford.Universal.easy_circuit_to_clifford_rz}
+  \leanok
+  Every exact easy-gate circuit can be converted into a Clifford+$R_z$ circuit
+  synthesizing the same unitary up to global phase.
+\end{lemma}
+
+\begin{proof}
+  \leanok
+  \uses{lem:cliff_easy_factor_to_clifford_rz}
+  Replace each factor using Lemma~\ref{lem:cliff_easy_factor_to_clifford_rz}
+  and concatenate the replacement circuits.  Global phases multiply to a
+  single global phase.
+\end{proof}
+
+\begin{theorem}
+  \label{thm:cliff_clifford_rz_from_lemma1}
+  \lean{TwoControl.Clifford.Universal.clifford_rz_synthesis_from_lemma1}
+  \leanok
+  Every $n$-qubit unitary, with $2 \le n$, has a Clifford+$R_z$ circuit up to
+  global phase.
+\end{theorem}
+
+\begin{proof}
+  \leanok
+  \uses{lem:cliff_easy_decomposition, lem:cliff_easy_circuit_to_clifford_rz}
+  First apply Lemma~\ref{lem:cliff_easy_decomposition}.  Then convert the
+  resulting easy-gate circuit using
+  Lemma~\ref{lem:cliff_easy_circuit_to_clifford_rz}.
+\end{proof}
+
+\begin{lemma}
+  \label{lem:cliff_12_rz_approx}
+  \lean{TwoControl.Clifford.Universal.lemma12_rz_approximation_by_ht}
+  \leanok
+  For any real angle $\theta$ and any $\epsilon>0$, there is a one-qubit
+  circuit built from $\{H,T\}$ whose matrix is within $\epsilon$ of
+  $R_z(\theta)$.
+\end{lemma}
+
+\begin{proof}
+  \leanok
+  This is Lemma~12 of the Clifford paper.  We currently treat it as the
+  approximation axiom for the universality path.
+\end{proof}
+
+\begin{lemma}
+  \label{lem:cliff_embedded_rz_approx}
+  \lean{TwoControl.Clifford.Universal.embedded_rz_approximation_by_clifford_t}
+  \leanok
+  Every embedded $R_z(\theta)$ gate can be approximated arbitrarily closely by
+  an embedded Clifford+T circuit.
+\end{lemma}
+
+\begin{proof}
+  \leanok
+  \uses{lem:cliff_12_rz_approx}
+  Apply Lemma~\ref{lem:cliff_12_rz_approx} on the target wire and lift the
+  resulting one-qubit circuit into the ambient $n$-qubit circuit.
+\end{proof}
+
+\begin{lemma}
+  \label{lem:cliff_clifford_rz_to_clifford_t}
+  \lean{TwoControl.Clifford.Universal.clifford_rz_synthesis_approximates_by_clifford_t}
+  \leanok
+  If $U$ has a Clifford+$R_z$ circuit up to global phase, then for every
+  $\epsilon>0$ there is a Clifford+T circuit $C$ such that $d(U,C)<\epsilon$.
+\end{lemma}
+
+\begin{proof}
+  \leanok
+  \uses{lem:cliff_hs_global_phase_zero, lem:cliff_hs_circuit_sum, lem:cliff_embedded_rz_approx}
+  Replace each $R_z(\theta_j)$ in the Clifford+$R_z$ circuit by a
+  Clifford+T approximation within $\epsilon/k$, where $k$ is the number of
+  $R_z$ gates.  Exact Clifford+T gates contribute zero distance, global phase
+  contributes zero distance, and Lemma~\ref{lem:cliff_hs_circuit_sum} bounds
+  the total accumulated error by $\epsilon$.
+\end{proof}
+
+\begin{theorem}
+  \label{thm:clifford_t_universal}
+  \lean{TwoControl.Clifford.Universal.clifford_t_is_universal}
+  \notready
+  For any $n$-qubit unitary $U$, with $2 \le n$, and any $\epsilon>0$, there
+  exists a circuit $C$ built from Clifford+T gates such that $d(U,C)<\epsilon$.
+\end{theorem}
+
+\begin{proof}
+  \notready
+  \uses{thm:cliff_clifford_rz_from_lemma1, lem:cliff_clifford_rz_to_clifford_t}
+  Apply Theorem~\ref{thm:cliff_clifford_rz_from_lemma1} to obtain a
+  Clifford+$R_z$ synthesis of $U$ up to global phase.  Then apply
+  Lemma~\ref{lem:cliff_clifford_rz_to_clifford_t} to approximate every
+  remaining $R_z$ gate by Clifford+T.
+\end{proof}

@@ -1,0 +1,712 @@
+\documentclass[11pt]{article}
+
+\topmargin=-0.5in
+\oddsidemargin=0in
+\evensidemargin=0in
+\textwidth=6.5in
+\textheight=9.0in
+
+\usepackage{setspace}
+\usepackage{graphicx}
+
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{amsthm}
+\usepackage{url}
+
+\usepackage{setspace}
+
+\input{Qcircuit}
+
+% \noindent {\sc Slide}: Jones-Gomard-Sestoft book cover.
+
+% \mbox{} \\ \hspace*{1cm}
+%    [Our experiments confirm our theory] \\
+
+\title{Quantum Algorithms \\
+       Clifford+T is Universal}
+\author{Jens Palsberg}
+\date{Mar 5, 2025}
+
+% Title: Towards a universal quantum programming language.
+% Goal: 2,500 words.
+% Almost every quantum computer right now has its own programming language. 
+% How may this change for the future quantum computers and what are 
+% the unique challenges in making a universal quantum computing language?
+%
+% Role model: http://xrds.acm.org/current-issue.cfm
+
+\def\({\begin{eqnarray*}}
+\def\){\end{eqnarray*}}
+
+\newtheorem{theorem}{Theorem}
+\newtheorem{corollary}[theorem]{Corollary}
+\newtheorem{lemma}[theorem]{Lemma}
+
+\def\phi{\varphi}
+\def\imp{\rightarrow}
+\def\implies{\Rightarrow}
+
+\def\ket#1{|#1\rangle}
+\def\bra#1{\langle#1|}
+\def\inner#1#2{\langle{#1}|{#2}\rangle}
+\def\outer#1#2{\ket{#1}\bra{#2}}
+\def\eigenvalues#1{\mbox{\sf Eigenvalues}(#1)}
+
+\def\iff{\Longleftrightarrow}
+
+\begin{document}
+\maketitle
+
+% Example
+% Story
+% Data
+% Quote
+% Peer Testimony
+
+\newpage
+
+\rightline{Quantum Algorithms, by Jens Palsberg}
+\rightline{Clifford+T is Universal; 100 minutes; Mar 5, 2025} 
+
+\vspace*{-1.2cm}
+
+\section*{Outline}
+
+\paragraph{Hook:} 
+A quantum computer implements a universal gate set.
+Intuitively, this means that the computer can implement any unitary. 
+But technically, it means that the computer can approximate any unitary.
+What is behind this idea and how can we prove that 
+a gate set can approximate any unitary?
+
+\paragraph{Purpose:} Persuade you that Clifford+T is universal.
+
+\paragraph{Preview:} \mbox{} \\
+\hspace*{1cm}
+1. We will state the theorem and devise a proof strategy.
+\\
+\hspace*{1cm}
+2. We will first prove a version of the theorem that works with $R_z$ gates.
+\\
+\hspace*{1cm}
+3. We will prove the full theorem by approximating the $R_z$ gates.
+
+\paragraph{Transition to Body:} 
+Let us begin with a look at what we are trying to prove.
+
+\paragraph{Main Point 1:}
+We will state the theorem and devise a proof strategy. \\
+\hspace*{1cm}
+   [We state theorem] \\ 
+\hspace*{1cm}
+   [We will first prove a version of the theorem that uses an easy gate set] \\
+\hspace*{1cm}
+   [We state some known lemmas]
+
+\paragraph{Transition to MP2:}
+Now we move on to a proof for an easy gate set.
+
+\paragraph{Main Point 2:}
+We will first prove a version of the theorem that works with $R_z$ gates. \\
+\hspace*{1cm}
+   [We prove the simple version of the theorem] \\
+\hspace*{1cm}
+   [We prove a key lemma] \\
+\hspace*{1cm}
+   [We need exponentially many gates to implement an $n$-qubit unitary in the worst case] 
+
+\paragraph{Transition to MP3:}
+Now we can finish the proof by focusing on approximation.
+
+\paragraph{Main Point 3:}
+We will prove the full theorem by approximating the $R_z$ gates. \\
+\hspace*{1cm}
+   [We define approximation of unitaries] \\
+\hspace*{1cm}
+   [We state some known lemmas about the Hilbert-Schmidt distance] \\
+\hspace*{1cm}
+   [We prove the full version of the theorem] 
+
+\paragraph{Transition to Close:} 
+So there you have it.
+
+\paragraph{Review:}
+The key property of a universal gate set is that 
+it can approximate any unitary.
+Our proof strategy is to first prove the theorem for an easy gate set and then
+extend to $\{C(X), H, T\}$.
+
+\paragraph{Strong finish:}
+Quantum computing has probabilities built in and
+the idea of a universal gate set has approximation built in.
+Quantum algorithms have no requirement to be exact; 
+rather, they can try to get close.
+
+\paragraph{Call to action:}
+Implement the procedure for compiling any unitary into the easy gate set.
+
+\newpage
+
+\section*{Detailed presentation}
+
+\paragraph{Hook:} 
+A quantum computer implements a universal gate set.
+Intuitively, this means that the computer can implement any unitary. 
+But technically, it means that the computer can approximate any unitary.
+What is behind this idea and how can we prove that 
+a gate set can approximate any unitary?
+
+\paragraph{Purpose:} Persuade you that Clifford+T is universal.
+
+\paragraph{Preview:} \mbox{} \\
+\hspace*{1cm}
+1. We will state the theorem and devise a proof strategy.
+\\
+\hspace*{1cm}
+2. We will first prove a version of the theorem that works with $R_z$ gates.
+\\
+\hspace*{1cm}
+3. We will prove the full theorem by approximating the $R_z$ gates.
+
+\paragraph{Transition to Body:} 
+Let us begin with a look at what we are trying to prove.
+
+\paragraph{Main Point 1:}
+We will state the theorem and devise a proof strategy. \\
+\mbox{} \\ \hspace*{1cm}
+   [We state theorem] \\ 
+Let $d$ denote the Hilbert-Schmidt distance.
+
+\bigskip
+
+We will use the term circuit to mean a product of unitaries.
+A key idea is that we can restrict those unitaries to come from
+a particular gate set.  
+
+We say that a gate set is universal if,
+for any unitary $U$ and any $\epsilon > 0$, 
+we can use the gate set to define a circuit $C$
+such that $d(U,C) < \epsilon$.
+The following theorem states that $\{C(X), H, T\}$ is universal.
+
+\bigskip
+
+\noindent
+{\bf Theorem}.  For any unitary $U$ and any $\epsilon > 0$, 
+there exists a circuit $C$ built from $\{C(X), H, T\}$,
+such that $d(U,C) < \epsilon$.
+
+\mbox{} \\ \hspace*{1cm}
+   [We will first prove a version of the theorem that uses an easy gate set] \\
+Let us state an easier version that has no need for approximation.
+
+\begin{lemma} 
+For any unitary $U$,
+there exists a circuit $C$ built from 
+2-qubit gates and
+$\{H, S, S^\dagger, R_z(\theta)\}$, \\
+such that $U = C$.
+\label{lem:decomposition-to-an-easy-gate-set}
+\end{lemma}
+
+Our proof strategy is to first prove 
+Lemma~\ref{lem:decomposition-to-an-easy-gate-set} 
+and then approximate the $R_z(\theta)$ gates.
+
+\mbox{} \\ \hspace*{1cm}
+   [We state some known lemmas] \\
+Let us define three rotation matrices:
+\[
+\begin{array}{rclclcl}
+R_x(\theta) &=& 
+e^{-i\theta X/2}
+&=&
+\cos(\theta/2)\ I - i\sin(\theta/2)\ X
+&=&
+\left(
+\begin{array}{cc}
+\cos(\theta/2)    & -i \sin(\theta/2) \\
+-i \sin(\theta/2) & \cos(\theta/2)
+\end{array}
+\right)
+\\
+R_y(\theta) &=&
+e^{-i\theta Y/2}
+&=&
+\cos(\theta/2)\ I - i\sin(\theta/2)\ Y
+&=&
+\left(
+\begin{array}{cc}
+\cos(\theta/2)    & -\sin(\theta/2) \\
+\sin(\theta/2) & \cos(\theta/2)
+\end{array}
+\right)
+\\
+R_z(\theta) &=&
+e^{-i\theta Z/2}
+&=&
+\cos(\theta/2)\ I - i\sin(\theta/2)\ Z
+&=&
+\left(
+\begin{array}{cc}
+e^{-i\theta/2} & 0 \\
+0              & e^{i\theta/2}
+\end{array}
+\right)
+\end{array}
+\]
+
+\newpage
+
+Our next lemma states the Cosine-Sine decomposition,
+also known as the CS-decomposition.
+
+\begin{lemma} {\bf (Paige and Wei 1994)}
+For one n-qubit gate $U$, there exist $2^{n-1}$ 1-qubit gates $R_y(\theta_0)$, $R_y(\theta_1)$, $\cdots$, and $R_y(\theta_{2^{n-1}-1})$, four (n-1)-qubit gates $P_0$, $P_1$, $Q_0$, and $Q_1$, and three n-qubit gates $P = \outer{0}{0} \otimes P_{0} + \outer{1}{1} \otimes P_{1}$, $R = \sum^{2^{n-1}-1}_{i=0}R_y(\theta_i) \otimes \outer{i}{i}$, and $Q= \outer{0}{0} \otimes Q_{0} + \outer{1}{1} \otimes Q_{1}$, 
+such that
+\[ 
+\Qcircuit @C=0.5em @R=0.4em {
+  & \qw & \multigate{2}{U} & \qw & &&  & & \qw & \gate{} \qwx[2]& \gate{R}      &\gate{} \qwx[2]&\qw\\
+ &  &                &     & &=& &   &    &          &                 &               &   \\
+ & \qw / & \ghost{U}        & \qw &  && & & \qw / & \gate{Q}       & \gate{} \qwx[-2]&\gate{P}       &\qw\\
+}
+\]
+\label{cosinesine}
+\end{lemma}
+
+Our next lemma says that we can implement an $R_y(\alpha)$ via use of 
+an $R_z(-\alpha)$ gate.
+
+\begin{lemma} {\bf (Shende, Markov, and Bullock 2004)}
+For one 1-qubit gate $R_y(\alpha)$, there exists one 1-qubit gate $R_z(-\alpha)$, such that
+\[ 
+\Qcircuit @C=0.5em @R=0.4em {
+ & \gate{R_y(\alpha)} & \qw & & = & &  & \gate{S} & \gate{H} & \gate{R_z(-\alpha)}      &\gate{H}    & \gate{S^\dag} & \qw \\ 
+}
+\]
+\label{ryrz}
+\end{lemma}
+
+\begin{proof}
+We calculate:
+%
+\(
+S^\dagger\ H\ R_z(-\alpha)\ H\ S
+&=&
+S^\dagger\ H\ [\cos(-\alpha/2)\ I - i\sin(-\alpha/2)\ Z]\ H\ S
+\\
+&=&
+S^\dagger\ H\ [\cos(\alpha/2)\ I + i\sin(\alpha/2)\ Z]\ H\ S
+\\
+&=&
+S^\dagger\ [\cos(\alpha/2)\ I + i\sin(\alpha/2)\ X]\ S
+\\
+&=&
+\cos(\alpha/2)\ I + i\sin(\alpha/2)\ (-Y)
+\\
+&=&
+\cos(\alpha/2)\ I - i\sin(\alpha/2)\ Y
+\\
+&=&
+R_y(\alpha)
+\)
+In the third step, we use $H H = I$ and $H Z H = X$.
+In the fourth step, we use $S^\dagger S = I$ and $S^\dagger X S = - Y$.
+\end{proof}
+
+The following lemma is interesting in itself, yet for our purposes,
+the main point is that it works well together with CS-composition.
+
+\begin{lemma} {\bf (Shende, Bullock, and Markov 2005)}
+For two (n-1)-qubit gates $U_{0}$ and $U_{1}$ and one n-qubit gate $U = \outer{0}{0} \otimes U_{0} + \outer{1}{1} \otimes U_{1}$, there exist $2^{n-1}$ 1-qubit gates $R_z(\alpha_0)$, $R_z(\alpha_1)$, $\cdots$, and $R_z(\alpha_{2^{n-1}-1})$, two (n-1)-qubit gates $P$ and $Q$, and one n-qubit gate $R = \sum^{2^{n-1}-1}_{i=0}R_{z}(\alpha_i) \otimes \outer{i}{i}$, such that
+\[ 
+\Qcircuit @C=0.5em @R=0.4em {
+& \qw & \gate{} \qwx[2] & \qw &  && &  & \qw & \qw       & \gate{R}      &\qw            &\qw\\  
+& & &     & & = & &  &             &        &         &               &   \\
+& \qw / & \gate{U}       & \qw &  && &  & \qw / & \gate{Q}       & \gate{} \qwx[-2]&\gate{P}       &\qw\\
+}
+\]
+\label{demultiplexing}
+\end{lemma}
+
+\paragraph{Transition to MP2:}
+Now we move on to a proof for an easy gate set.
+
+\newpage
+
+\paragraph{Main Point 2:}
+We will first prove a version of the theorem that works with $R_z$ gates. \\
+\mbox{} \\ \hspace*{1cm}
+   [We prove the simple version of the theorem] \\
+We state Lemma 1 again.
+
+\bigskip
+
+\noindent
+{\bf Lemma 1.} 
+{\em 
+For any unitary $U$,
+there exists a circuit $C$ built from 
+2-qubit gates and
+$\{H, S, S^\dagger, R_z(\theta)\}$, \\
+such that $U = C$.}
+
+\begin{proof}
+For a $n$-qubit gate $U$, we calculate as follows.
+
+\begin{eqnarray}
+\Qcircuit @C=0.5em @R=1em {
+& \qw & \multigate{2}{U}  & \qw \\
+& \qw & \ghost{U} & \qw \\
+& / \qw & \ghost{U}  & \qw 
+}
+& \;\;\;\;\;\;\; &
+\Qcircuit @C=0.5em @R=1em {
+& \qw & \gate{} \qwx[1] & \gate{R}  & \gate{} \qwx[1] & \qw \\
+\lstick{= \;\;\;\; } & \qw & \multigate{1}{Q} &  \gate{} \qwx[-1] & \multigate{1}{P} & \qw \\
+& / \qw & \ghost{Q}  &  \gate{} \qwx[-1] & \ghost{P}  & \qw 
+}\nonumber
+\\[0.4cm] &&
+\Qcircuit @C=0.5em @R=1em {
+& \qw & \gate{} \qwx[1] & \gate{S} & \gate{H} & \gate{R_1} & \gate{H} &\gate{S^\dag} & \gate{} \qwx[1] & \qw \\
+\lstick{= \;\;\;\; } & \qw & \multigate{1}{Q} & \qw & \qw &  \gate{} \qwx[-1] & \qw & \qw & \multigate{1}{P} & \qw \\
+& / \qw & \ghost{Q} & \qw & \qw &  \gate{} \qwx[-1] & \qw & \qw & \ghost{P}  & \qw 
+}\nonumber
+\\[0.4cm] &&
+\Qcircuit @C=0.5em @R=1em {
+& \qw & \gate{} \qwx[1] & \gate{S} & \gate{H} & \gate{R_1} & \gate{H} &\gate{S^\dag} & \qw & \gate{R_0} \qwx[1] & \qw & \qw \\
+\lstick{= \;\;\;\; } & \qw & \multigate{1}{Q} & \qw & \qw &  \gate{} \qwx[-1] & \qw & \qw & \multigate{1}{W} & \gate{} \qwx[-1] & \multigate{1}{V} & \qw \\
+& / \qw & \ghost{Q} & \qw & \qw &  \gate{} \qwx[-1] & \qw & \qw & \ghost{W} & \gate{} \qwx[-1] & \ghost{V}  & \qw 
+}\nonumber
+\\[0.4cm] &&
+\Qcircuit @C=0.5em @R=1em {
+& \qw & \qw & \gate{R_2} \qwx[1] & \qw & \gate{S} & \gate{H} & \gate{R_1} & \gate{H} &\gate{S^\dag} & \qw & \gate{R_0} \qwx[1] & \qw & \qw \\
+\lstick{= \;\;\;\; } & \qw & \multigate{1}{N} & \gate{} \qwx[-1] & \multigate{1}{M} & \qw & \qw &  \gate{} \qwx[-1] & \qw & \qw & \multigate{1}{W} & \gate{} \qwx[-1] & \multigate{1}{V} & \qw \\
+& / \qw & \ghost{N} & \gate{} \qwx[-1] & \ghost{M} & \qw & \qw &  \gate{} \qwx[-1] & \qw & \qw & \ghost{W} & \gate{} \qwx[-1] & \ghost{V}  & \qw 
+}
+\nonumber
+% \label{eq:sec2}
+\end{eqnarray}
+
+In the first step, according to Lemma~\ref{cosinesine}, for every $n$-qubit gate $U$, there exist $2^{n-1}$ 1-qubit gates $R_y(\theta_0)$, $R_y(\theta_1)$, $\cdots$, and $R_y(\theta_{2^{n-1}-1})$, four (n-1)-qubit gates $P_0$, $P_1$, $Q_0$, and $Q_1$, and three n-qubit gates $P = \outer{0}{0} \otimes P_{0} + \outer{1}{1} \otimes P_{1}$, $R = \sum^{2^{n-1}-1}_{i=0}R_y(\theta_i) \otimes \outer{i}{i}$, and $Q= \outer{0}{0} \otimes Q_{0} + \outer{1}{1} \otimes Q_{1}$, 
+such that the first step is valid. 
+
+In the second step, according to Lemma~\ref{ryrz}, for $R = \sum^{2^{n-1}-1}_{i=0}R_y(\theta_i) \otimes \outer{i}{i}$ gate, there exists one $n$-qubit gate $R_1 = \sum^{2^{n-1}-1}_{i=0}R_z(-\theta_i) \otimes \outer{i}{i}$, such that 
+\begin{eqnarray*}
+R & = & \sum^{2^{n-1}-1}_{i=0}R_y(\theta_i) \otimes \outer{i}{i} \\
+& = & \sum^{2^{n-1}-1}_{i=0} ( S^\dag \cdot H \cdot R_z(-\theta_i) \cdot H \cdot S )\otimes \outer{i}{i} \\
+& = & \sum^{2^{n-1}-1}_{i=0} ( S^\dag \cdot H )\otimes \outer{i}{i} \cdot  \sum^{2^{n-1}-1}_{i=0}   R_z(-\theta_i) \otimes \outer{i}{i}  \cdot \sum^{2^{n-1}-1}_{i=0} ( H \cdot S )\otimes \outer{i}{i} \\
+& = & (S^\dag \otimes I^{n-1}) \cdot (H \otimes I^{n-1}) \cdot R_1 \cdot (H \otimes I^{n-1}) \cdot (S \otimes I^{n-1})
+\end{eqnarray*}
+
+From the above, the second step is valid. 
+
+In the third step, according to Lemma~\ref{demultiplexing}, for $P = \outer{0}{0} \otimes P_{0} + \outer{1}{1} \otimes P_{1} $ gate, there exist $2^{n-1}$ 1-qubit gates $R_z(\alpha_0)$, $R_z(\alpha_1)$, $\cdots$, and $R_z(\alpha_{2^{n-1}-1})$, two (n-1)-qubit gates $V$ and $W$, and one n-qubit gate $R_0 = \sum^{2^{n-1}-1}_{i=0}R_{z}(\alpha_i) \otimes \outer{i}{i}$, such that the third step is valid. 
+
+In the fourth step, according to Lemma~\ref{demultiplexing}, for $Q = \outer{0}{0} \otimes Q_{0} + \outer{1}{1} \otimes Q_{1} $ gate, there exist $2^{n-1}$ 1-qubit gates $R_z(\beta_0)$, $R_z(\beta_1)$, $\cdots$, and $R_z(\beta_{2^{n-1}-1})$, two (n-1)-qubit gates $M$ and $N$, and one n-qubit gate $R_2 = \sum^{2^{n-1}-1}_{i=0}R_{z}(\beta_i) \otimes \outer{i}{i}$, such that the fourth step is valid.
+
+The above calculation shows how to recursively decompose any unitary $U$.
+\end{proof}
+ 
+\mbox{} \\ \hspace*{1cm}
+   [We prove a key lemma] \\
+We first state a lemma that gets us from control on $(n-1)$ qubits to
+control on $(n-2)$ qubits for the case of control of $R_z(\alpha)$ gates.
+
+\begin{lemma} {\bf (M{\"{o}}tt{\"{o}}nen et al.\ 2004)}
+For $2^{n-1}$ 1-qubit gates $R_z(\alpha_0)$, $R_z(\alpha_1)$, $\cdots$, and $R_z(\alpha_{2^{n-1}-1})$ and one n-qubit gate $R= \sum^{2^{n-1}-1}_{i=0}R_{z}(\alpha_i) \otimes \outer{i}{i}$, there exist $2^{n-2}$ 1-qubit gates $R_z(\beta_0)$, $R_z(\beta_1)$, $\cdots$, and $R_z(\beta_{2^{n-2}-1})$, $2^{n-2}$ 1-qubit gates $R_z(\gamma_0)$, $R_z(\gamma_1)$, $\cdots$, and $R_z(\gamma_{2^{n-2}-1})$, and two (n-1)-qubit gates $R_0 = \sum^{2^{n-2}-1}_{i=0}R_{z}(\beta_i) \otimes \outer{i}{i}$ and $R_1 = \sum^{2^{n-2}-1}_{i=0}R_{z}(\gamma_i) \otimes \outer{i}{i}$, such that
+\[ 
+\Qcircuit @C=0.5em @R=0.4em {
+  & \qw & \gate{R} \qwx[1] & \qw & &&  & & \qw & \targ & \gate{R_0}      & \targ & \gate{R_1} & \qw\\
+ &  \qw &   \gate{} \qwx[1]     &  \qw   & &=& &   &   \qw &     \ctrl{-1}     &  \qw               &        \ctrl{-1}       & \qw  & \qw \\
+ & \qw / & \gate{}        & \qw &  && & & \qw / & \qw       & \gate{} \qwx[-2] & \qw  &\gate{} \qwx[-2]    &\qw\\
+}
+\]
+\label{rzrz}
+\end{lemma}
+
+Now we can count the number of 2-qubit gates needed to implement 
+multi-control $R_z(\alpha)$ gates.
+
+\begin{lemma}
+For $2^{n-1}$ 1-qubit gates $R_z(\alpha_0)$, $R_z(\alpha_1)$, $\cdots$, and $R_z(\alpha_{2^{n-1}-1})$ and one n-qubit gate $R= \sum^{2^{n-1}-1}_{i=0}R_{z}(\alpha_i) \otimes \outer{i}{i}$, we can implement the $R$ gate by using $(3 \times 2^{n-2} - 2)$ 2-qubit gates. 
+\label{rzcount}
+\end{lemma}
+
+\begin{proof}
+According to Lemma~\ref{rzrz}, for every n-qubit gate in the form of $R = \sum^{2^{n-1}-1}_{i=0}R_{z}(\alpha_i) \otimes \outer{i}{i}$, we can implement it by using two (n-1)-qubit gates $R_0 = \sum^{2^{n-2}-1}_{i=0}R_{z}(\beta_i) \otimes \outer{i}{i}$ and $R_1 = \sum^{2^{n-2}-1}_{i=0}R_{z}(\gamma_i) \otimes \outer{i}{i}$ and two $C(X)$ gates. From this, if we use $\mathcal{R}(n)$ to denote the 2-qubit gate count for an n-qubit gate in the form of $R = \sum^{2^{n-1}-1}_{i=0}R_{z}(\alpha_i) \otimes \outer{i}{i}$,  we know that 
+\begin{eqnarray}
+\mathcal{R}(n) & = &  2 \times \mathcal{R}(n-1) + 2 
+\label{eq:-r-n} \\
+\mathcal{R}(2) & = & 1
+\label{eq:-r-2} 
+\end{eqnarray}
+
+Now we can do an iterative calculation that uses
+Equations~(\ref{eq:-r-n})--(\ref{eq:-r-2}):
+\begin{eqnarray}
+\mathcal{R}(n) & = &  2 \times \mathcal{R}(n-1) + 2 \nonumber \\ 
+& = & 2 \times (2 \times \mathcal{R}(n-2) + 2) + 2 \nonumber \\ 
+& = & 2^2 \times \mathcal{R}(n-2) + 2^2 + 2 \nonumber \\ 
+&& \cdots \nonumber \\  
+& = & 2^{n-2} \times \mathcal{R}(2) + \sum^{n-2}_{i=1}2^i \nonumber \\ 
+& = & 2^{n-2} + 2^{n-1} - 2 \nonumber \\ 
+& = & 3 \times 2^{n-2} - 2 \nonumber
+\end{eqnarray}
+
+We conclude that we can implement the $R$ gate by $(3 \times 2^{n-2} - 2)$ 2-qubit gates. 
+\end{proof}
+
+
+\mbox{} \\ \hspace*{1cm}
+   [We need exponentially many gates to implement an $n$-qubit unitary in the worst case] \\
+From the above, we can implement every n-qubit gate $U$ by using 
+four $(n-1)$-qubit gates $V$, $W$, $M$, and $N$ and 
+three n-qubit controlled-rotation gates $R_0$, $R_1$, and $R_2$. 
+If we use $\mathcal{U}(n)$ to denote the 2-qubit gate count for 
+an general $n$-qubit gate and $\mathcal{R}(n)$ to denote 
+the 2-qubit gate count for an $n$-qubit controlled-rotation gate in 
+the form of $R = \sum^{2^{n-1}-1}_{i=0}R_{z}(\alpha_i) \otimes \outer{i}{i}$,  
+we know that 
+\begin{eqnarray}
+\mathcal{U}(n) & = & 4 \times \mathcal{U}(n-1) + 3 \times \mathcal{R}(n) 
+\label{eq:u-n-with-r} \\
+\mathcal{U}(2) & = & 1    
+\label{eq:u-2}
+\end{eqnarray}
+
+According to Lemma~\ref{rzcount}, we have that 
+\begin{eqnarray}
+\mathcal{U}(n) & = & 4 \times \mathcal{U}(n-1) + 3 \times (3 \times 2^{n-2} - 2)
+\nonumber \\
+& = & 4 \times \mathcal{U}(n-1) + 9 \times 2^{n-2} - 6
+\label{eq:u-n-full-formula}
+\end{eqnarray}
+
+Now we can do an iterative calculation that uses
+Equations~(\ref{eq:u-2})--(\ref{eq:u-n-full-formula}):
+\begin{eqnarray}
+\mathcal{U}(n) & = & 4 \times \mathcal{U}(n-1) + 9 \times 2^{n-2} - 6 \nonumber \\
+& = & 4 \times (4 \times \mathcal{U}(n-2) + 9 \times 2^{n-3} - 6) + 9 \times 2^{n-2} - 6 \nonumber \\
+& = & 4^2 \times \mathcal{U}(n-2) + 9 \times (4 \times 2^{n-3} + 1 \times 2^{n-2}) - 6 \times (4 + 1) \nonumber \\
+&& \cdots \nonumber \\
+& = &  4^{n-2} \times \mathcal{U}(2) + 9 \times \sum^{n-3}_{i=0}(4^i \times 2^{n-2-i}) - 6 \times \sum^{n-3}_{i=0} 4^i  \nonumber \\
+& = &  4^{n-2}  + (9 \times 2^{n-2}) \times (2^{n-2} - 1) - 2 \times (4^{n-2} - 1) \nonumber \\
+& = &  2 \times 4^{n-1} - 9 \times 2^{n-2} + 2 
+\nonumber
+\end{eqnarray}
+
+We conclude that we can implement $U$ by 
+$(\frac{1}{2} \times 4^n - 9 \times 2^{n-2} + 2 )$ 2-qubit gates. 
+
+
+\paragraph{Transition to MP3:}
+Now we can finish the proof by focusing on approximation.
+
+\paragraph{Main Point 3:}
+We will prove the full theorem by approximating the $R_z$ gates. \\
+\mbox{} \\ \hspace*{1cm}
+   [We define approximation of unitaries] \\
+We define the Hilbert-Schmidt distance $d$ for 
+$n$-qubit $n$-qubit unitaries $U, V$:
+\(
+d(U,V) &=& 
+\sqrt{ 1 - \frac{ || Tr( U^\dagger V ) ||^2 }{ N^2 } }
+\)
+where $Tr(U)$ denotes the trace of $U$, and $N = 2^n$.
+
+% We have that $d$ satisfies the triangle inequality:
+% $d(U,W) \leq d(U,V) + d(V,W)$.
+
+\newpage
+
+\mbox{} \\ \hspace*{1cm}
+   [We state some known lemmas about the Hilbert-Schmidt distance] % \\
+
+\begin{lemma}
+\label{lem:hs-distance-to-itself-is-zero}
+$d(U,U) = 0$. \\
+\end{lemma}
+
+\begin{proof}
+Notice $Tr( U^\dagger U ) = Tr( I_N ) = N$.
+We calculate:
+\(
+d(U,U) &=& \sqrt{ 1 - \frac{ || Tr( U^\dagger U ) ||^2 }{ N^2 } } 
+ \;\;=\;\; \sqrt{ 1 - \frac{ || N ||^2 }{ N^2 } } 
+ \;\;=\;\; 0
+\)
+\end{proof}
+
+\begin{lemma} {\bf (Wang and Zhang, 1994)}
+\(
+\sqrt{ 1 - \frac{ || Tr( UV ) ||^2 }{ N^2 } }
+&\leq&
+\sqrt{ 1 - \frac{ || Tr( U ) ||^2 }{ N^2 } }
+\;+\;
+\sqrt{ 1 - \frac{ || Tr( V ) ||^2 }{ N^2 } }
+\)
+\label{lem:trace-inequality}
+\end{lemma}
+
+For approximation of a product of gates, errors add at most linearly.
+
+\begin{lemma}
+$d(U_1 U_2, V_1 V_2) \;\leq\; d(U_1, V_1) \;+\; d(U_2, V_2)$.
+\label{lem:hs-small-product-rule}
+\end{lemma}
+
+\begin{proof}
+Notice that
+$Tr((U_1 U_2)^\dagger\ (V_1 V_2)) \;=\;
+Tr(U_2^\dagger U_1^\dagger V_1 V_2) 
+\;=\;
+Tr(U_1^\dagger V_1 V_2 U_2^\dagger)$.
+From this we derive
+\(
+d(U_1 U_2, V_1 V_2) &=&
+\sqrt{ 1 - \frac{ || Tr( (U_1 U_2)^\dagger\ (V_1 V_2) ) ||^2 }{ N^2 } }
+\\ &=&
+\sqrt{ 1 - \frac{ || Tr( (U_1^\dagger V_1)\ (V_2 U_2^\dagger) ) ||^2 }{ N^2 } }
+\\ &\leq&
+\sqrt{ 1 - \frac{ || Tr( U_1^\dagger V_1 ) ||^2 }{ N^2 } }
+\;+\;
+\sqrt{ 1 - \frac{ || Tr( V_2 U_2^\dagger ) ||^2 }{ N^2 } }
+\\ &=&
+\sqrt{ 1 - \frac{ || Tr( U_1^\dagger V_1 ) ||^2 }{ N^2 } }
+\;+\;
+\sqrt{ 1 - \frac{ || Tr( U_2^\dagger V_2 ) ||^2 }{ N^2 } }
+\\[2mm] &=&
+d(U_1,V_1) + d(U_2,V_2)
+\)
+In the first step, we use the definition of $d$.
+In the second step, we use $(UV)^\dagger = V^\dagger\ U^\dagger$ and
+$Tr(UV) = Tr(VU)$.
+In the third step, we use Lemma~\ref{lem:trace-inequality}.
+In the fourth step, we use $Tr(UV) = Tr(VU)$.
+In the fifth step, we use the definition of $d$.
+\end{proof}
+
+
+\begin{lemma}
+$d(\ U_1 \ldots U_n,\ \ V_1 \ldots V_n\ ) \;\leq\; \sum_{i=1}^n d(U_i,V_i)$.
+\label{lem:hs-big-product-rule}
+\end{lemma}
+
+\begin{proof}
+We proceed by induction on $n$.
+
+In the base case of $n=1$, we have $d(U_1,V_1) \leq d(U_1,V_1)$, as required.
+
+In the induction step, suppose the lemma holds for $n$.
+Consider the case of $n+1$.
+\(
+d(\ U_1 \ldots U_{n+1},\ \ V_1 \ldots V_{n+1}\ ) 
+&\leq&
+d(\ U_1 \ldots U_n,\ \ V_1 \ldots V_n\ ) + d(U_{n+1},V_{n+1}) 
+\\ &\leq&
+\sum_{i=1}^n d(U_i,V_i) + d(U_{n+1},V_{n+1})
+\\ &=&
+\sum_{i=1}^{n+1} d(U_i,V_i) 
+\)
+In the first step, we use Lemma~\ref{lem:hs-small-product-rule}.
+\end{proof}
+
+\newpage
+
+\mbox{} \\ \hspace*{1cm}
+   [We prove the full version of the theorem] \\
+We will rely on that any 2-qubit gate can be implemented using 
+2 $C(X)$ gates and some 1-qubit gates in $\{H, T, R_z(\theta)\}$.
+
+\begin{lemma} {\bf (Shende, Markov, and Bullock 2004)}
+For any 2-qubit unitary $U$,
+there exists a circuit $C$ built from 
+$\{C(X), H, T, R_z(\theta)\}$, 
+such that $U = C$.
+\label{lem:implementation-of-a-2-qubit-gate}
+\end{lemma}
+
+We will rely on that $\{H, T\}$ can approximate $R_z(\theta)$:
+we can use $\{H, T\}$ to get as close as we wish to any $R_z(\theta)$ gate.
+Intuitively, $\{H, T\}$ is universal for defining $R_z(\theta)$ gates,
+as expressed in Lemma~\ref{lem:approximation-of-rz}.
+
+\begin{lemma}
+For any $\epsilon > 0$,
+there exists a circuit $C$ built from $\{H, T\}$,
+such that $d(R_z(\theta),C) < \epsilon$.
+\label{lem:approximation-of-rz}
+\end{lemma}
+
+Now we can prove the theorem, which we repeat here.
+
+\bigskip
+
+\noindent
+{\bf Theorem}.  For any unitary $U$ and any $\epsilon > 0$, 
+there exists a circuit $C$ built from $\{C(X), H, T\}$,
+such that $d(U,C) < \epsilon$.
+
+\begin{proof}
+For a unitary $U$ and $\epsilon > 0$,
+Lemma~\ref{lem:decomposition-to-an-easy-gate-set} says that
+there exists a circuit $C_1$ built from 2-qubit gates and
+$\{H, S, S^\dagger, R_z(\theta)\}$, 
+such that $U = C_1$.
+We have that in $C_1$
+we can use Lemma~\ref{lem:implementation-of-a-2-qubit-gate} 
+to replace every 2-qubit gate that is different from $C(X)$ with
+a circuit built from $\{C(X), H, T, R_z(\theta)\}$.
+We also have that in $C_1$ we can replace $S$ and $S^\dagger$ based on
+the following equalities:
+$S = T T$ and $S^\dagger = T T T T T T$.
+This leaves us with a circuit $C_2$ built from 
+$\{C(X), H, T, R_z(\theta)\}$ 
+such that $U = C_1 = C_2$.
+
+Let $k$ be the number of $R_z$ gates in $C_2$, and
+let $\theta_1, \ldots, \theta_k$ be the angles used in those gates.
+From Lemma~\ref{lem:approximation-of-rz} we get circuits $W_j$ such that
+\begin{eqnarray}
+d(R_z(\theta_j),W_j) &<& \epsilon/k
+\label{eq:approximation-of-r-z}
+\end{eqnarray}
+Let $C_3$ be a version of $C_2$ in which we have replaced
+each $R_z(\theta_j)$ by $W_j$.
+We calculate:
+\(
+d(U, C_3) &=& 
+d(C_2, C_3) \;\;\leq\;\;
+\sum_{j=1}^k d(R_z(\theta_j),W_j) \;\;\leq\;\;
+k \cdot (\epsilon/k) \;\;=\;\; 
+\epsilon
+\)
+In the second step, we use 
+Lemma~\ref{lem:hs-distance-to-itself-is-zero} and
+Lemma~\ref{lem:hs-big-product-rule}.
+In the third step, we use Equation~(\ref{eq:approximation-of-r-z}).
+\end{proof}
+
+
+\paragraph{Transition to Close:} 
+So there you have it.
+
+\paragraph{Review:}
+The key property of a universal gate set is that 
+it can approximate any unitary.
+Our proof strategy is to first prove the theorem for an easy gate set and then
+extend to $\{C(X), H, T\}$.
+
+\paragraph{Strong finish:}
+Quantum computing has probabilities built in and
+the idea of a universal gate set has approximation built in.
+Quantum algorithms have no requirement to be exact; 
+rather, they can try to get close.
+
+\paragraph{Call to action:}
+Implement the procedure for compiling any unitary into the easy gate set.
+
+\end{document}
+
