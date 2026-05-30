@@ -1,0 +1,183 @@
+\begin{figure}
+  \begin{tikzpicture}[node distance=1cm and 1.6cm]
+    \def\labelstyle{\scriptstyle}
+    \node (filler) {};
+
+    \node (r1c1) [right=of filler]
+          {\umatrix{0001}{0000}{0000}{0001}};
+
+    \node [xshift=-4mm,yshift=-1.5mm] at (r1c1.west) {Start:};
+
+    \draw [->] ([xshift=-7mm] r1c1.north) arc[start angle=0, end angle=270, x radius=4mm, y radius=4mm];
+    \node at ([xshift=.15cm, yshift=.6cm] r1c1.north west) {$\labelstyle \sS$};
+
+    \node [xshift=0cm,yshift=-.03cm,right] at (r1c1.south) {$\scriptstyle h=t=2k=0$};
+
+    \node (r2c1) [below=of r1c1]
+          {\umatrix{0001}{0001}{0001}{0001}}
+          \leftrightfrom{H}{k\pp}{r1c1};
+    \node [xshift=0cm,yshift=-.03cm,right] at (r2c1.south) {$\scriptstyle h+1=t+2=2k=2$};
+
+    \node (r2c2) [right=of r2c1]
+          {\umatrix{0001}{0001}{0100}{0100}}
+          edge [<-] node[above] {$\labelstyle S$} (r2c1);
+    \node [xshift=0cm,yshift=-.03cm,right] at (r2c2.south) {$\scriptstyle h+1=t+2=2k=2$};
+
+    \node (r2c3) [right=of r2c2]
+          {\umatrix{0001}{0010}{0001}{0010}};
+    \node [xshift=0cm,yshift=-.03cm,right] at (r2c3.south) {$\scriptstyle h+1=t+1=2k=2$};
+
+    \node (r2c4) [right=of r2c3]
+          {\umatrix{0001}{0010}{0100}{1000}}
+          edge [<-] node[above] {$\labelstyle S$} (r2c3);
+    \node [xshift=0cm,yshift=-.03cm,right] at (r2c4.south) {$\scriptstyle h+1=t+1=2k=2$};
+
+    \node (r1c3) [above=of r2c3]
+          {\umatrix{0001}{0000}{0000}{0010}}
+          edge [<-] node[above ]{$\labelstyle T$} (r1c1)
+          \leftrightto{H}{k\pp}{r2c3};
+    \node [xshift=0cm,yshift=-.03cm,right] at (r1c3.south) {$\scriptstyle h=t-1=2k=0$};
+
+    \node (r3c1) [below=of r2c1]
+          {\umatrix{0001}{0001}{0010}{0010}}
+          edge [<-] node[left] {$\labelstyle T$} (r2c1);
+    \node [xshift=0cm,yshift=-.03cm,right] at (r3c1.south) {$\scriptstyle h+1=t+1=2k=2$};
+
+    \node (r3c2) [right=of r3c1]
+          {\umatrix{0001}{0001}{1000}{1000}}
+          edge [<-] node[left] {$\labelstyle T$} (r2c2);
+    \node [xshift=0cm,yshift=-.03cm,right] at (r3c2.south) {$\scriptstyle h+1=t+1=2k=2$};
+
+    \node (r3c3) [right=of r3c2]
+          {\umatrix{0001}{0010}{0010}{0100}}
+          edge [<-] node[left] {$\labelstyle T$} (r2c3);
+    \node [xshift=0cm,yshift=-.03cm,right] at (r3c3.south) {$\scriptstyle h+1=t=2k=2$};
+
+    \node (r3c4) [right=of r3c3]
+          {\umatrix{0001}{0010}{1000}{0001}}
+          edge [<-] node[left] {$\labelstyle T$} (r2c4);
+    \node [xshift=0cm,yshift=-.03cm,right] at (r3c4.south) {$\scriptstyle h+1=t=2k=2$};
+
+    \node (r4c1) [below=of r3c1]
+          {\umatrix{0011}{0011}{0011}{0011}}
+          \leftrightfrom{H}{k\pp}{r3c1}
+          \starportfrom{H}{k\pp}{r3c2};
+    \node [xshift=0cm,yshift=-.03cm,right] at (r4c1.south) {$\scriptstyle h+2=t+3=2k\ge4$};
+
+    \node (r4c2) [right=of r4c1]
+          {\umatrix{0011}{0011}{1100}{1100}}
+          edge [<-] node[above] {$\labelstyle S$} (r4c1);
+    \node [xshift=0cm,yshift=-.03cm,right] at (r4c2.south) {$\scriptstyle h+2=t+3=2k\ge4$};
+
+    \node (r4c3) [right=of r4c2]
+          {\umatrix{0011}{0110}{0011}{0110}}
+          \leftrightfrom{H}{k\pp}{r3c3}
+          \starportfrom{H}{k\pp}{r3c4};
+    \node [xshift=0cm,yshift=-.03cm,right] at (r4c3.south) {$\scriptstyle h+2=t+2=2k\ge4$};
+
+    \node (r4c4) [right=of r4c3]
+          {\umatrix{0011}{0110}{1100}{1001}}
+          edge [<-] node[above] {$\labelstyle S$} (r4c3);
+    \node [xshift=0cm,yshift=-.03cm,right] at (r4c4.south) {$\scriptstyle h+2=t+2=2k\ge4$};
+
+    \node (r5c1) [below=of r4c1]
+          {\umatrix{0011}{0011}{0110}{0110}}
+          edge [<-] node[left] {$\labelstyle T$} (r4c1);
+    \node [xshift=0cm,yshift=-.03cm,right] at (r5c1.south) {$\scriptstyle h+2=t+2=2k\ge4$};
+
+    \node (r5c2) [right=of r5c1]
+          {\umatrix{0011}{0011}{1001}{1001}}
+          edge [<-] node[left] {$\labelstyle T$} (r4c2);
+    \node [xshift=0cm,yshift=-.03cm,right] at (r5c2.south) {$\scriptstyle h+2=t+2=2k\ge4$};
+
+    \node (r5c3) [right=of r5c2]
+          {\umatrix{0011}{0110}{0110}{1100}}
+          edge [<-] node[left] {$\labelstyle T$} (r4c3);
+    \node [xshift=0cm,yshift=-.03cm,right] at (r5c3.south) {$\scriptstyle h+2=t+1=2k\ge4$};
+
+    \node (r5c4) [right=of r5c3]
+          {\umatrix{0011}{0110}{1001}{0011}}
+          edge [<-] node[left] {$\labelstyle T$} (r4c4);
+    \node [xshift=0cm,yshift=-.03cm,right] at (r5c4.south) {$\scriptstyle h+2=t+1=2k\ge4$};
+
+    \node (r6c1) [below=of r5c1]
+          {\umatrix{0101}{0101}{0101}{0101}\makebox[0in][l]{**}}
+          \leftrightfrom{H}{k\pp}{r5c1}
+          \starportfrom{H}{k\pp}{r5c2};
+    \node [xshift=0cm,yshift=-.03cm,right] at (r6c1.south) {$\scriptstyle h+3=t+4=2k\ge6$};
+
+
+    \node (r6c3) [below=of r5c3]
+          {\umatrix{0101}{1010}{0101}{1010}\makebox[0in][l]{**}}
+          \leftrightfrom{H}{k\pp}{r5c3}
+          \starportfrom{H}{k\pp}{r5c4};
+    \node [xshift=0cm,yshift=-.03cm,right] at (r6c3.south) {$\scriptstyle h+3=t+3=2k\ge6$};
+
+    \node (r7c1) [below=of r6c1]
+          {\umatrix{1000}{0111}{0111}{1000}}
+          edge [<-, thick, double] node[left] {\footnotesize Reduce}  node[right] {$\labelstyle k\mm$} (r6c1);
+    \node [xshift=0cm,yshift=-.03cm,right] at (r7c1.south) {$\scriptstyle h+1=t+2=2k\ge4$};
+
+    \node (r7c2) [right=of r7c1]
+          {\umatrix{1000}{0111}{1101}{0010}}
+          edge [<-] node[above] {$\labelstyle S$} (r7c1);
+    \node [xshift=0cm,yshift=-.03cm,right] at (r7c2.south) {$\scriptstyle h+1=t+2=2k\ge4$};
+
+    \node (r7c3) [right=of r7c2]
+          {\umatrix{1000}{1110}{0111}{0001}}
+          edge [<-, thick, double] node[left] {\footnotesize Reduce}  node[right] {$\labelstyle k\mm$} (r6c3);
+    \node [xshift=0cm,yshift=-.03cm,right] at (r7c3.south) {$\scriptstyle h+1=t+1=2k\ge4$};
+
+    \node (r7c4) [right=of r7c3]
+          {\umatrix{1000}{1110}{1101}{0100}}
+          edge [<-] node[above] {$\labelstyle S$} (r7c3);
+    \node [xshift=0cm,yshift=-.03cm,right] at (r7c4.south) {$\scriptstyle h+1=t+1=2k\ge4$};
+
+
+    \node (r8c1) [below=of r7c1]
+          {\umatrix{1000}{0111}{1110}{0001}}
+          edge [<-] node[left] {$\labelstyle T$} (r7c1);
+    \node [xshift=0cm,yshift=-.03cm,right] at (r8c1.south) {$\scriptstyle h+1=t+1=2k\ge4$};
+
+    \node (r8c2) [right=of r8c1]
+          {\umatrix{1000}{0111}{1011}{0100}}
+          edge [<-] node[left] {$\labelstyle T$} (r7c2);
+    \node [xshift=0cm,yshift=-.03cm,right] at (r8c2.south) {$\scriptstyle h+1=t+1=2k\ge4$};
+
+    \node (r8c3) [right=of r8c2]
+          {\umatrix{1000}{1110}{1110}{0010}}
+          edge [<-] node[left] {$\labelstyle T$} (r7c3);
+    \node [xshift=0cm,yshift=-.03cm,right] at (r8c3.south) {$\scriptstyle h+1=t=2k\ge4$};
+
+    \node (r8c4) [right=of r8c3]
+          {\umatrix{1000}{1110}{1011}{1000}}
+          edge [<-] node[left] {$\labelstyle T$} (r7c4);
+    \node [xshift=0cm,yshift=-.03cm,right] at (r8c4.south) {$\scriptstyle h+1=t=2k\ge4$};
+
+    \node (r9c1) [below=of r8c1]
+          {\umatrix{0011}{0011}{0011}{0011}\makebox[0in][l]{*}}
+          \leftrightfrom{H}{k\pp}{r8c1}
+          \starportfrom{H}{k\pp}{r8c2};
+    \node [xshift=0cm,yshift=-.03cm,right] at (r9c1.south) {$\scriptstyle h+2=t+3=2k\ge6$};
+
+    \draw [->, thick, double] ([xshift=.2cm] r9c1.west) to
+            [out=180,in=270] ([xshift=-1.6cm,yshift=.5cm]  r9c1) to
+            ([xshift=-1.6cm,yshift=-.5cm]  r4c1) to
+            [out=90,in=180] ([xshift=.2cm]  r4c1.west);
+
+    \node (r9c3) [below=of r8c3]
+          {\umatrix{0011}{0110}{0011}{0110}\makebox[0in][l]{*}}
+          \leftrightfrom{H}{k\pp}{r8c3}
+          \starportfrom{H}{k\pp}{r8c4};
+    \node [xshift=0cm,yshift=-.03cm,right] at (r9c3.south) {$\scriptstyle h+2=t+2=2k\ge6$};
+
+    \draw [->, thick, double] ([xshift=.2cm] r9c3.west) to
+            [out=180,in=270] ([xshift=-1.6cm,yshift=.5cm]  r9c3) to
+            ([xshift=-1.6cm,yshift=-.5cm]  r4c3) to
+            [out=90,in=180] ([xshift=.2cm]  r4c3.west);
+  \end{tikzpicture}
+  \caption{The left action of Matsumoto-Amano normal forms on
+    $k$-residues over $U(2)$. All matrices are written modulo the
+    right action of $\sS$.}
+  \label{fig:u2-transitions}
+\end{figure}

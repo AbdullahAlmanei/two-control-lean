@@ -1,21 +1,15 @@
 import TwoControl.Clifford.Universal.Distance
+import TwoControl.Clifford.Lemma12.Main
 
 namespace TwoControl
 namespace Clifford
 namespace Universal
 
 /-!
-Lemma 12 layer.  We intentionally keep the number-theoretic approximation
-theorem as an explicit external axiom for now; the rest of the main theorem
-can be wired against this interface while the standalone approximation
-development is completed.
+Lemma 12 lifting layer.  The dedicated one-qubit approximation branch now lives
+under `TwoControl/Clifford/Lemma12/`; this file only lifts its final theorem
+through the existing embedding API.
 -/
-
-/-- Lemma 12 in `doc.tex`: `{H,T}` approximates every `R_z(θ)` to arbitrary
-Hilbert-Schmidt precision. -/
-axiom lemma12_rz_approximation_by_ht (θ : ℝ) {ε : ℝ} (hε : 0 < ε) :
-    ∃ gates : List OneQubitHTPrimitive,
-      hsDistance (rz θ) (oneQubitHTCircuitMatrix gates) < ε
 
 private theorem trace_reindexSquare {N M : ℕ} (e : Fin N ≃ Fin M) (A : Square N) :
     Matrix.trace (reindexSquare e A) = Matrix.trace A := by
@@ -326,7 +320,8 @@ theorem embedded_rz_approximation_by_clifford_t {n : ℕ}
     ∃ gates : List (Square (2 ^ n)),
       CircuitOver (CliffordTGate n) gates ∧
       hsDistance R (circuitMatrix gates) < ε := by
-  rcases lemma12_rz_approximation_by_ht θ hε with ⟨gatesHT, hApprox⟩
+  rcases TwoControl.Clifford.Lemma12.lemma12_rz_approximation_by_ht θ hε with
+    ⟨gatesHT, hApprox⟩
   rcases hR with ⟨p, rfl⟩ | ⟨p, rfl⟩ | ⟨p, rfl⟩
   · refine ⟨embedOneQubitHTCircuit p gatesHT,
       CircuitOver_embedOneQubitHTCircuit_cliffordT p gatesHT, ?_⟩

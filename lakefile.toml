@@ -3,6 +3,12 @@ version = "0.1.0"
 defaultTargets = ["TwoControl"]
 
 [[lean_lib]]
+name = "DyadicCyclotomic"
+
+[[lean_lib]]
+name = "MatrixCompletion"
+
+[[lean_lib]]
 name = "TwoControl"
 
 

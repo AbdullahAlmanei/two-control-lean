@@ -904,6 +904,144 @@ theorem GlobalPhaseEquivalent.localOnSecond {A B : Square 2}
   refine ⟨z, hz, ?_⟩
   rw [hA, localOnSecond_smul]
 
+/-- Every one-qubit unitary has the standard `R_z R_y R_z` Euler form up to
+global phase. -/
+theorem one_qubit_euler_rz_ry_rz_up_to_global_phase (U : Square 2)
+    (hU : U ∈ Matrix.unitaryGroup (Fin 2) ℂ) :
+    ∃ α β γ : ℝ, ∃ z : ℂ,
+      ‖z‖ = 1 ∧ U = z • (rz α * CosineSine.ry β * rz γ) := by
+  let ψ : Vec 2 := U.mulVec ket0
+  have hψ : IsQubit ψ :=
+    StateHelpers.isQubit_mulVec_of_unitary U hU StateHelpers.isQubit_ket0
+  rcases qubit_prepare_rz_ry ψ hψ with ⟨α, β, phase, hPhaseNorm, hprep⟩
+  let C : Square 2 := rz α * CosineSine.ry β
+  have hC : C ∈ Matrix.unitaryGroup (Fin 2) ℂ := by
+    dsimp [C]
+    exact Submonoid.mul_mem _ (rz_unitary α) (CosineSine.ry_unitary β)
+  have hCket0 : C.mulVec ket0 = (rz α).mulVec ((CosineSine.ry β).mulVec ket0) := by
+    dsimp [C]
+    simpa using (Matrix.mulVec_mulVec (rz α) (CosineSine.ry β) ket0)
+  let D : Square 2 := C† * U
+  have hD : D ∈ Matrix.unitaryGroup (Fin 2) ℂ := by
+    dsimp [D]
+    exact Submonoid.mul_mem _ (conjTranspose_mem_unitaryGroup hC) hU
+  have hPhaseSq : star phase * phase = 1 := conj_mul_eq_one_of_norm_eq_one hPhaseNorm
+  have hUcol0 : U.mulVec ket0 = star phase • C.mulVec ket0 := by
+    calc
+      U.mulVec ket0 = (1 : ℂ) • U.mulVec ket0 := by simp
+      _ = (star phase * phase) • U.mulVec ket0 := by rw [hPhaseSq]
+      _ = star phase • (phase • U.mulVec ket0) := by simp [smul_smul]
+      _ = star phase • C.mulVec ket0 := by rw [← hprep]
+  have hDcol0 : D.mulVec ket0 = star phase • ket0 := by
+    calc
+      D.mulVec ket0 = C†.mulVec (U.mulVec ket0) := by
+        dsimp [D]
+        rw [Matrix.mulVec_mulVec]
+      _ = C†.mulVec (star phase • C.mulVec ket0) := by rw [hUcol0]
+      _ = star phase • C†.mulVec (C.mulVec ket0) := by
+        rw [Matrix.mulVec_smul]
+      _ = star phase • C†.mulVec ((rz α).mulVec ((CosineSine.ry β).mulVec ket0)) := by
+        simpa using congrArg (fun v => star phase • C†.mulVec v) hCket0
+      _ = star phase • (C† * C).mulVec ket0 := by
+        have hmul :
+            C†.mulVec ((rz α).mulVec ((CosineSine.ry β).mulVec ket0)) =
+              (C† * C).mulVec ket0 := by
+          have hinner :
+              (rz α).mulVec ((CosineSine.ry β).mulVec ket0) =
+                (rz α * CosineSine.ry β).mulVec ket0 := by
+            simpa using (Matrix.mulVec_mulVec (rz α) (CosineSine.ry β) ket0).symm
+          dsimp [C]
+          calc
+            (rz α * CosineSine.ry β)†.mulVec
+                ((rz α).mulVec ((CosineSine.ry β).mulVec ket0))
+                = (rz α * CosineSine.ry β)†.mulVec
+                    ((rz α * CosineSine.ry β).mulVec ket0) := by
+                    rw [hinner]
+            _ = ((rz α * CosineSine.ry β)† *
+                  (rz α * CosineSine.ry β)).mulVec ket0 := by
+                  simpa using
+                    (Matrix.mulVec_mulVec
+                      ((rz α * CosineSine.ry β)†)
+                      (rz α * CosineSine.ry β)
+                      ket0).symm
+        simpa using congrArg (fun v => star phase • v) hmul
+      _ = star phase • ket0 := by
+        have hleft : C† * C = (1 : Square 2) := Matrix.mem_unitaryGroup_iff'.mp hC
+        rw [hleft, Matrix.one_mulVec]
+  rcases unitary_first_column_scalar_is_diag D hD (star phase) hDcol0 with
+    ⟨μ, hPhaseDagNorm, hμnorm, hDiag⟩
+  rcases diag2_eq_global_phase_rz (star phase) μ hPhaseDagNorm hμnorm with
+    ⟨γ, z, hznorm, hDz⟩
+  refine ⟨α, β, γ, z, hznorm, ?_⟩
+  calc
+    U = C * D := by
+      dsimp [D]
+      have hright : C * C† = (1 : Square 2) := Matrix.mem_unitaryGroup_iff.mp hC
+      calc
+        U = (1 : Square 2) * U := by simp
+        _ = (C * C†) * U := by rw [hright]
+        _ = C * (C† * U) := by simp [mul_assoc]
+    _ = C * (z • rz γ) := by rw [hDiag, hDz]
+    _ = z • (rz α * CosineSine.ry β * rz γ) := by
+      dsimp [C]
+      simpa [mul_assoc] using (Matrix.mul_smul (rz α * CosineSine.ry β) z (rz γ))
+
+private lemma rz_det_eq_one (θ : ℝ) : (rz θ).det = 1 := by
+  rw [rz, DiagonalizationHelpers.det_diag2, ← Complex.exp_add]
+  have hsum : -Complex.I * (↑θ / 2 : ℂ) + Complex.I * (↑θ / 2 : ℂ) = 0 := by
+    ring
+  rw [hsum, Complex.exp_zero]
+
+private lemma ry_det_eq_one (θ : ℝ) : (CosineSine.ry θ).det = 1 := by
+  have htrig :
+      ((((Real.cos (θ / 2)) ^ 2 + (Real.sin (θ / 2)) ^ 2 : ℝ) : ℂ)) = 1 := by
+    exact_mod_cast (Real.cos_sq_add_sin_sq (θ / 2))
+  simpa [CosineSine.ry, Matrix.det_fin_two, pow_two] using htrig
+
+private lemma rz_add_two_pi_eq_neg (θ : ℝ) :
+    rz (θ + 2 * Real.pi) = -rz θ := by
+  ext i j
+  fin_cases i <;> fin_cases j
+  · simp [rz, diag2]
+    rw [show -(Complex.I * ((↑θ + 2 * (Real.pi : ℂ)) / 2)) =
+        -(Complex.I * (↑θ / 2 : ℂ)) - (Real.pi : ℂ) * Complex.I by
+          ring]
+    rw [Complex.exp_sub_pi_mul_I]
+  · simp [rz, diag2]
+  · simp [rz, diag2]
+  · simp [rz, diag2]
+    rw [show Complex.I * ((↑θ + 2 * (Real.pi : ℂ)) / 2) =
+        Complex.I * (↑θ / 2 : ℂ) + (Real.pi : ℂ) * Complex.I by
+          ring]
+    rw [Complex.exp_add_pi_mul_I]
+
+/-- Every special one-qubit unitary has an exact `R_z R_y R_z` Euler form. -/
+theorem specialUnitary_euler_rz_ry_rz (U : Square 2)
+    (hU : U ∈ Matrix.specialUnitaryGroup (Fin 2) ℂ) :
+    ∃ α β γ : ℝ, U = rz α * CosineSine.ry β * rz γ := by
+  have hSU := Matrix.mem_specialUnitaryGroup_iff.mp hU
+  rcases one_qubit_euler_rz_ry_rz_up_to_global_phase U hSU.1 with
+    ⟨α, β, γ, z, hz, hEuler⟩
+  have hProductDet :
+      (rz α * CosineSine.ry β * rz γ).det = 1 := by
+    rw [Matrix.det_mul, Matrix.det_mul, rz_det_eq_one, ry_det_eq_one, rz_det_eq_one]
+    simp
+  have hzsq : z ^ 2 = 1 := by
+    have hdet := congrArg Matrix.det hEuler
+    rw [hSU.2, Matrix.det_smul, hProductDet] at hdet
+    simpa using hdet.symm
+  rcases sq_eq_one_iff.mp hzsq with hz_one | hz_neg
+  · refine ⟨α, β, γ, ?_⟩
+    simpa [hz_one] using hEuler
+  · refine ⟨α + 2 * Real.pi, β, γ, ?_⟩
+    calc
+      U = (-1 : ℂ) • (rz α * CosineSine.ry β * rz γ) := by
+        simpa [hz_neg] using hEuler
+      _ = (-rz α) * CosineSine.ry β * rz γ := by
+        simp [mul_assoc]
+      _ = rz (α + 2 * Real.pi) * CosineSine.ry β * rz γ := by
+        rw [rz_add_two_pi_eq_neg]
+
 /-- Derived one-qubit synthesis corollary over `{H, T, R_z(θ)}`, up to global phase. -/
 theorem one_qubit_exact_h_t_rz (U : Square 2)
     (hU : U ∈ Matrix.unitaryGroup (Fin 2) ℂ) :
