@@ -1,0 +1,25 @@
+Subject: Update on the Clifford+Rz circuit length bound
+
+Hi Professor,
+
+We have now proved the staged exact Clifford+Rz length bound in Lean. This is the bound for the theorem before the final Lemma 12 step that approximates Rz gates by H/T circuits.
+
+The main theorem is TwoControl.Clifford.Universal.clifford_rz_synthesis_bounded_of_two_le. It says that for n >= 2, every unitary U on 2^n dimensions has a Clifford+Rz circuit, up to global phase, whose length is bounded by cliffordRzBound n.
+
+We also proved the coarse exponential corollary TwoControl.Clifford.Universal.cliffordRzBound_le_const_mul_four_pow, which shows that cliffordRzBound n is at most a constant times 4^n. This matches the paper's high-level recurrence: the decomposition branches into four recursive subproblems and adds controlled-rotation terms of size roughly 2^n. The constants differ from the paper because the Lean bound counts one-qubit gates as list factors, while the paper's displayed recurrence is mainly tracking two-qubit gates.
+
+The proof is built bottom-up. First, we proved bounded versions of the uniformly controlled Rz and Ry synthesis lemmas. Then we proved a bounded version of Lemma 1 for the easy gate set. Then we proved a constant bound for the two-qubit Lemma 11 construction. Finally, we proved that each easy-gate factor expands to a Clifford+Rz circuit of bounded length, and lifted the whole easy-gate circuit into the final Clifford+Rz bound.
+
+I verified the result by building the relevant Lean modules:
+
+lake build TwoControl.Clifford.Universal.RecursiveDecomposition
+lake build TwoControl.Clifford.Universal.RecursiveBounds
+lake build TwoControl.Clifford.Universal.CliffordRzBounds
+lake build TwoControl.Clifford.Universal.Main
+
+I also scanned the staged bound files for sorry, axiom, constant, and admit. The staged bound implementation does not use any of them.
+
+This does not yet prove a length bound for the full Clifford+T theorem, because that still requires a quantitative version of Lemma 12. The next step is to bound the cost of approximating each Rz gate by an H/T circuit as a function of the target precision epsilon.
+
+Best,
+Abdullah

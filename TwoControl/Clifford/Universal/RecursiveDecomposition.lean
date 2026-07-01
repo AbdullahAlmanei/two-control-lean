@@ -4,6 +4,7 @@ import TwoControl.DiagonalizationHelpers
 import Mathlib.Analysis.InnerProductSpace.PiL2
 import Mathlib.Analysis.Matrix.PosDef
 import Mathlib.Analysis.SpecialFunctions.Complex.Arg
+import Mathlib.LinearAlgebra.Matrix.Permutation
 
 namespace TwoControl
 namespace Clifford
@@ -1385,6 +1386,53 @@ private noncomputable def pairBlockEquiv (m : ℕ) :
       ((Equiv.cast (congrArg Fin (four_mul_pow_eq_pow_add_two m)))
         (@finProdFinEquiv 4 (2 ^ m) (a, r))) = @finProdFinEquiv 4 (2 ^ m) (a, r)
   exact (Equiv.cast (congrArg Fin (four_mul_pow_eq_pow_add_two m))).left_inv _
+
+/-- The basis permutation that swaps the top two wires of an `(m+2)`-qubit
+space and leaves the remaining `m` wires fixed. -/
+noncomputable def topSwapPerm (m : ℕ) :
+    Equiv.Perm (Fin (2 ^ (m + 2))) :=
+  (pairBlockEquiv m).symm.trans
+    (((Equiv.swap (1 : Fin 4) 2).prodCongr
+      (Equiv.refl (Fin (2 ^ m)))).trans (pairBlockEquiv m))
+
+private theorem topSwapPerm_apply_pair (m : ℕ) (a : Fin 4)
+    (r : Fin (2 ^ m)) :
+    topSwapPerm m ((pairBlockEquiv m) (a, r)) =
+      (pairBlockEquiv m) ((Equiv.swap (1 : Fin 4) 2 a), r) := by
+  simp [topSwapPerm]
+
+theorem topSwapPerm_symm (m : ℕ) :
+    (topSwapPerm m).symm = topSwapPerm m := by
+  ext i
+  obtain ⟨⟨a, r⟩, rfl⟩ := (pairBlockEquiv m).surjective i
+  have hfin :
+      (topSwapPerm m).symm ((pairBlockEquiv m) (a, r)) =
+        topSwapPerm m ((pairBlockEquiv m) (a, r)) := by
+    apply (topSwapPerm m).injective
+    rw [Equiv.apply_symm_apply]
+    rw [topSwapPerm_apply_pair, topSwapPerm_apply_pair]
+    fin_cases a <;> rfl
+  exact congrArg Fin.val hfin
+
+private theorem swap2_eq_permMatrix :
+    swap2 = (Equiv.swap (1 : Fin 4) 2).permMatrix ℂ := by
+  ext i j
+  fin_cases i <;> fin_cases j <;> simp [swap2, Equiv.swap_apply_def]
+
+theorem topTwoUnitary_swap_eq_permMatrix (m : ℕ) :
+    topTwoUnitary m swap2 = (topSwapPerm m).permMatrix ℂ := by
+  ext i j
+  obtain ⟨⟨a, r⟩, rfl⟩ := (pairBlockEquiv m).surjective i
+  obtain ⟨⟨b, s⟩, rfl⟩ := (pairBlockEquiv m).surjective j
+  rw [topTwoUnitary_eq_kron, swap2_eq_permMatrix]
+  simp only [castSquare, reindexSquare, Matrix.reindexAlgEquiv_apply,
+    Matrix.reindex_apply, Matrix.submatrix_apply, pairBlockEquiv_cast_symm_apply]
+  rw [TwoControl.kron_apply]
+  simp [Equiv.Perm.permMatrix, PEquiv.toMatrix_apply, topSwapPerm_apply_pair,
+    Matrix.one_apply]
+  by_cases hrs : r = s <;>
+    by_cases hab : (Equiv.swap (1 : Fin 4) 2) a = b <;>
+      simp [hrs, hab]
 
 private noncomputable def pairBlockDiagonal (m : ℕ) (M : Fin (2 ^ m) → Square 4) :
     Square (2 ^ (m + 2)) :=
