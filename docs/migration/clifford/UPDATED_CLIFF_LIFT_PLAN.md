@@ -1,5 +1,14 @@
 # Plan: Lift the Clifford+T Universality Proof to `updated_cliff.tex` (June 2026)
 
+> **SUPERSEDED (2026-07-10)** by `UNIVERSAL_NEW_GATES_LIFT_PLAN.md`, which
+> targets `reference/cliff/universal_new_gates.tex` (July 1, 2026). The July
+> paper resolves the Section-0 erratum below by replacing the gates with
+> `G₁ = e^{-3iπ/8}THTHT` and `G₂ = (HT⁴)G₁(HT⁴)†`, whose axes are
+> orthogonal — the three-factor Euler step becomes globally valid and the
+> angle-splitting fix planned here is no longer needed. Phase A of this plan
+> is reworked there; Phases B/C/D carry over unchanged and this document
+> remains the authoritative detail reference for them.
+
 Target reference: `reference/cliff/updated_cliff.tex`.
 Old reference: `reference/cliff/doc.tex` (Mar 2025), which the current
 formalization follows.

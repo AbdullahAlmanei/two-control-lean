@@ -2422,6 +2422,396 @@ theorem lemma1_decomposition_to_easy_gate_set {n : ℕ} (hn : 2 ≤ n)
       simpa [mul_assoc] using synthesizes_mul (synthesizes_mul hSynthP hSynthR) hSynthQ
   exact hMain n hn U hU
 
+/-! ## Exact synthesis into the paper gate set `{CX, H, S, S†, R_z}`
+
+`universal_new_gates.tex`, Lemma `clifford-plus-rx-is-universal` (qualitative
+form): the same recursion as `lemma1_decomposition_to_easy_gate_set`, but with
+the paper's one-qubit base case and no arbitrary two-qubit gates.  The only
+two-qubit gate is `CX`: it appears in the Möttönen step and in the
+SWAP-conjugation inside `liftMiddleUnitary`, where the SWAP is decomposed via
+`SWAP = CX·(H⊗H)·CX·(H⊗H)·CX`.  The result is up to global phase; the phase
+enters through the one-qubit base case and multiplies through products. -/
+
+private theorem liftLower_cliffordRzGate {m : ℕ} {E : Square (2 ^ m)}
+    (hE : CliffordRzGate m E) :
+    CliffordRzGate (m + 1) (liftLowerUnitary m E) := by
+  rcases hE with hCnot | hH | hS | hSdg | ⟨θ, hRz⟩
+  · exact CliffordRzGate.cnot (liftLower_isEmbeddedTwoQubit hCnot)
+  · exact CliffordRzGate.hadamard (liftLower_isEmbeddedOneQubit hH)
+  · exact CliffordRzGate.phaseS (liftLower_isEmbeddedOneQubit hS)
+  · exact CliffordRzGate.phaseSdagger (liftLower_isEmbeddedOneQubit hSdg)
+  · exact CliffordRzGate.rz θ (liftLower_isEmbeddedOneQubit hRz)
+
+private theorem synthesizes_liftLower_cliffordRz {m : ℕ} {W : Square (2 ^ m)}
+    (hW : Synthesizes (CliffordRzGate m) W) :
+    Synthesizes (CliffordRzGate (m + 1)) (liftLowerUnitary m W) := by
+  rcases hW with ⟨gates, hGates, hEq⟩
+  refine ⟨gates.map (liftLowerUnitary m), ?_, ?_⟩
+  · intro gate hgate
+    rcases List.mem_map.1 hgate with ⟨gate', hgate', rfl⟩
+    exact liftLower_cliffordRzGate (hGates gate' hgate')
+  · rw [hEq]
+    symm
+    exact circuitMatrix_map_liftLower m gates
+
+/-! ### `SWAP = CX·(H⊗H)·CX·(H⊗H)·CX` -/
+
+/-- The explicit matrix of `H ⊗ H`. -/
+private noncomputable def hhMat : Square 4 :=
+  ((1 / 2 : ℝ) : ℂ) •
+    Matrix.of ![![1, 1, 1, 1], ![1, -1, 1, -1], ![1, 1, -1, -1], ![1, -1, -1, 1]]
+
+set_option maxHeartbeats 800000 in
+private lemma hadamard_kron_hadamard_matrix :
+    hadamard2 ⊗ₖ hadamard2 = hhMat := by
+  have hsq : ((Real.sqrt 2 : ℝ) : ℂ) ^ 2 = 2 := by
+    exact_mod_cast Real.sq_sqrt (by norm_num : (0 : ℝ) ≤ 2)
+  ext i j
+  obtain ⟨⟨i₁, i₂⟩, rfl⟩ := finProdFinEquiv.surjective i
+  obtain ⟨⟨j₁, j₂⟩, rfl⟩ := finProdFinEquiv.surjective j
+  rw [kron_apply]
+  fin_cases i₁ <;> fin_cases i₂ <;> fin_cases j₁ <;> fin_cases j₂ <;>
+    · simp [hadamard2, hhMat, finProdFinEquiv]
+      push_cast
+      ring_nf
+      rw [inv_pow, hsq]
+      norm_num
+
+/-- The reversed-control CNOT `(H⊗H)·CX·(H⊗H)`. -/
+private def rcnotMat : Square 4 :=
+  Matrix.of ![![1, 0, 0, 0], ![0, 1, 0, 0], ![0, 0, 0, 1], ![0, 0, 1, 0]]
+
+set_option maxHeartbeats 800000 in
+private lemma hh_cnot_hh : hhMat * cnot * hhMat = rcnotMat := by
+  ext i j
+  fin_cases i <;> fin_cases j <;>
+    norm_num [hhMat, rcnotMat, cnot, GateHelpers.notc, Matrix.mul_apply,
+      Fin.sum_univ_four, Matrix.cons_val_zero, Matrix.cons_val_one,
+      Matrix.cons_val_two, Matrix.cons_val_three, Matrix.head_cons,
+      Matrix.tail_cons]
+
+set_option maxHeartbeats 800000 in
+private lemma swap2_eq_cnot_rcnot_cnot : swap2 = cnot * rcnotMat * cnot := by
+  ext i j
+  fin_cases i <;> fin_cases j <;>
+    norm_num [swap2, rcnotMat, cnot, GateHelpers.notc, Matrix.mul_apply,
+      Fin.sum_univ_four, Matrix.cons_val_zero, Matrix.cons_val_one,
+      Matrix.cons_val_two, Matrix.cons_val_three, Matrix.head_cons,
+      Matrix.tail_cons]
+
+/-- The three-CNOT decomposition of SWAP over the paper gate set, with the
+middle reversed-control CNOT realized by `H`-conjugation. -/
+private theorem swap2_decomposition :
+    swap2 =
+      cnot * (localOnFirst hadamard2 * localOnSecond hadamard2) * cnot *
+        (localOnFirst hadamard2 * localOnSecond hadamard2) * cnot := by
+  have hh : localOnFirst hadamard2 * localOnSecond hadamard2 = hhMat := by
+    rw [localOnFirst, localOnSecond, ← KronHelpers.kron_mul_reindex, mul_one,
+      one_mul]
+    exact hadamard_kron_hadamard_matrix
+  rw [hh]
+  calc swap2 = cnot * rcnotMat * cnot := swap2_eq_cnot_rcnot_cnot
+    _ = cnot * (hhMat * cnot * hhMat) * cnot := by rw [hh_cnot_hh]
+    _ = cnot * hhMat * cnot * hhMat * cnot := by
+        simp [mul_assoc]
+
+private theorem synthesizes_topTwo_swap2_cliffordRz (m : ℕ) :
+    Synthesizes (CliffordRzGate (m + 2)) (topTwoUnitary m swap2) := by
+  have hEq : topTwoUnitary m swap2 =
+      topTwoUnitary m cnot *
+        (topTwoUnitary m (localOnFirst hadamard2) *
+          topTwoUnitary m (localOnSecond hadamard2)) *
+        topTwoUnitary m cnot *
+        (topTwoUnitary m (localOnFirst hadamard2) *
+          topTwoUnitary m (localOnSecond hadamard2)) *
+        topTwoUnitary m cnot := by
+    simp only [topTwoUnitary, ← TwoQubitPlacement.embed_mul]
+    rw [← swap2_decomposition]
+  rw [hEq]
+  have hcnot : Synthesizes (CliffordRzGate (m + 2)) (topTwoUnitary m cnot) :=
+    synthesizes_singleton
+      (CliffordRzGate.cnot (topTwoUnitary_isEmbeddedTwoQubit m cnot))
+  have hHfirst :
+      Synthesizes (CliffordRzGate (m + 2)) (topTwoUnitary m (localOnFirst hadamard2)) :=
+    synthesizes_singleton
+      (CliffordRzGate.hadamard
+        (IsEmbeddedOneQubitGate.of_twoQubit_first (topTwoPlacement m) hadamard2))
+  have hHsecond :
+      Synthesizes (CliffordRzGate (m + 2)) (topTwoUnitary m (localOnSecond hadamard2)) :=
+    synthesizes_singleton
+      (CliffordRzGate.hadamard
+        (IsEmbeddedOneQubitGate.of_twoQubit_second (topTwoPlacement m) hadamard2))
+  exact synthesizes_mul
+    (synthesizes_mul
+      (synthesizes_mul
+        (synthesizes_mul hcnot (synthesizes_mul hHfirst hHsecond))
+        hcnot)
+      (synthesizes_mul hHfirst hHsecond))
+    hcnot
+
+private theorem synthesizes_liftMiddle_cliffordRz {m : ℕ} {W : Square (2 ^ (m + 1))}
+    (hW : Synthesizes (CliffordRzGate (m + 1)) W) :
+    Synthesizes (CliffordRzGate (m + 2)) (liftMiddleUnitary m W) := by
+  have hSwap : Synthesizes (CliffordRzGate (m + 2)) (topTwoUnitary m swap2) :=
+    synthesizes_topTwo_swap2_cliffordRz m
+  have hLower : Synthesizes (CliffordRzGate (m + 2)) (liftLowerUnitary (m + 1) W) :=
+    synthesizes_liftLower_cliffordRz hW
+  rw [liftMiddleUnitary]
+  simpa [mul_assoc] using synthesizes_mul (synthesizes_mul hSwap hLower) hSwap
+
+/-! ### The uniformly controlled rotation families, retyped -/
+
+/-- Paper Lemma `rzcount`'s qualitative content: multiplexed `R_z` families
+are `{CX, R_z}` circuits (via the Möttönen recursion, paper Lemma `rzrz`). -/
+theorem synthesizes_controlled_rz_family_cliffordRz (m : ℕ)
+    (α : Fin (2 ^ m) → ℝ) :
+    Synthesizes (CliffordRzGate (m + 1)) (controlledRzFamily m α) := by
+  induction m with
+  | zero =>
+      have hDiag0 :
+          Matrix.diagonal (fun i : Fin 1 => Complex.exp (-Complex.I * (α i / 2))) =
+            Complex.exp (-Complex.I * (α 0 / 2)) • (1 : Square 1) := by
+        ext i j
+        fin_cases i <;> fin_cases j <;> simp
+      have hDiag1 :
+          Matrix.diagonal (fun i : Fin 1 => Complex.exp (Complex.I * (α i / 2))) =
+            Complex.exp (Complex.I * (α 0 / 2)) • (1 : Square 1) := by
+        ext i j
+        fin_cases i <;> fin_cases j <;> simp
+      have hBlocks :
+          castSquare (two_mul_pow_eq_pow_succ 0)
+            ((proj0 ⊗ₖ Matrix.diagonal (fun i : Fin 1 => Complex.exp (-Complex.I * (α i / 2)))) +
+              proj01 ⊗ₖ (0 : Square 1) + proj10 ⊗ₖ (0 : Square 1) +
+              proj1 ⊗ₖ Matrix.diagonal (fun i : Fin 1 => Complex.exp (Complex.I * (α i / 2)))) =
+            castSquare (two_mul_pow_eq_pow_succ 0)
+              ((proj0 ⊗ₖ (Complex.exp (-Complex.I * (α 0 / 2)) • (1 : Square 1))) +
+                proj01 ⊗ₖ (0 : Square 1) + proj10 ⊗ₖ (0 : Square 1) +
+                proj1 ⊗ₖ (Complex.exp (Complex.I * (α 0 / 2)) • (1 : Square 1))) := by
+        rw [hDiag0, hDiag1]
+      have hBase : controlledRzFamily 0 α = rz (α 0) := by
+        rw [controlledRzFamily, firstQubitBlockDiag, unblockify_fromBlocks]
+        exact hBlocks.trans <| by
+          rw [KronHelpers.kron_smul_right, KronHelpers.kron_smul_right]
+          rw [two_kron_one, two_kron_one]
+          ext i j
+          fin_cases i <;> fin_cases j <;>
+            simp [rz, diag2, proj0, proj1, proj01, proj10, ketbra, ket0, ket1,
+              castSquare, reindexSquare, Matrix.reindex_apply, TwoControl.kron]
+      rw [hBase, ← liftTopOneQubit_zero (rz (α 0))]
+      exact synthesizes_singleton
+        (CliffordRzGate.rz (α 0) (liftTopOneQubit_isEmbedded 0 (rz (α 0))))
+  | succ m ih =>
+      rcases controlled_rz_reduction_step m α with ⟨β, γ, CX, hCX, hEq⟩
+      have hCX' : Synthesizes (CliffordRzGate (m + 2)) CX :=
+        synthesizes_singleton (CliffordRzGate.cnot hCX)
+      have hβ : Synthesizes (CliffordRzGate (m + 1)) (controlledRzFamily m β) := ih β
+      have hγ : Synthesizes (CliffordRzGate (m + 1)) (controlledRzFamily m γ) := ih γ
+      have hβLift :
+          Synthesizes (CliffordRzGate (m + 2))
+            (liftMiddleUnitary m (controlledRzFamily m β)) :=
+        synthesizes_liftMiddle_cliffordRz hβ
+      have hγLift :
+          Synthesizes (CliffordRzGate (m + 2))
+            (liftMiddleUnitary m (controlledRzFamily m γ)) :=
+        synthesizes_liftMiddle_cliffordRz hγ
+      rw [hEq]
+      simpa [mul_assoc] using
+        synthesizes_mul
+          (synthesizes_mul
+            (synthesizes_mul hCX' hβLift)
+            hCX')
+          hγLift
+
+/-- Multiplexed `R_y` families over the paper set, via the `R_y`-to-`R_z`
+conversion (paper Lemma `ryrz`). -/
+theorem synthesizes_controlled_ry_family_cliffordRz (m : ℕ)
+    (θ : Fin (2 ^ m) → ℝ) :
+    Synthesizes (CliffordRzGate (m + 1)) (controlledRyFamily m θ) := by
+  rw [controlled_ry_family_via_controlled_rz]
+  have hSdagger :
+      Synthesizes (CliffordRzGate (m + 1)) (liftTopOneQubit m phaseSdagger) :=
+    synthesizes_singleton
+      (CliffordRzGate.phaseSdagger (liftTopOneQubit_isEmbedded m phaseSdagger))
+  have hHadamard :
+      Synthesizes (CliffordRzGate (m + 1)) (liftTopOneQubit m hadamard2) :=
+    synthesizes_singleton
+      (CliffordRzGate.hadamard (liftTopOneQubit_isEmbedded m hadamard2))
+  have hRz :
+      Synthesizes (CliffordRzGate (m + 1)) (controlledRzFamily m (fun i => - θ i)) :=
+    synthesizes_controlled_rz_family_cliffordRz m (fun i => - θ i)
+  have hS : Synthesizes (CliffordRzGate (m + 1)) (liftTopOneQubit m phaseS) :=
+    synthesizes_singleton
+      (CliffordRzGate.phaseS (liftTopOneQubit_isEmbedded m phaseS))
+  exact synthesizes_mul
+    (synthesizes_mul
+      (synthesizes_mul
+        (synthesizes_mul hSdagger hHadamard)
+        hRz)
+      hHadamard)
+    hS
+
+/-! ### Global-phase plumbing -/
+
+private theorem synthesizesUpToGlobalPhase_of_synthesizes {N : ℕ}
+    {allowed : Square N → Prop} {U : Square N}
+    (hU : Synthesizes allowed U) :
+    SynthesizesUpToGlobalPhase allowed U := by
+  rcases hU with ⟨gates, hGates, hEq⟩
+  exact ⟨gates, hGates, GlobalPhaseEquivalent.of_eq hEq⟩
+
+private theorem synthesizesUpToGlobalPhase_mul {N : ℕ}
+    {allowed : Square N → Prop} {U V : Square N}
+    (hU : SynthesizesUpToGlobalPhase allowed U)
+    (hV : SynthesizesUpToGlobalPhase allowed V) :
+    SynthesizesUpToGlobalPhase allowed (U * V) := by
+  rcases hU with ⟨gU, hgU, hUphase⟩
+  rcases hV with ⟨gV, hgV, hVphase⟩
+  exact ⟨gU ++ gV, CircuitOver_append hgU hgV,
+    GlobalPhaseEquivalent.trans (GlobalPhaseEquivalent.mul hUphase hVphase)
+      (GlobalPhaseEquivalent.of_eq (circuitMatrix_append gU gV).symm)⟩
+
+private theorem liftLowerUnitary_smul (m : ℕ) (z : ℂ) (W : Square (2 ^ m)) :
+    liftLowerUnitary m (z • W) = z • liftLowerUnitary m W := by
+  rw [liftLowerUnitary_eq_kron, liftLowerUnitary_eq_kron,
+    KronHelpers.kron_smul_right]
+  simp [castSquare, reindexSquare]
+
+private theorem synthesizesUpToGlobalPhase_liftLower {m : ℕ} {W : Square (2 ^ m)}
+    (hW : SynthesizesUpToGlobalPhase (CliffordRzGate m) W) :
+    SynthesizesUpToGlobalPhase (CliffordRzGate (m + 1)) (liftLowerUnitary m W) := by
+  rcases hW with ⟨gates, hGates, z, hz, hEq⟩
+  refine ⟨gates.map (liftLowerUnitary m), ?_, z, hz, ?_⟩
+  · intro gate hgate
+    rcases List.mem_map.1 hgate with ⟨gate', hgate', rfl⟩
+    exact liftLower_cliffordRzGate (hGates gate' hgate')
+  · rw [hEq, liftLowerUnitary_smul, circuitMatrix_map_liftLower]
+
+/-- Demultiplexing step over the paper set, up to global phase (paper Lemma
+`demultiplexing`, Shende–Bullock–Markov). -/
+private theorem synthesizesUpToGlobalPhase_first_qubit_block_diag {m : ℕ}
+    (hm : 1 ≤ m)
+    (ih : ∀ W : Square (2 ^ m),
+      W ∈ Matrix.unitaryGroup (Fin (2 ^ m)) ℂ →
+        SynthesizesUpToGlobalPhase (CliffordRzGate m) W)
+    (U₀ U₁ : Square (2 ^ m))
+    (hU₀ : U₀ ∈ Matrix.unitaryGroup (Fin (2 ^ m)) ℂ)
+    (hU₁ : U₁ ∈ Matrix.unitaryGroup (Fin (2 ^ m)) ℂ) :
+    SynthesizesUpToGlobalPhase (CliffordRzGate (m + 1))
+      (firstQubitBlockDiag m U₀ U₁) := by
+  rcases general_demultiplexing_step hm U₀ U₁ hU₀ hU₁ with ⟨P, Q, α, hP, hQ, hEq⟩
+  have hP' : SynthesizesUpToGlobalPhase (CliffordRzGate m) P := ih P hP
+  have hQ' : SynthesizesUpToGlobalPhase (CliffordRzGate m) Q := ih Q hQ
+  have hRz : SynthesizesUpToGlobalPhase (CliffordRzGate (m + 1))
+      (controlledRzFamily m α) :=
+    synthesizesUpToGlobalPhase_of_synthesizes
+      (synthesizes_controlled_rz_family_cliffordRz m α)
+  have hPLift : SynthesizesUpToGlobalPhase (CliffordRzGate (m + 1))
+      (liftLowerUnitary m P) :=
+    synthesizesUpToGlobalPhase_liftLower hP'
+  have hQLift : SynthesizesUpToGlobalPhase (CliffordRzGate (m + 1))
+      (liftLowerUnitary m Q) :=
+    synthesizesUpToGlobalPhase_liftLower hQ'
+  rw [hEq]
+  simpa [mul_assoc] using
+    synthesizesUpToGlobalPhase_mul (synthesizesUpToGlobalPhase_mul hQLift hRz) hPLift
+
+/-! ### The one-qubit base case and the paper induction -/
+
+/-- The paper's one-qubit base case (paper Lemma
+`clifford-plus-rx-is-universal-for-1-qubit-gates`), packaged as a
+`CliffordRzGate 1` synthesis. -/
+private theorem one_qubit_synthesizesUpToGlobalPhase_cliffordRz
+    (U : Square (2 ^ 1))
+    (hU : U ∈ Matrix.unitaryGroup (Fin (2 ^ 1)) ℂ) :
+    SynthesizesUpToGlobalPhase (CliffordRzGate 1) U := by
+  have hmem : ∀ g : Square 2, IsEmbeddedOneQubitGate 1 g g := by
+    intro g
+    have h := liftTopOneQubit_isEmbedded 0 g
+    rwa [liftTopOneQubit_zero] at h
+  rcases one_qubit_exact_clifford_rz U hU with ⟨α, β, γ, z, hz, hEq⟩
+  refine ⟨[rz α, phaseSdagger, hadamard2, rz (-β), hadamard2, phaseS, rz γ],
+    ?_, z, hz, ?_⟩
+  · intro gate hgate
+    fin_cases hgate
+    · exact CliffordRzGate.rz α (hmem _)
+    · exact CliffordRzGate.phaseSdagger (hmem _)
+    · exact CliffordRzGate.hadamard (hmem _)
+    · exact CliffordRzGate.rz (-β) (hmem _)
+    · exact CliffordRzGate.hadamard (hmem _)
+    · exact CliffordRzGate.phaseS (hmem _)
+    · exact CliffordRzGate.rz γ (hmem _)
+  · rw [hEq]
+    congr 1
+    simp [circuitMatrix, mul_assoc]
+
+/-- Paper Lemma `clifford-plus-rx-is-universal` (qualitative form): every
+`n`-qubit unitary, `n ≥ 1`, is exactly a `{CX, H, S, S†, R_z}` circuit up to
+global phase.  The proof is the paper's induction: base case one qubit
+(Nielsen–Chuang ZYZ + the `ryrz` bridge), step via the cosine-sine
+decomposition, demultiplexing, and multiplexed-rotation synthesis. -/
+theorem clifford_rz_universal {n : ℕ} (hn : 1 ≤ n)
+    (U : Square (2 ^ n))
+    (hU : U ∈ Matrix.unitaryGroup (Fin (2 ^ n)) ℂ) :
+    SynthesizesUpToGlobalPhase (CliffordRzGate n) U := by
+  have hMain :
+      ∀ n, 1 ≤ n →
+        ∀ U : Square (2 ^ n),
+          U ∈ Matrix.unitaryGroup (Fin (2 ^ n)) ℂ →
+            SynthesizesUpToGlobalPhase (CliffordRzGate n) U := by
+    intro n
+    refine Nat.strong_induction_on n ?_
+    intro n ih hn U hU
+    by_cases hOne : n = 1
+    · subst hOne
+      exact one_qubit_synthesizesUpToGlobalPhase_cliffordRz U hU
+    · have hGt : 1 < n := lt_of_le_of_ne hn (Ne.symm hOne)
+      have hNonzero : n ≠ 0 := by omega
+      rcases Nat.exists_eq_succ_of_ne_zero hNonzero with ⟨m, rfl⟩
+      have hmOne : 1 ≤ m := by omega
+      rcases general_cosine_sine_step (n := m + 1)
+          (Nat.succ_le_succ (Nat.zero_le m)) U hU with
+        ⟨P, R, Q, hP, hR, hQ, hStep, hEq⟩
+      rcases hStep with ⟨P₀, P₁, Q₀, Q₁, θ, hPshape, hRshape, hQshape⟩
+      have hRec :
+          ∀ W : Square (2 ^ m),
+            W ∈ Matrix.unitaryGroup (Fin (2 ^ m)) ℂ →
+              SynthesizesUpToGlobalPhase (CliffordRzGate m) W := by
+        intro W hW
+        exact ih m (Nat.lt_succ_self m) hmOne W hW
+      have hPshape' : P = firstQubitBlockDiag m P₀ P₁ := by
+        simpa [firstQubitBlockDiag] using hPshape
+      have hRshape' : R = controlledRyFamily m θ := by
+        simpa [controlledRyFamily] using hRshape
+      have hQshape' : Q = firstQubitBlockDiag m Q₀ Q₁ := by
+        simpa [firstQubitBlockDiag] using hQshape
+      have hPBlocks :
+          P₀ ∈ Matrix.unitaryGroup (Fin (2 ^ m)) ℂ ∧
+            P₁ ∈ Matrix.unitaryGroup (Fin (2 ^ m)) ℂ := by
+        apply firstQubitBlockDiag_unitary_factors (m := m)
+        simpa [hPshape'] using hP
+      have hQBlocks :
+          Q₀ ∈ Matrix.unitaryGroup (Fin (2 ^ m)) ℂ ∧
+            Q₁ ∈ Matrix.unitaryGroup (Fin (2 ^ m)) ℂ := by
+        apply firstQubitBlockDiag_unitary_factors (m := m)
+        simpa [hQshape'] using hQ
+      have hSynthP : SynthesizesUpToGlobalPhase (CliffordRzGate (m + 1)) P := by
+        rw [hPshape']
+        exact synthesizesUpToGlobalPhase_first_qubit_block_diag hmOne hRec
+          P₀ P₁ hPBlocks.1 hPBlocks.2
+      have hSynthR : SynthesizesUpToGlobalPhase (CliffordRzGate (m + 1)) R := by
+        rw [hRshape']
+        exact synthesizesUpToGlobalPhase_of_synthesizes
+          (synthesizes_controlled_ry_family_cliffordRz m θ)
+      have hSynthQ : SynthesizesUpToGlobalPhase (CliffordRzGate (m + 1)) Q := by
+        rw [hQshape']
+        exact synthesizesUpToGlobalPhase_first_qubit_block_diag hmOne hRec
+          Q₀ Q₁ hQBlocks.1 hQBlocks.2
+      rw [hEq]
+      simpa [mul_assoc] using
+        synthesizesUpToGlobalPhase_mul
+          (synthesizesUpToGlobalPhase_mul hSynthP hSynthR) hSynthQ
+  exact hMain n hn U hU
+
 end Universal
 end Clifford
 end TwoControl
