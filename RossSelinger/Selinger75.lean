@@ -375,27 +375,6 @@ inductive RightEquivalent : ResidueMatrix → ResidueMatrix → Prop
 
 end ResidueMatrix
 
-private theorem phaseT_scalar_eq_rsOmegaAlg :
-    Complex.exp (Complex.I * (Real.pi / 4)) = rsOmegaAlg := by
-  rw [show Complex.I * (Real.pi / 4) = ((Real.pi / 4 : ℂ) * Complex.I) by ring,
-    Complex.exp_mul_I]
-  have hcast : (Real.pi / 4 : ℂ) = ((Real.pi / 4 : ℝ) : ℂ) := by norm_num
-  have hcos : Complex.cos (Real.pi / 4 : ℂ) = (((Real.sqrt 2) / 2 : ℝ) : ℂ) := by
-    rw [hcast, ← Complex.ofReal_cos, Real.cos_pi_div_four]
-  have hsin : Complex.sin (Real.pi / 4 : ℂ) = (((Real.sqrt 2) / 2 : ℝ) : ℂ) := by
-    rw [hcast, ← Complex.ofReal_sin, Real.sin_pi_div_four]
-  rw [hcos, hsin]
-  rw [rsOmegaAlg]
-  have hs : ((Real.sqrt 2 : ℝ) : ℂ) ≠ 0 := by
-    exact_mod_cast (show (Real.sqrt 2 : ℝ) ≠ 0 by positivity)
-  have hI : (1 + Complex.I : ℂ) ≠ 0 := by
-    intro h
-    have hre := congrArg Complex.re h
-    norm_num at hre
-  simp [sqrtTwoComplex]
-  field_simp [hs, hI]
-  norm_num [sq, ← Complex.ofReal_mul, Real.sq_sqrt]
-
 private theorem zmod2_eq_zero_or_one (x : ZMod 2) : x = 0 ∨ x = 1 := by
   fin_cases x
   · left

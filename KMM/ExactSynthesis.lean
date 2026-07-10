@@ -2061,7 +2061,7 @@ theorem TCount_prependOptimizedInverseHT_le
   have h := TCount_optimizedInverseHTWord_le_one k
   omega
 
-private lemma phaseT_scalar_eq_rsOmegaAlg :
+lemma phaseT_scalar_eq_rsOmegaAlg :
     Complex.exp (Complex.I * (Real.pi / 4)) = rsOmegaAlg := by
   rw [show Complex.I * (Real.pi / 4) = ((Real.pi / 4 : ℂ) * Complex.I) by ring,
     Complex.exp_mul_I]

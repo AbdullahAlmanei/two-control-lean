@@ -5,13 +5,28 @@ A Lean + Blueprint project for translating and reconstructing the proof of
 
 Visit [this](https://abdullahalmanei.github.io/two-control-lean/) page to view the current status of the proof.
 
+## Projects in this repo
+
+This repo hosts three separate proof efforts sharing one Lean package:
+
+1. **The two-controls paper** (`TwoControl/Section3.lean`-`Section7.lean` plus
+   the shared helper files below them) — the project this repo is named for.
+   Complete and stable.
+2. **Clifford+T universality** (`TwoControl/Clifford/`, `TwoControl/CosineSine/`)
+   — a quantitative Boykin-style density bound for Clifford+T universality,
+   built on top of the two-controls vocabulary. Active.
+3. **Ross-Selinger circuit synthesis** (`RossSelinger/`, `KMM/`, plus the
+   top-level `DyadicCyclotomic`/`MatrixCompletion` libraries) — optimal
+   ancilla-free circuit synthesis. Paused; see
+   [`RossSelinger/README.md`](RossSelinger/README.md). Not built by default.
+
 ## Structure
-- `TwoControl/`: Lean formalization
+- `TwoControl/`: Lean formalization of projects 1 and 2 above
+- `RossSelinger/`, `KMM/`: paused Ross-Selinger circuit-synthesis engine (project 3), not built by default (not in `defaultTargets`); build explicitly with `lake build RossSelinger KMM` when resumed
 - `blueprint/`: Blueprint proof map and dependency graph
 - `reference/rocq/`: original Rocq reference repo
 - `reference/paper/`: source paper
 - `docs/`: migration methodology, theorem map, journal
-- `RossSelinger/`, `KMM/`: paused Ross-Selinger circuit-synthesis engine, not built by default (not in `defaultTargets`); build explicitly with `lake build RossSelinger` when resumed
 
 ## Local workflow
 ```bash
