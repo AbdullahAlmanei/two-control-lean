@@ -1,6 +1,6 @@
-import TwoControl.RossSelinger.Algorithm
+import RossSelinger.Algorithm
 
-namespace TwoControl.RossSelinger
+namespace RossSelinger
 
 /-!
 Conditional correctness for the Ross-Selinger Rz-approximation algorithm:
@@ -42,4 +42,3 @@ theorem rossSelingerOracleSearch_sound_if_returns
   exact rossSelingerSearch_sound_if_returns oracle.completionSolver fuel input hrun
 
 end RossSelinger
-end TwoControl

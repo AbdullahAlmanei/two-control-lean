@@ -1,17 +1,17 @@
-import TwoControl.RossSelinger.Basic
+import RossSelinger.Basic
 import DyadicCyclotomic.Basic
-import TwoControl.RossSelinger.ZomegaRingTheory
-import TwoControl.RossSelinger.ZomegaNormSolvability
-import TwoControl.RossSelinger.GridLemma
-import TwoControl.RossSelinger.Grid
+import RossSelinger.ZomegaRingTheory
+import RossSelinger.ZomegaNormSolvability
+import RossSelinger.GridLemma
+import RossSelinger.Grid
 import MatrixCompletion.Completion
-import TwoControl.RossSelinger.DiophantineCore
-import TwoControl.RossSelinger.Diophantine
-import TwoControl.RossSelinger.Selinger75
-import TwoControl.RossSelinger.MANormalForm
-import TwoControl.RossSelinger.Algorithm
-import TwoControl.RossSelinger.Correctness
-import TwoControl.RossSelinger.Optimality
+import RossSelinger.DiophantineCore
+import RossSelinger.Diophantine
+import RossSelinger.Selinger75
+import RossSelinger.MANormalForm
+import RossSelinger.Algorithm
+import RossSelinger.Correctness
+import RossSelinger.Optimality
 
 /-!
 Entry point for the conditional Ross-Selinger compiler leg.

@@ -11,6 +11,7 @@ Visit [this](https://abdullahalmanei.github.io/two-control-lean/) page to view t
 - `reference/rocq/`: original Rocq reference repo
 - `reference/paper/`: source paper
 - `docs/`: migration methodology, theorem map, journal
+- `RossSelinger/`, `KMM/`: paused Ross-Selinger circuit-synthesis engine, not built by default (not in `defaultTargets`); build explicitly with `lake build RossSelinger` when resumed
 
 ## Local workflow
 ```bash

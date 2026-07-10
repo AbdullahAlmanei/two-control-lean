@@ -3,7 +3,7 @@ import Mathlib.Analysis.Complex.Norm
 import Mathlib.Analysis.SpecificLimits.Basic
 import Mathlib.Data.Real.Archimedean
 
-namespace TwoControl.RossSelinger
+namespace RossSelinger
 
 open MatrixCompletion
 open DyadicCyclotomic
@@ -259,4 +259,3 @@ theorem grid_candidate_exists
   · exact grid_candidate_small_epsilon θ hε hlarge
 
 end RossSelinger
-end TwoControl

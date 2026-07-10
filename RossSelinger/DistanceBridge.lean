@@ -1,4 +1,4 @@
-import TwoControl.RossSelinger.Basic
+import RossSelinger.Basic
 import TwoControl.Clifford.Universal.Distance
 import MatrixCompletion.Completion
 import Mathlib.Analysis.CStarAlgebra.Matrix
@@ -7,8 +7,9 @@ import Mathlib.Tactic.NormNum
 import Mathlib.Tactic.Positivity
 import Mathlib.Tactic.Ring
 
-namespace TwoControl.RossSelinger
+namespace RossSelinger
 
+open TwoControl
 open TwoControl.Clifford
 open TwoControl.Clifford.Universal
 open MatrixCompletion
@@ -160,4 +161,3 @@ theorem hsDistance_lt_of_opDist_small
   nlinarith
 
 end RossSelinger
-end TwoControl

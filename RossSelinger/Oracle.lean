@@ -1,6 +1,6 @@
-import TwoControl.RossSelinger.Correctness
+import RossSelinger.Correctness
 
-namespace TwoControl.RossSelinger
+namespace RossSelinger
 
 /-!
 Optional oracle-facing adapter.
@@ -24,4 +24,3 @@ theorem ross_selinger_Rz_approx_oracle_if_returns
   rossSelingerOracleSearch_sound_if_returns oracle fuel input hrun
 
 end RossSelinger
-end TwoControl

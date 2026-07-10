@@ -1,12 +1,13 @@
-import TwoControl.RossSelinger.DiophantineCore
-import TwoControl.RossSelinger.Grid
-import TwoControl.RossSelinger.ZomegaRingTheory
+import RossSelinger.DiophantineCore
+import RossSelinger.Grid
+import RossSelinger.ZomegaRingTheory
 
-namespace TwoControl.RossSelinger
+namespace RossSelinger
 
+open TwoControl
 open DyadicCyclotomic
 open MatrixCompletion
-open TwoControl.KMM
+open KMM
 
 /-!
 Ross-Selinger's Diophantine completion step.
@@ -57,4 +58,3 @@ theorem normEquation_of_solves_completionXi {u t : ℂ}
   exact normEquation_of_diophantine h.2
 
 end RossSelinger
-end TwoControl

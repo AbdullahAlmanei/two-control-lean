@@ -1,14 +1,15 @@
-import TwoControl.RossSelinger.Diophantine
-import TwoControl.RossSelinger.MANormalForm
-import TwoControl.KMM.ExactSynthesis
+import RossSelinger.Diophantine
+import RossSelinger.MANormalForm
+import KMM.ExactSynthesis
 
-namespace TwoControl.RossSelinger
+namespace RossSelinger
 
+open TwoControl
 open DyadicCyclotomic
 open MatrixCompletion
 open TwoControl.Clifford
-open TwoControl.KMM
-open TwoControl.RossSelinger.Selinger75
+open KMM
+open RossSelinger.Selinger75
 
 /-!
 Fuelled, proof-carrying Ross-Selinger search.
@@ -765,4 +766,3 @@ noncomputable def rossSelingerOracleSearch
   rossSelingerSearch oracle.completionSolver fuel input
 
 end RossSelinger
-end TwoControl

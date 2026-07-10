@@ -1,6 +1,6 @@
-import TwoControl.RossSelinger.Correctness
+import RossSelinger.Correctness
 
-namespace TwoControl.RossSelinger
+namespace RossSelinger
 
 open DyadicCyclotomic
 
@@ -172,4 +172,3 @@ theorem rossSelingerOracle_optimal_if_returns
   exact hreturned.trans ((rossLevelTCount_mono hlevel).trans hcompetitor)
 
 end RossSelinger
-end TwoControl

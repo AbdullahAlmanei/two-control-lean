@@ -1,8 +1,9 @@
 import TwoControl.Clifford.Universal.GateSets
 import Mathlib.Analysis.CStarAlgebra.Matrix
 
-namespace TwoControl.RossSelinger
+namespace RossSelinger
 
+open TwoControl
 open TwoControl.Clifford
 open scoped Matrix.Norms.L2Operator
 
@@ -118,4 +119,3 @@ theorem eval_append (left right : CliffordTCircuit) :
 end CliffordTCircuit
 
 end RossSelinger
-end TwoControl

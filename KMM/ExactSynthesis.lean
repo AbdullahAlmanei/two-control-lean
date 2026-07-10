@@ -1,13 +1,14 @@
-import TwoControl.KMM.Denominator
+import KMM.Denominator
 import MatrixCompletion.Completion
-import TwoControl.RossSelinger.Basic
+import RossSelinger.Basic
 import Mathlib.NumberTheory.Real.Irrational
 
-namespace TwoControl.KMM
+namespace KMM
 
+open TwoControl
 open DyadicCyclotomic MatrixCompletion
 open TwoControl.Clifford
-open TwoControl.RossSelinger
+open RossSelinger
 
 /-!
 Kliuchnikov-Maslov-Mosca exact synthesis.
@@ -4293,4 +4294,4 @@ theorem exact_synthesis_completion_tcount {u t : ℂ}
   refine ⟨C, hC, ?_⟩
   simpa [completionMatrix] using hT
 
-end TwoControl.KMM
+end KMM

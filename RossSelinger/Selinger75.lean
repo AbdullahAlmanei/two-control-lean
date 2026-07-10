@@ -1,8 +1,10 @@
-import TwoControl.RossSelinger.Basic
-import TwoControl.KMM.ExactSynthesis
+import RossSelinger.Basic
+import KMM.ExactSynthesis
 import MatrixCompletion.Completion
 
-namespace TwoControl.RossSelinger
+namespace RossSelinger
+
+open TwoControl
 
 /-!
 Residue vocabulary for the Giles-Selinger Lemma 7.5 close-out.
@@ -14,7 +16,7 @@ explicit so Figure 2 can be transcribed without mental basis conversion.
 
 namespace Selinger75
 
-open TwoControl.KMM
+open KMM
 open MatrixCompletion
 open DyadicCyclotomic
 
@@ -1734,4 +1736,4 @@ theorem figure2_completion_branch_selected_node_synthesizes
 
 end Selinger75
 
-end TwoControl.RossSelinger
+end RossSelinger

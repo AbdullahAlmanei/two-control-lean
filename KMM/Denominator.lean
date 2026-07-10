@@ -1,7 +1,8 @@
-import TwoControl.KMM.OmegaArithmetic
+import KMM.OmegaArithmetic
 
-namespace TwoControl.KMM
+namespace KMM
 
+open TwoControl
 open DyadicCyclotomic
 
 /-!
@@ -179,4 +180,4 @@ theorem kmm_sde_gde_relation
     True := by
   trivial
 
-end TwoControl.KMM
+end KMM

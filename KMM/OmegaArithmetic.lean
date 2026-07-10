@@ -1,8 +1,9 @@
 import DyadicCyclotomic.Basic
 import Mathlib.Tactic.IntervalCases
 
-namespace TwoControl.KMM
+namespace KMM
 
+open TwoControl
 open DyadicCyclotomic
 
 /-!
@@ -937,4 +938,4 @@ theorem sde3_descent_choice
     (List.all_eq_true.mp (List.all_eq_true.mp hB _ hxmem) _ hymem) with ⟨k, hkmem, hk⟩
   exact ⟨⟨k, by simp at hkmem; omega⟩, by simpa using hk⟩
 
-end TwoControl.KMM
+end KMM

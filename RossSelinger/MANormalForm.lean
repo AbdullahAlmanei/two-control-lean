@@ -1,10 +1,11 @@
-import TwoControl.RossSelinger.Selinger75
+import RossSelinger.Selinger75
 
-namespace TwoControl.RossSelinger
+namespace RossSelinger
 
+open TwoControl
 open TwoControl.Clifford
-open TwoControl.RossSelinger.Selinger75
-open TwoControl.KMM
+open RossSelinger.Selinger75
+open KMM
 open MatrixCompletion
 open DyadicCyclotomic
 
@@ -319,4 +320,4 @@ theorem ma_normal_form_figure2_synthesis_bound
   (dyadic_unitary_has_ma_figure2_witness hU hEntries hLeast hResidue
     hNode hR hValid).synthesizes
 
-end TwoControl.RossSelinger
+end RossSelinger

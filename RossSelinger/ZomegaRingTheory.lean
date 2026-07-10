@@ -1,7 +1,8 @@
-import TwoControl.KMM.OmegaArithmetic
+import KMM.OmegaArithmetic
 
+open TwoControl
 open DyadicCyclotomic
-open TwoControl.KMM
+open KMM
 
 /-!
 Concrete `ℤ[ω]` arithmetic needed by the Ross-Selinger Diophantine layer.
@@ -12,7 +13,7 @@ ring operations and conjugation lemmas needed to state the norm-equation
 factorization step without introducing a second representation of `ℤ[ω]`.
 -/
 
-namespace TwoControl.KMM.OmegaIntCoord
+namespace KMM.OmegaIntCoord
 
 private theorem inDyadicCyclotomic_int (m : ℤ) :
     InDyadicCyclotomic (m : ℂ) := by
@@ -133,9 +134,8 @@ theorem val_div_sqrtTwo_pow_in_dyadic (x : OmegaIntCoord) (k : ℕ) :
       exact InDyadicCyclotomic.div_sqrtTwo ih
 
 end OmegaIntCoord
-end TwoControl.KMM
+end KMM
 
-namespace TwoControl
 namespace RossSelinger
 
 /-- A real `D[√2]` value written as a normalized pair over a power of `√2`. -/
@@ -194,4 +194,3 @@ def ZomegaNormEquationSolvable (ξ : DyadicSqrtTwoPair) : Prop :=
       (OmegaIntCoord.val x / sqrtTwoComplex ^ k) = ξ.val
 
 end RossSelinger
-end TwoControl

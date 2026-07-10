@@ -1,8 +1,9 @@
 import TwoControl.Clifford.Lemma12.Common.HTCircuit
-import TwoControl.RossSelinger.Basic
+import RossSelinger.Basic
 
-namespace TwoControl.RossSelinger
+namespace RossSelinger
 
+open TwoControl
 open TwoControl.Clifford
 open TwoControl.Clifford.Universal
 open TwoControl.Clifford.Lemma12
@@ -150,4 +151,3 @@ theorem CliffordTCircuit.eval_toHT (gates : CliffordTCircuit) :
                 rfl
 
 end RossSelinger
-end TwoControl

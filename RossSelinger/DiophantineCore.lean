@@ -1,7 +1,8 @@
 import DyadicCyclotomic.Basic
 
-namespace TwoControl.RossSelinger
+namespace RossSelinger
 
+open TwoControl
 open DyadicCyclotomic
 
 /-- The Diophantine right-hand side `ξ = 1 - u†u`. -/
@@ -13,4 +14,3 @@ def SolvesNormEquation (ξ t : ℂ) : Prop :=
   InDyadicCyclotomic t ∧ star t * t = ξ
 
 end RossSelinger
-end TwoControl

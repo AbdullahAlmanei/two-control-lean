@@ -1,8 +1,9 @@
-import TwoControl.RossSelinger.DiophantineCore
+import RossSelinger.DiophantineCore
 import Mathlib.Data.Complex.Basic
 
-namespace TwoControl.RossSelinger
+namespace RossSelinger
 
+open TwoControl
 open DyadicCyclotomic
 
 /-!
@@ -125,4 +126,3 @@ theorem solvesNormEquation_of_sq_add_sq (m : ℕ) (a c x y : ℤ)
     rw [h]
 
 end RossSelinger
-end TwoControl

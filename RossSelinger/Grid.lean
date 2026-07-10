@@ -1,6 +1,6 @@
-import TwoControl.RossSelinger.GridLemma
+import RossSelinger.GridLemma
 
-namespace TwoControl.RossSelinger
+namespace RossSelinger
 
 open DyadicCyclotomic
 open MatrixCompletion
@@ -554,4 +554,3 @@ theorem scaled_grid_candidate_exists
   simpa [ScaledGridCandidate] using grid_candidate_exists θ hε
 
 end RossSelinger
-end TwoControl
