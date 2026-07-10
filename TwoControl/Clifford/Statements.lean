@@ -1266,5 +1266,27 @@ theorem lemma11_two_qubit_synthesis (U : Square 4)
       (GlobalPhaseEquivalent.trans hProduct
         (GlobalPhaseEquivalent.of_eq hMatrix.symm))
 
+/-- One-qubit synthesis over the paper gate set `{H, S, S†, R_z}`, up to a
+global phase (paper Lemma `clifford-plus-rx-is-universal-for-1-qubit-gates`,
+Nielsen–Chuang 2000): every one-qubit unitary is, up to phase, the seven-gate
+word `R_z(α) · S† · H · R_z(-β) · H · S · R_z(γ)`.
+
+This is the ZYZ Euler form with the middle `R_y` replaced through the
+`S†·H·R_z(-β)·H·S` bridge (paper Lemma `ryrz`). -/
+theorem one_qubit_exact_clifford_rz (U : Square 2)
+    (hU : U ∈ Matrix.unitaryGroup (Fin 2) ℂ) :
+    ∃ α β γ : ℝ,
+      GlobalPhaseEquivalent U
+        (rz α * (phaseSdagger * (hadamard2 * (rz (-β) *
+          (hadamard2 * (phaseS * rz γ)))))) := by
+  rcases one_qubit_euler_rz_ry_rz_up_to_global_phase U hU with ⟨α, β, γ, z, hz, hEuler⟩
+  refine ⟨α, β, γ, z, hz, ?_⟩
+  have hry : CosineSine.ry β = phaseSdagger * (hadamard2 * rz (-β) * hadamard2) * phaseS := by
+    rw [hadamard_mul_rz_neg_mul_hadamard_eq_core]
+    exact (phaseSdagger_mul_core_mul_phaseS_eq_ry β).symm
+  rw [hEuler, hry]
+  congr 1
+  simp [mul_assoc]
+
 end Clifford
 end TwoControl

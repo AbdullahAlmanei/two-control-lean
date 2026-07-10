@@ -553,6 +553,58 @@ theorem hsDistance_circuitMatrix_le_sum {N : ℕ} (hN : 0 < N)
           simp only [circuitMatrix_cons, List.zipWith_cons_cons, List.sum_cons]
           exact le_trans hmul (add_le_add (le_refl (hsDistance U V)) htail)
 
+
+/-! ## Paper Lemmas `distance-equality-for-products`, `distance-to-identity`,
+`distance-of-conjugated-unitaries` (`universal_new_gates.tex`, Lemmas 9–11) -/
+
+/-- Paper Lemma `distance-equality-for-products`:
+`d(U₁U₂, V₁V₂) = d(V₁†U₁, V₂U₂†)`. -/
+theorem hsDistance_product_rearrange {N : ℕ} (U₁ U₂ V₁ V₂ : Square N) :
+    hsDistance (U₁ * U₂) (V₁ * V₂) = hsDistance (V₁† * U₁) (V₂ * U₂†) := by
+  unfold hsDistance
+  have h : ((U₁ * U₂)† * (V₁ * V₂)).trace = ((V₁† * U₁)† * (V₂ * U₂†)).trace := by
+    rw [Matrix.conjTranspose_mul, Matrix.conjTranspose_mul,
+      Matrix.conjTranspose_conjTranspose]
+    have e1 : U₂† * U₁† * (V₁ * V₂) = U₂† * (U₁† * V₁ * V₂) := by
+      simp only [mul_assoc]
+    have e2 : U₁† * V₁ * V₂ * U₂† = U₁† * V₁ * (V₂ * U₂†) := by
+      simp only [mul_assoc]
+    rw [e1, Matrix.trace_mul_comm, e2]
+  rw [h]
+
+/-- Paper Lemma `distance-to-identity`, first half: `d(I, V₁V₂) = d(V₁†, V₂)`. -/
+theorem hsDistance_one_mul_mul {N : ℕ} (V₁ V₂ : Square N) :
+    hsDistance 1 (V₁ * V₂) = hsDistance (V₁†) V₂ := by
+  have h := hsDistance_product_rearrange (1 : Square N) 1 V₁ V₂
+  simpa using h
+
+/-- Paper Lemma `distance-to-identity`, second half: `d(U₁U₂, I) = d(U₁, U₂†)`. -/
+theorem hsDistance_mul_mul_one {N : ℕ} (U₁ U₂ : Square N) :
+    hsDistance (U₁ * U₂) 1 = hsDistance U₁ (U₂†) := by
+  have h := hsDistance_product_rearrange U₁ U₂ (1 : Square N) 1
+  simpa using h
+
+/-- Paper Lemma `distance-of-conjugated-unitaries`: `d(U,V) = d(V†,U†)`. -/
+theorem hsDistance_conjTranspose_symm {N : ℕ} (U V : Square N) :
+    hsDistance U V = hsDistance (V†) (U†) := by
+  have h := hsDistance_product_rearrange (1 : Square N) U V 1
+  simpa using h
+
+/-- The Wang–Zhang inequality in the paper's shape
+(`universal_new_gates.tex`, Lemma `trace-inequality`):
+`d(U,V) ≤ d(U,I) + d(I,V)`. -/
+theorem hsDistance_le_hsDistance_one_add {N : ℕ} (hN : 0 < N)
+    (U V : Square N)
+    (hU : U ∈ Matrix.unitaryGroup (Fin N) ℂ)
+    (hV : V ∈ Matrix.unitaryGroup (Fin N) ℂ) :
+    hsDistance U V ≤ hsDistance U 1 + hsDistance 1 V := by
+  have hU' : U† ∈ Matrix.unitaryGroup (Fin N) ℂ := by
+    have h : star U ∈ Matrix.unitaryGroup (Fin N) ℂ := Unitary.star_mem hU
+    rwa [Matrix.star_eq_conjTranspose] at h
+  have h := trace_inequality hN (U†) V hU' hV
+  unfold hsDistance
+  simpa [Matrix.conjTranspose_one] using h
+
 end Universal
 end Clifford
 end TwoControl

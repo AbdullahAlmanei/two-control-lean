@@ -343,6 +343,80 @@ theorem clifford_rz_synthesis_from_lemma1 {n : ℕ} (hn : 2 ≤ n)
     SynthesizesUpToGlobalPhase (CliffordTRzGate n) U :=
   easy_circuit_to_clifford_rz (lemma1_decomposition_to_easy_gate_set hn U hU)
 
+/-! ## Conversion from the paper set `{CX, H, S, S†, R_z}` to Clifford+T+`R_z`
+
+`universal_new_gates.tex`, final theorem: the exact-synthesis circuit over
+`{CX, H, S, S†, R_z}` becomes a Clifford+T+`R_z` circuit by the local
+rewrites `S = T²` and `S† = T⁶`.  No Lemma 11 is needed: the paper set
+contains no arbitrary two-qubit gates. -/
+
+private theorem clifford_rz_gate_factor_to_clifford_t_rz {n : ℕ}
+    {U : Square (2 ^ n)} (hU : CliffordRzGate n U) :
+    SynthesizesUpToGlobalPhase (CliffordTRzGate n) U := by
+  rcases hU with hCnot | hH | hS | hSdag | hRz
+  · exact ⟨[U], by
+      intro gate hmem
+      have hgate : gate = U := by simpa using hmem
+      subst hgate
+      exact Or.inl hCnot,
+      by simp [circuitMatrix, GlobalPhaseEquivalent.refl]⟩
+  · exact ⟨[U], by
+      intro gate hmem
+      have hgate : gate = U := by simpa using hmem
+      subst hgate
+      exact Or.inr (Or.inl hH),
+      by simp [circuitMatrix, GlobalPhaseEquivalent.refl]⟩
+  · exact clifford_t_synthesis_is_clifford_t_rz (embedded_phaseS_is_clifford_t hS)
+  · exact clifford_t_synthesis_is_clifford_t_rz
+      (embedded_phaseSdagger_is_clifford_t hSdag)
+  · rcases hRz with ⟨θ, hθ⟩
+    exact ⟨[U], by
+      intro gate hmem
+      have hgate : gate = U := by simpa using hmem
+      subst hgate
+      exact Or.inr (Or.inr (Or.inr ⟨θ, hθ⟩)),
+      by simp [circuitMatrix, GlobalPhaseEquivalent.refl]⟩
+
+private theorem clifford_rz_circuit_matrix_to_clifford_t_rz {n : ℕ}
+    (gates : List (Square (2 ^ n)))
+    (hGates : CircuitOver (CliffordRzGate n) gates) :
+    SynthesizesUpToGlobalPhase (CliffordTRzGate n) (circuitMatrix gates) := by
+  induction gates with
+  | nil =>
+      refine ⟨[], ?_, ?_⟩
+      · intro gate hmem
+        cases hmem
+      · simp [GlobalPhaseEquivalent.refl]
+  | cons gate rest ih =>
+      have hGateAllowed : CliffordRzGate n gate := hGates gate (by simp)
+      have hRestAllowed : CircuitOver (CliffordRzGate n) rest := by
+        intro factor hmem
+        exact hGates factor (by simp [hmem])
+      rcases clifford_rz_gate_factor_to_clifford_t_rz hGateAllowed with
+        ⟨gateCircuit, hGateCircuit, hGatePhase⟩
+      rcases ih hRestAllowed with ⟨restCircuit, hRestCircuit, hRestPhase⟩
+      refine ⟨gateCircuit ++ restCircuit, ?_, ?_⟩
+      · exact circuitOver_append hGateCircuit hRestCircuit
+      · have hProduct :
+            GlobalPhaseEquivalent
+              (gate * circuitMatrix rest)
+              (circuitMatrix gateCircuit * circuitMatrix restCircuit) :=
+          GlobalPhaseEquivalent.mul hGatePhase hRestPhase
+        exact GlobalPhaseEquivalent.trans hProduct
+          (GlobalPhaseEquivalent.of_eq
+            (circuitMatrix_append gateCircuit restCircuit).symm)
+
+/-- Every `{CX, H, S, S†, R_z}` synthesis is a Clifford+T+`R_z` synthesis
+(`S = T²`, `S† = T⁶`).  This is the drop-in replacement for the Lemma-11
+route `clifford_rz_synthesis_from_lemma1` on the main theorem's path. -/
+theorem clifford_rz_to_clifford_t_rz {n : ℕ} {U : Square (2 ^ n)}
+    (hU : SynthesizesUpToGlobalPhase (CliffordRzGate n) U) :
+    SynthesizesUpToGlobalPhase (CliffordTRzGate n) U := by
+  rcases hU with ⟨gates, hGates, hPhase⟩
+  rcases clifford_rz_circuit_matrix_to_clifford_t_rz gates hGates with
+    ⟨tGates, hTGates, hTPhase⟩
+  exact ⟨tGates, hTGates, GlobalPhaseEquivalent.trans hPhase hTPhase⟩
+
 end Universal
 end Clifford
 end TwoControl

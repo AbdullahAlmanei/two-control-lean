@@ -487,6 +487,53 @@ theorem CliffordTGate.phaseT {n : ℕ} {U : Square (2 ^ n)}
     CliffordTGate n U :=
   Or.inr (Or.inr hU)
 
+/-- Paper gate set of `universal_new_gates.tex`, Lemma
+`clifford-plus-rx-is-universal`: `{CX, H, S, S†, R_z}`.  Unlike `EasyGate`,
+arbitrary two-qubit unitaries are not allowed; unlike `CliffordTRzGate`, the
+Clifford phases are `S, S†` rather than `T`. -/
+def CliffordRzGate (n : ℕ) (U : Square (2 ^ n)) : Prop :=
+  IsEmbeddedTwoQubitGate n cnot U ∨
+  IsEmbeddedOneQubitGate n hadamard2 U ∨
+  IsEmbeddedOneQubitGate n phaseS U ∨
+  IsEmbeddedOneQubitGate n phaseSdagger U ∨
+  (∃ θ : ℝ, IsEmbeddedOneQubitGate n (rz θ) U)
+
+theorem CliffordRzGate.cnot {n : ℕ} {U : Square (2 ^ n)}
+    (hU : IsEmbeddedTwoQubitGate n cnot U) :
+    CliffordRzGate n U :=
+  Or.inl hU
+
+theorem CliffordRzGate.hadamard {n : ℕ} {U : Square (2 ^ n)}
+    (hU : IsEmbeddedOneQubitGate n hadamard2 U) :
+    CliffordRzGate n U :=
+  Or.inr (Or.inl hU)
+
+theorem CliffordRzGate.phaseS {n : ℕ} {U : Square (2 ^ n)}
+    (hU : IsEmbeddedOneQubitGate n phaseS U) :
+    CliffordRzGate n U :=
+  Or.inr (Or.inr (Or.inl hU))
+
+theorem CliffordRzGate.phaseSdagger {n : ℕ} {U : Square (2 ^ n)}
+    (hU : IsEmbeddedOneQubitGate n phaseSdagger U) :
+    CliffordRzGate n U :=
+  Or.inr (Or.inr (Or.inr (Or.inl hU)))
+
+theorem CliffordRzGate.rz {n : ℕ} (θ : ℝ) {U : Square (2 ^ n)}
+    (hU : IsEmbeddedOneQubitGate n (rz θ) U) :
+    CliffordRzGate n U :=
+  Or.inr (Or.inr (Or.inr (Or.inr ⟨θ, hU⟩)))
+
+/-- Every paper gate is in particular an easy gate. -/
+theorem CliffordRzGate.easyGate {n : ℕ} {U : Square (2 ^ n)}
+    (hU : CliffordRzGate n U) :
+    EasyGate n U := by
+  rcases hU with hCnot | hH | hS | hSdg | ⟨θ, hRz⟩
+  · exact EasyGate.of_embedded_two_qubit cnot_mem_unitaryGroup hCnot
+  · exact EasyGate.hadamard hH
+  · exact EasyGate.phaseS hS
+  · exact EasyGate.phaseSdagger hSdg
+  · exact EasyGate.rz θ hRz
+
 theorem EasyGate.mem_unitaryGroup {n : ℕ} {U : Square (2 ^ n)}
     (hU : EasyGate n U) :
     U ∈ Matrix.unitaryGroup (Fin (2 ^ n)) ℂ := by
@@ -498,6 +545,11 @@ theorem EasyGate.mem_unitaryGroup {n : ℕ} {U : Square (2 ^ n)}
   · exact hSdg.mem_unitaryGroup phaseSdagger_mem_unitaryGroup
   · rcases hRz with ⟨θ, hEmbedded⟩
     exact hEmbedded.mem_unitaryGroup (rz_mem_unitaryGroup θ)
+
+theorem CliffordRzGate.mem_unitaryGroup {n : ℕ} {U : Square (2 ^ n)}
+    (hU : CliffordRzGate n U) :
+    U ∈ Matrix.unitaryGroup (Fin (2 ^ n)) ℂ :=
+  hU.easyGate.mem_unitaryGroup
 
 theorem CliffordTRzGate.mem_unitaryGroup {n : ℕ} {U : Square (2 ^ n)}
     (hU : CliffordTRzGate n U) :
