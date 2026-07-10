@@ -1,0 +1,16 @@
+[HISTORICAL RECORD - resolved 2026-07-10: the author's July 1, 2026 revision
+ universal_new_gates.tex adopts the orthogonal-axis repair; see
+ UNIVERSAL_NEW_GATES_LIFT_PLAN.md]
+
+Dear Professor,
+
+I found one specific issue in the updated Clifford+T proof that I think needs a correction. The issue is not with the main universality theorem or with the general idea of using irrational rotations. It is with the three-factor Euler decomposition step for the particular gates G_1 = exp(-i*pi/4) THTH and G_2 = exp(-i*pi/4) HTHT.
+
+The current argument appears to use the fact that the axes for G_1 and G_2 are nonparallel to conclude that every determinant-one one-qubit unitary can be written, up to global phase, as G_1^a G_2^b G_1^c. Nonparallel axes are not enough for that global three-factor decomposition. The attached note gives an exact counterexample: R_z(pi). It derives a necessary reachability inequality for any such three-factor product and then shows, by exact calculation for these G_1 and G_2 axes, that R_z(pi) violates it.
+
+I think the proof can still be repaired while keeping the same simple spirit. One option is to replace the global three-factor statement by a bounded-reachability statement, then split R_z(theta) into many small rotations R_z(theta/N). For N large enough, each small rotation should lie in the reachable region, and then the existing irrational-angle density argument can approximate the real powers by integer powers. A second option is to return to an orthogonal-axis Boykin/Nielsen-Chuang version, where the three-factor Euler decomposition is globally valid.
+
+So the main theorem is still fine, but this particular proof step should be adjusted before relying on the updated presentation.
+
+Best,
+Abdullah
