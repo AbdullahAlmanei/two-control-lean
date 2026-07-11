@@ -16,23 +16,23 @@ Primary source files:
 - `blueprint/src/chapters/section6.tex`
 - `blueprint/src/chapters/section7.tex`
 
-- `docs/migration/generation/section3_generation_packet.md`
-- `docs/migration/generation/section4_generation_packet.md`
-- `docs/migration/generation/section5_generation_packet.md`
-- `docs/migration/generation/section6_generation_packet.md`
-- `docs/migration/generation/section7_generation_packet.md`
+- `docs/migration/archive/generation/section3_generation_packet.md`
+- `docs/migration/archive/generation/section4_generation_packet.md`
+- `docs/migration/archive/generation/section5_generation_packet.md`
+- `docs/migration/archive/generation/section6_generation_packet.md`
+- `docs/migration/archive/generation/section7_generation_packet.md`
 
 Governing documents:
 - `docs/migration/shared_context.md`
-- `docs/migration/object_conventions.md`
-- `docs/migration/generation_naming_conventions.md`
-- `docs/migration/agent_rules.md`
-- `docs/migration/theorem_map.md`
+- `docs/migration/archive/object_conventions.md`
+- `docs/migration/archive/generation_naming_conventions.md`
+- `docs/migration/archive/agent_rules.md`
+- `docs/migration/archive/theorem_map.md`
 
 ## Output
 
 You write exactly one file:
-- `docs/migration/statement_symbol_inventory.md`
+- `docs/migration/archive/statement_symbol_inventory.md`
 
 ## File mode
 

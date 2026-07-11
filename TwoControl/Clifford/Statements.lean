@@ -36,10 +36,6 @@ private lemma inv_sqrt_two_sq :
     ((↑(Real.sqrt 2) : ℂ)⁻¹) ^ 2 = (1 / 2 : ℂ) := by
   simpa [pow_two] using inv_sqrt_two_mul_inv_sqrt_two
 
-private lemma complex_half_eq_div_two (θ : ℝ) :
-    ((θ : ℂ) * (2⁻¹ : ℂ)) = ((θ : ℂ) / 2) := by
-  ring
-
 private lemma exp_half_pos (θ : ℝ) :
     Complex.exp (Complex.I * (θ : ℂ) * (2⁻¹ : ℂ)) =
       Complex.cos ((θ : ℂ) * (2⁻¹ : ℂ)) +
@@ -138,12 +134,6 @@ private lemma diag4_mul_diag4 (a b c d e f g h : ℂ) :
   ext i j
   fin_cases i <;> fin_cases j <;>
     simp [diag4, Matrix.mul_apply, Fin.sum_univ_four]
-
-private lemma diag2_mul_diag2 (a b c d : ℂ) :
-    diag2 a b * diag2 c d = diag2 (a * c) (b * d) := by
-  ext i j
-  fin_cases i <;> fin_cases j <;>
-    simp [diag2, Matrix.mul_apply, Fin.sum_univ_two]
 
 private lemma conj_mul_eq_one_of_norm_eq_one {z : ℂ} (hz : ‖z‖ = 1) :
     star z * z = 1 := by
@@ -433,16 +423,6 @@ private lemma diag2_eq_global_phase_rz (phase μ : ℂ)
         _ = phase * Complex.exp ((γ / 2) * Complex.I) * Complex.exp (Complex.I * (γ / 2)) := by
               simp [mul_assoc]
 
-private lemma controlledGate_rz_eq (α : ℝ) :
-    controlledGate (rz α) =
-      diag4 1 1 (Complex.exp (-Complex.I * (α / 2))) (Complex.exp (Complex.I * (α / 2))) := by
-  rw [rz, controlledGate_diag2_eq]
-
-private lemma localOnFirst_phaseShift_eq (φ : ℝ) :
-    localOnFirst (phaseShift φ) =
-      diag4 1 1 (Complex.exp (Complex.I * φ)) (Complex.exp (Complex.I * φ)) := by
-  rw [localOnFirst, phaseShift, DiagonalizationHelpers.diag2_one_right_kron]
-
 private lemma localOnFirst_rz_eq (θ : ℝ) :
     localOnFirst (rz θ) =
       diag4 (Complex.exp (((-θ) / 2) * Complex.I))
@@ -717,56 +697,6 @@ theorem lemma4_demultiplex_two_qubit (V₀ V₁ : Square 2)
       symm
       rw [controlledRzPair_eq_blockDiag2, localOnSecond_mul_blockDiag2_mul_localOnSecond]
 
-/-- Exact one-qubit diagonalization, reusing the repo's existing helper theorem. -/
-theorem one_qubit_diagonalization (U : Square 2)
-    (hU : U ∈ Matrix.unitaryGroup (Fin 2) ℂ) :
-    ∃ (u₀ u₁ : ℂ) (V : Square 2),
-      ‖u₀‖ = 1 ∧
-      ‖u₁‖ = 1 ∧
-      V ∈ Matrix.unitaryGroup (Fin 2) ℂ ∧
-      U = V * diag2 u₀ u₁ * V† := by
-  simpa using unitary_diag2_exists U hU
-
-/-- Paper-facing controlled-diagonal factorization from `lemmadiag`. -/
-theorem controlled_diag_via_phase_and_controlled_rz (d₀ d₁ : ℂ)
-    (hd₀ : ‖d₀‖ = 1) (hd₁ : ‖d₁‖ = 1) :
-    ∃ (φ α : ℝ),
-      controlledGate (diag2 d₀ d₁) =
-        controlledGate (rz α) * localOnFirst (phaseShift φ) := by
-  let z₀ : Circle := unitCircleOfNormOne d₀ hd₀
-  let z₁ : Circle := unitCircleOfNormOne d₁ hd₁
-  let φ : ℝ := (Complex.arg (z₀ : ℂ) + Complex.arg (z₁ : ℂ)) / 2
-  let α : ℝ := Complex.arg (z₁ : ℂ) - Complex.arg (z₀ : ℂ)
-  refine ⟨φ, α, ?_⟩
-  have hd₀exp : d₀ = Complex.exp (Complex.arg (z₀ : ℂ) * Complex.I) := by
-    simpa [z₀, unitCircleOfNormOne] using complex_eq_exp_arg_of_norm_one d₀ hd₀
-  have hd₁exp : d₁ = Complex.exp (Complex.arg (z₁ : ℂ) * Complex.I) := by
-    simpa [z₁, unitCircleOfNormOne] using complex_eq_exp_arg_of_norm_one d₁ hd₁
-  have hd₀split :
-      Complex.exp (Complex.arg (z₀ : ℂ) * Complex.I) =
-        Complex.exp (-Complex.I * (α / 2)) * Complex.exp (Complex.I * φ) := by
-    rw [← Complex.exp_add]
-    congr 1
-    simp [φ, α]
-    ring
-  have hd₁split :
-      Complex.exp (Complex.arg (z₁ : ℂ) * Complex.I) =
-        Complex.exp (Complex.I * (α / 2)) * Complex.exp (Complex.I * φ) := by
-    rw [← Complex.exp_add]
-    congr 1
-    simp [φ, α]
-    ring
-  calc
-    controlledGate (diag2 d₀ d₁)
-        = diag4 1 1 d₀ d₁ := controlledGate_diag2_eq d₀ d₁
-    _ = diag4 1 1
-          (Complex.exp (-Complex.I * (α / 2)) * Complex.exp (Complex.I * φ))
-          (Complex.exp (Complex.I * (α / 2)) * Complex.exp (Complex.I * φ)) := by
-          rw [hd₀exp, hd₁exp, hd₀split, hd₁split]
-    _ = controlledGate (rz α) * localOnFirst (phaseShift φ) := by
-          rw [controlledGate_rz_eq, localOnFirst_phaseShift_eq, diag4_mul_diag4]
-          simp
-
 /-- Exact-synthesis corollary for the special controlled-`R_z` pairs used in Lemma 11. -/
 theorem controlled_rz_pair_uses_standard_gates (α₀ α₁ : ℝ) :
     ∃ gates : List TwoQubitPrimitive,
@@ -985,62 +915,6 @@ theorem one_qubit_euler_rz_ry_rz_up_to_global_phase (U : Square 2)
     _ = z • (rz α * CosineSine.ry β * rz γ) := by
       dsimp [C]
       simpa [mul_assoc] using (Matrix.mul_smul (rz α * CosineSine.ry β) z (rz γ))
-
-private lemma rz_det_eq_one (θ : ℝ) : (rz θ).det = 1 := by
-  rw [rz, DiagonalizationHelpers.det_diag2, ← Complex.exp_add]
-  have hsum : -Complex.I * (↑θ / 2 : ℂ) + Complex.I * (↑θ / 2 : ℂ) = 0 := by
-    ring
-  rw [hsum, Complex.exp_zero]
-
-private lemma ry_det_eq_one (θ : ℝ) : (CosineSine.ry θ).det = 1 := by
-  have htrig :
-      ((((Real.cos (θ / 2)) ^ 2 + (Real.sin (θ / 2)) ^ 2 : ℝ) : ℂ)) = 1 := by
-    exact_mod_cast (Real.cos_sq_add_sin_sq (θ / 2))
-  simpa [CosineSine.ry, Matrix.det_fin_two, pow_two] using htrig
-
-private lemma rz_add_two_pi_eq_neg (θ : ℝ) :
-    rz (θ + 2 * Real.pi) = -rz θ := by
-  ext i j
-  fin_cases i <;> fin_cases j
-  · simp [rz, diag2]
-    rw [show -(Complex.I * ((↑θ + 2 * (Real.pi : ℂ)) / 2)) =
-        -(Complex.I * (↑θ / 2 : ℂ)) - (Real.pi : ℂ) * Complex.I by
-          ring]
-    rw [Complex.exp_sub_pi_mul_I]
-  · simp [rz, diag2]
-  · simp [rz, diag2]
-  · simp [rz, diag2]
-    rw [show Complex.I * ((↑θ + 2 * (Real.pi : ℂ)) / 2) =
-        Complex.I * (↑θ / 2 : ℂ) + (Real.pi : ℂ) * Complex.I by
-          ring]
-    rw [Complex.exp_add_pi_mul_I]
-
-/-- Every special one-qubit unitary has an exact `R_z R_y R_z` Euler form. -/
-theorem specialUnitary_euler_rz_ry_rz (U : Square 2)
-    (hU : U ∈ Matrix.specialUnitaryGroup (Fin 2) ℂ) :
-    ∃ α β γ : ℝ, U = rz α * CosineSine.ry β * rz γ := by
-  have hSU := Matrix.mem_specialUnitaryGroup_iff.mp hU
-  rcases one_qubit_euler_rz_ry_rz_up_to_global_phase U hSU.1 with
-    ⟨α, β, γ, z, hz, hEuler⟩
-  have hProductDet :
-      (rz α * CosineSine.ry β * rz γ).det = 1 := by
-    rw [Matrix.det_mul, Matrix.det_mul, rz_det_eq_one, ry_det_eq_one, rz_det_eq_one]
-    simp
-  have hzsq : z ^ 2 = 1 := by
-    have hdet := congrArg Matrix.det hEuler
-    rw [hSU.2, Matrix.det_smul, hProductDet] at hdet
-    simpa using hdet.symm
-  rcases sq_eq_one_iff.mp hzsq with hz_one | hz_neg
-  · refine ⟨α, β, γ, ?_⟩
-    simpa [hz_one] using hEuler
-  · refine ⟨α + 2 * Real.pi, β, γ, ?_⟩
-    calc
-      U = (-1 : ℂ) • (rz α * CosineSine.ry β * rz γ) := by
-        simpa [hz_neg] using hEuler
-      _ = (-rz α) * CosineSine.ry β * rz γ := by
-        simp [mul_assoc]
-      _ = rz (α + 2 * Real.pi) * CosineSine.ry β * rz γ := by
-        rw [rz_add_two_pi_eq_neg]
 
 /-- Derived one-qubit synthesis corollary over `{H, T, R_z(θ)}`, up to global phase. -/
 theorem one_qubit_exact_h_t_rz (U : Square 2)
@@ -1265,6 +1139,28 @@ theorem lemma11_two_qubit_synthesis (U : Square 4)
       (GlobalPhaseEquivalent.of_eq hUeq)
       (GlobalPhaseEquivalent.trans hProduct
         (GlobalPhaseEquivalent.of_eq hMatrix.symm))
+
+/-- One-qubit synthesis over the paper gate set `{H, S, S†, R_z}`, up to a
+global phase (paper Lemma `clifford-plus-rx-is-universal-for-1-qubit-gates`,
+Nielsen–Chuang 2000): every one-qubit unitary is, up to phase, the seven-gate
+word `R_z(α) · S† · H · R_z(-β) · H · S · R_z(γ)`.
+
+This is the ZYZ Euler form with the middle `R_y` replaced through the
+`S†·H·R_z(-β)·H·S` bridge (paper Lemma `ryrz`). -/
+theorem one_qubit_exact_clifford_rz (U : Square 2)
+    (hU : U ∈ Matrix.unitaryGroup (Fin 2) ℂ) :
+    ∃ α β γ : ℝ,
+      GlobalPhaseEquivalent U
+        (rz α * (phaseSdagger * (hadamard2 * (rz (-β) *
+          (hadamard2 * (phaseS * rz γ)))))) := by
+  rcases one_qubit_euler_rz_ry_rz_up_to_global_phase U hU with ⟨α, β, γ, z, hz, hEuler⟩
+  refine ⟨α, β, γ, z, hz, ?_⟩
+  have hry : CosineSine.ry β = phaseSdagger * (hadamard2 * rz (-β) * hadamard2) * phaseS := by
+    rw [hadamard_mul_rz_neg_mul_hadamard_eq_core]
+    exact (phaseSdagger_mul_core_mul_phaseS_eq_ry β).symm
+  rw [hEuler, hry]
+  congr 1
+  simp [mul_assoc]
 
 end Clifford
 end TwoControl

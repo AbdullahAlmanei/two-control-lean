@@ -18,7 +18,7 @@ theorem two_qubit_gate_has_clifford_rz_circuit (U : Square 4)
       GlobalPhaseEquivalent U (twoQubitCircuitMatrix gates) :=
   lemma11_two_qubit_synthesis U hU
 
-private lemma phaseT_sq_eq_phaseS :
+lemma phaseT_sq_eq_phaseS :
     phaseT * phaseT = phaseS := by
   ext i j
   fin_cases i <;> fin_cases j
@@ -34,13 +34,13 @@ private lemma phaseT_sq_eq_phaseS :
               ring
       _ = Complex.I := by simpa [mul_comm] using Complex.exp_pi_div_two_mul_I
 
-private lemma phaseS_cubed_eq_phaseSdagger :
+lemma phaseS_cubed_eq_phaseSdagger :
     phaseS * phaseS * phaseS = phaseSdagger := by
   ext i j
   fin_cases i <;> fin_cases j <;>
     simp [phaseS, phaseSdagger, diag2, Matrix.mul_apply, Fin.sum_univ_two]
 
-private lemma phaseT_six_eq_phaseSdagger :
+lemma phaseT_six_eq_phaseSdagger :
     phaseT * phaseT * phaseT * phaseT * phaseT * phaseT = phaseSdagger := by
   calc
     phaseT * phaseT * phaseT * phaseT * phaseT * phaseT
@@ -49,14 +49,14 @@ private lemma phaseT_six_eq_phaseSdagger :
     _ = phaseS * (phaseS * phaseS) := by rw [phaseT_sq_eq_phaseS]
     _ = phaseSdagger := by simpa [mul_assoc] using phaseS_cubed_eq_phaseSdagger
 
-private lemma localOnFirst_mul (A B : Square 2) :
+lemma localOnFirst_mul (A B : Square 2) :
     localOnFirst (A * B) = localOnFirst A * localOnFirst B := by
   unfold localOnFirst
   simpa using
     (KronHelpers.kron_mul_reindex (A := A) (B := B)
       (C := (1 : Square 2)) (D := (1 : Square 2)))
 
-private lemma localOnSecond_mul (A B : Square 2) :
+lemma localOnSecond_mul (A B : Square 2) :
     localOnSecond (A * B) = localOnSecond A * localOnSecond B := by
   unfold localOnSecond
   simpa using
@@ -141,29 +141,29 @@ private lemma twoQubitCliffordT_onSecond_phaseSdagger :
             simp [mul_assoc]
     _ = localOnSecond phaseSdagger := by rw [phaseT_six_eq_phaseSdagger]
 
-private theorem reindexSquare_smul {N M : ℕ} (e : Fin N ≃ Fin M)
+theorem reindexSquare_smul {N M : ℕ} (e : Fin N ≃ Fin M)
     (z : ℂ) (U : Square N) :
     reindexSquare e (z • U) = z • reindexSquare e U := by
   simp [reindexSquare]
 
-private theorem castSquare_smul {N M : ℕ} (h : N = M)
+theorem castSquare_smul {N M : ℕ} (h : N = M)
     (z : ℂ) (U : Square N) :
     castSquare h (z • U) = z • castSquare h U := by
   simpa [castSquare] using reindexSquare_smul (Equiv.cast (congrArg Fin h)) z U
 
-private theorem TwoQubitPlacement.tensor_smul {n : ℕ} (p : TwoQubitPlacement n)
+theorem TwoQubitPlacement.tensor_smul {n : ℕ} (p : TwoQubitPlacement n)
     (z : ℂ) (U : Square 4) :
     p.tensor (z • U) = z • p.tensor U := by
   unfold TwoQubitPlacement.tensor
   rw [kron_smul_left, KronHelpers.kron_smul_right]
 
-private theorem TwoQubitPlacement.embed_smul {n : ℕ} (p : TwoQubitPlacement n)
+theorem TwoQubitPlacement.embed_smul {n : ℕ} (p : TwoQubitPlacement n)
     (z : ℂ) (U : Square 4) :
     p.embed (z • U) = z • p.embed U := by
   unfold TwoQubitPlacement.embed
   rw [TwoQubitPlacement.tensor_smul, castSquare_smul, reindexSquare_smul]
 
-private theorem TwoQubitPlacement.globalPhaseEquivalent {n : ℕ}
+theorem TwoQubitPlacement.globalPhaseEquivalent {n : ℕ}
     (p : TwoQubitPlacement n) {A B : Square 4}
     (hAB : GlobalPhaseEquivalent A B) :
     GlobalPhaseEquivalent (p.embed A) (p.embed B) := by
@@ -342,6 +342,80 @@ theorem clifford_rz_synthesis_from_lemma1 {n : ℕ} (hn : 2 ≤ n)
     (hU : U ∈ Matrix.unitaryGroup (Fin (2 ^ n)) ℂ) :
     SynthesizesUpToGlobalPhase (CliffordTRzGate n) U :=
   easy_circuit_to_clifford_rz (lemma1_decomposition_to_easy_gate_set hn U hU)
+
+/-! ## Conversion from the paper set `{CX, H, S, S†, R_z}` to Clifford+T+`R_z`
+
+`universal_new_gates.tex`, final theorem: the exact-synthesis circuit over
+`{CX, H, S, S†, R_z}` becomes a Clifford+T+`R_z` circuit by the local
+rewrites `S = T²` and `S† = T⁶`.  No Lemma 11 is needed: the paper set
+contains no arbitrary two-qubit gates. -/
+
+private theorem clifford_rz_gate_factor_to_clifford_t_rz {n : ℕ}
+    {U : Square (2 ^ n)} (hU : CliffordRzGate n U) :
+    SynthesizesUpToGlobalPhase (CliffordTRzGate n) U := by
+  rcases hU with hCnot | hH | hS | hSdag | hRz
+  · exact ⟨[U], by
+      intro gate hmem
+      have hgate : gate = U := by simpa using hmem
+      subst hgate
+      exact Or.inl hCnot,
+      by simp [circuitMatrix, GlobalPhaseEquivalent.refl]⟩
+  · exact ⟨[U], by
+      intro gate hmem
+      have hgate : gate = U := by simpa using hmem
+      subst hgate
+      exact Or.inr (Or.inl hH),
+      by simp [circuitMatrix, GlobalPhaseEquivalent.refl]⟩
+  · exact clifford_t_synthesis_is_clifford_t_rz (embedded_phaseS_is_clifford_t hS)
+  · exact clifford_t_synthesis_is_clifford_t_rz
+      (embedded_phaseSdagger_is_clifford_t hSdag)
+  · rcases hRz with ⟨θ, hθ⟩
+    exact ⟨[U], by
+      intro gate hmem
+      have hgate : gate = U := by simpa using hmem
+      subst hgate
+      exact Or.inr (Or.inr (Or.inr ⟨θ, hθ⟩)),
+      by simp [circuitMatrix, GlobalPhaseEquivalent.refl]⟩
+
+private theorem clifford_rz_circuit_matrix_to_clifford_t_rz {n : ℕ}
+    (gates : List (Square (2 ^ n)))
+    (hGates : CircuitOver (CliffordRzGate n) gates) :
+    SynthesizesUpToGlobalPhase (CliffordTRzGate n) (circuitMatrix gates) := by
+  induction gates with
+  | nil =>
+      refine ⟨[], ?_, ?_⟩
+      · intro gate hmem
+        cases hmem
+      · simp [GlobalPhaseEquivalent.refl]
+  | cons gate rest ih =>
+      have hGateAllowed : CliffordRzGate n gate := hGates gate (by simp)
+      have hRestAllowed : CircuitOver (CliffordRzGate n) rest := by
+        intro factor hmem
+        exact hGates factor (by simp [hmem])
+      rcases clifford_rz_gate_factor_to_clifford_t_rz hGateAllowed with
+        ⟨gateCircuit, hGateCircuit, hGatePhase⟩
+      rcases ih hRestAllowed with ⟨restCircuit, hRestCircuit, hRestPhase⟩
+      refine ⟨gateCircuit ++ restCircuit, ?_, ?_⟩
+      · exact circuitOver_append hGateCircuit hRestCircuit
+      · have hProduct :
+            GlobalPhaseEquivalent
+              (gate * circuitMatrix rest)
+              (circuitMatrix gateCircuit * circuitMatrix restCircuit) :=
+          GlobalPhaseEquivalent.mul hGatePhase hRestPhase
+        exact GlobalPhaseEquivalent.trans hProduct
+          (GlobalPhaseEquivalent.of_eq
+            (circuitMatrix_append gateCircuit restCircuit).symm)
+
+/-- Every `{CX, H, S, S†, R_z}` synthesis is a Clifford+T+`R_z` synthesis
+(`S = T²`, `S† = T⁶`).  This is the drop-in replacement for the Lemma-11
+route `clifford_rz_synthesis_from_lemma1` on the main theorem's path. -/
+theorem clifford_rz_to_clifford_t_rz {n : ℕ} {U : Square (2 ^ n)}
+    (hU : SynthesizesUpToGlobalPhase (CliffordRzGate n) U) :
+    SynthesizesUpToGlobalPhase (CliffordTRzGate n) U := by
+  rcases hU with ⟨gates, hGates, hPhase⟩
+  rcases clifford_rz_circuit_matrix_to_clifford_t_rz gates hGates with
+    ⟨tGates, hTGates, hTPhase⟩
+  exact ⟨tGates, hTGates, GlobalPhaseEquivalent.trans hPhase hTPhase⟩
 
 end Universal
 end Clifford

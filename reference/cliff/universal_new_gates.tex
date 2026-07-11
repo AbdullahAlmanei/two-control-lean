@@ -1,0 +1,1347 @@
+\documentclass[11pt]{article}
+
+\topmargin=-0.5in
+\oddsidemargin=0in
+\evensidemargin=0in
+\textwidth=6.5in
+\textheight=9.0in
+
+\usepackage{setspace}
+\usepackage{graphicx}
+
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{amsthm}
+\usepackage{url}
+
+\usepackage{setspace}
+
+\input{Qcircuit}
+
+% \noindent {\sc Slide}: Jones-Gomard-Sestoft book cover.
+
+% \mbox{} \\ \hspace*{1cm}
+%    [Our experiments confirm our theory] \\
+
+\title{Quantum Algorithms \\
+       Clifford+T is Universal}
+\author{Jens Palsberg}
+\date{July 1, 2026}
+
+% Title: Towards a universal quantum programming language.
+% Goal: 2,500 words.
+% Almost every quantum computer right now has its own programming language. 
+% How may this change for the future quantum computers and what are 
+% the unique challenges in making a universal quantum computing language?
+%
+% Role model: http://xrds.acm.org/current-issue.cfm
+
+\def\({\begin{eqnarray*}}
+\def\){\end{eqnarray*}}
+
+\newtheorem{theorem}{Theorem}
+\newtheorem{corollary}[theorem]{Corollary}
+\newtheorem{lemma}[theorem]{Lemma}
+
+\def\phi{\varphi}
+\def\imp{\rightarrow}
+\def\implies{\Rightarrow}
+
+\def\ket#1{|#1\rangle}
+\def\bra#1{\langle#1|}
+\def\inner#1#2{\langle{#1}|{#2}\rangle}
+\def\outer#1#2{\ket{#1}\bra{#2}}
+\def\eigenvalues#1{\mbox{\sf Eigenvalues}(#1)}
+
+\def\diag#1{\mbox{\sf Diag}{(#1)}}
+\def\diagtwo#1#2{\diag{#1,#2}}
+
+\def\C#1{\text{\sf C}{(#1)}}
+\def\CC#1{\text{\sf CC}{(#1)}}
+
+
+\def\iff{\Longleftrightarrow}
+
+\begin{document}
+\maketitle
+
+% Example
+% Story
+% Data
+% Quote
+% Peer Testimony
+
+\newpage
+
+\rightline{Quantum Algorithms, by Jens Palsberg}
+\rightline{Clifford+T is Universal; 100 minutes; July 1, 2026} 
+
+\vspace*{-1.2cm}
+
+\section*{Outline}
+
+\paragraph{Hook:} 
+A quantum computer implements a universal gate set.
+Intuitively, this means that the computer can implement any unitary. 
+But technically, it means that the computer can approximate any unitary.
+What is behind this idea and how can we prove that 
+a gate set can approximate any unitary?
+
+\paragraph{Purpose:} Persuade you that Clifford+T is universal.
+
+\paragraph{Preview:} \mbox{} \\
+\hspace*{1cm}
+1. We will state the theorem and devise a proof strategy.
+\\
+\hspace*{1cm}
+2. We will first prove a version of the theorem that works with $R_z$ gates.
+\\
+\hspace*{1cm}
+3. We will prove the full theorem by approximating the $R_z$ gates.
+
+\paragraph{Transition to Body:} 
+Let us begin with a look at what we are trying to prove.
+
+\paragraph{Main Point 1:}
+We will state the theorem and devise a proof strategy. \\
+\hspace*{1cm}
+   [We state the theorem] \\ 
+\hspace*{1cm}
+   [We will first prove a version of the theorem that uses an easy gate set] \\
+\hspace*{1cm}
+   [We state some known lemmas]
+
+\paragraph{Transition to MP2:}
+Now we move on to a proof for an easy gate set.
+
+\paragraph{Main Point 2:}
+We will first prove a version of the theorem that works with $R_z$ gates. \\
+\hspace*{1cm}
+   [We prove the simple version of the theorem] \\
+\hspace*{1cm}
+   [We need exponentially many gates to implement an $n$-qubit unitary in the worst case] \\
+\hspace*{1cm}
+   [We prove one of the known lemmas] 
+
+\paragraph{Transition to MP3:}
+Now we can finish the proof by focusing on approximation.
+
+\paragraph{Main Point 3:}
+We will prove the full theorem by approximating the $R_z$ gates. \\
+\hspace*{1cm}
+   [We list properties of approximation of unitaries] \\
+\hspace*{1cm}
+   [We show how to approximate $R_z$ gates] \\
+\hspace*{1cm}
+   [We prove the full version of the theorem] 
+
+\paragraph{Transition to Close:} 
+So there you have it.
+
+\paragraph{Review:}
+The key property of a universal gate set is that 
+it can approximate any unitary.
+Our proof strategy is to first prove the theorem for an easy gate set and then
+extend to $\{\C{X}, H, T\}$.
+
+\paragraph{Strong finish:}
+Quantum computing has probabilities built in and
+the idea of a universal gate set has approximation built in.
+Quantum algorithms have no requirement to be exact; 
+rather, they can try to get close.
+
+\paragraph{Call to action:}
+Implement the procedure for compiling any unitary into the easy gate set.
+
+\newpage
+
+\section*{Detailed presentation}
+
+\paragraph{Hook:} 
+A quantum computer implements a universal gate set.
+Intuitively, this means that the computer can implement any unitary. 
+But technically, it means that the computer can approximate any unitary.
+What is behind this idea and how can we prove that 
+a gate set can approximate any unitary?
+
+\paragraph{Purpose:} Persuade you that Clifford+T is universal.
+
+\paragraph{Preview:} \mbox{} \\
+\hspace*{1cm}
+1. We will state the theorem and devise a proof strategy.
+\\
+\hspace*{1cm}
+2. We will first prove a version of the theorem that works with $R_z$ gates.
+\\
+\hspace*{1cm}
+3. We will prove the full theorem by approximating the $R_z$ gates.
+
+\paragraph{Transition to Body:} 
+Let us begin with a look at what we are trying to prove.
+
+\paragraph{Main Point 1:}
+We will state the theorem and devise a proof strategy. \\
+\mbox{} \\ \hspace*{1cm}
+   [We state the theorem] \\ 
+We say that two unitaries $U$ and $V$ are equal up to a global phase,
+written $U \sim V$, if there exists a real number $\alpha$ such that
+$U = e^{i\alpha} V$, where $e^{i\alpha}$ is the global phase.
+%
+We define the following projective Hilbert–Schmidt distance $d$ for
+$n$-qubit unitaries $U, V$:
+\(
+d(U,V) &=& 
+\sqrt{ 1 - \frac{ | Tr( U^\dagger V ) |^2 }{ N^2 } }
+\) 
+where $Tr(U)$ denotes the trace of $U$, and $N = 2^n$.
+This distance is invariant under multiplication of either unitary by 
+a global phase.
+%
+Let us define three rotation matrices:
+\[
+\begin{array}{rclclcl}
+R_x(\theta) &=& 
+e^{-i\theta X/2}
+&=&
+\cos(\theta/2)\ I - i\sin(\theta/2)\ X
+&=&
+\left(
+\begin{array}{cc}
+\cos(\theta/2)    & -i \sin(\theta/2) \\
+-i \sin(\theta/2) & \cos(\theta/2)
+\end{array}
+\right)
+\\
+R_y(\theta) &=&
+e^{-i\theta Y/2}
+&=&
+\cos(\theta/2)\ I - i\sin(\theta/2)\ Y
+&=&
+\left(
+\begin{array}{cc}
+\cos(\theta/2)    & -\sin(\theta/2) \\
+\sin(\theta/2) & \cos(\theta/2)
+\end{array}
+\right)
+\\
+R_z(\theta) &=&
+e^{-i\theta Z/2}
+&=&
+\cos(\theta/2)\ I - i\sin(\theta/2)\ Z
+&=&
+\left(
+\begin{array}{cc}
+e^{-i\theta/2} & 0 \\
+0              & e^{i\theta/2}
+\end{array}
+\right)
+\end{array}
+\]
+%
+We use the term circuit to mean a product of unitaries,
+possibly from a particular gate set.  
+The gates $\{\C{X}, H, S\}$ are called Clifford gates,
+while $T$ and $R_z(\theta)$ are not Clifford gates.
+We say that a gate set is universal if,
+for any unitary $U$ and any $\epsilon > 0$, 
+we can use the gate set to define a circuit $C$
+such that $d(U,C) < \epsilon$.
+Theorem~\ref{thm:clifford-plus-t-is-universal} below states that 
+$\{\C{X}, H, T\}$ is universal.
+
+\begin{theorem}[\bf Clifford+T is universal]
+\label{thm:clifford-plus-t-is-universal}
+For any unitary $U$ and any $\epsilon > 0$, 
+there exists a circuit $C$ built from $\{\C{X}, H, T\}$,
+such that $d(U,C) < \epsilon$.
+\end{theorem}
+
+% \mbox{} \\ 
+\hspace*{1cm}
+   [We will first prove a version of the theorem that uses an easy gate set] \\
+Let us state an easier version that has no need for approximation.
+
+\begin{lemma}[\bf Clifford+R$_z$ is universal]
+For any $n$-qubit unitary $U$,
+there exists a circuit $C$ with 
+$14 \times 4^{n-1} - 9 \times 2^{n-1}$ gates drawn from
+$\{\C{X}, H, S, R_z(\theta)\}$ such that $U \sim C$.
+\label{lem:clifford-plus-rx-is-universal}
+\end{lemma}
+
+Our proof strategy is to first prove 
+Lemma~\ref{lem:clifford-plus-rx-is-universal}
+and then approximate the $R_z(\theta)$ gates.
+
+\newpage
+
+\mbox{} \\ \hspace*{1cm}
+   [We state some known lemmas] \\
+Lemma~\ref{lem:clifford-plus-rx-is-universal-for-1-qubit-gates} below
+% and
+% Lemma~\ref{lem:clifford-plus-rx-is-universal-for-2-qubit-gates} 
+% are special cases 
+is a special case of Lemma~\ref{lem:clifford-plus-rx-is-universal},
+for 1-qubit gates.
+% for 1-qubit gates and 2-qubit gates.
+Our strategy for proving 
+Lemma~\ref{lem:clifford-plus-rx-is-universal}
+% for an $n$-qubit unitary, 
+% where $n \geq 2$,
+is to do induction with
+Lemma~\ref{lem:clifford-plus-rx-is-universal-for-1-qubit-gates} 
+as the base case.
+
+\begin{lemma}[\bf Nielsen and Chuang 2000]
+For any 1-qubit unitary $U$,
+there exists a circuit $C$ with
+2 $H$ gates and 3 $R_z(\theta)$ gates
+such that $U \sim C$.
+\label{lem:clifford-plus-rx-is-universal-for-1-qubit-gates}
+\end{lemma}
+
+\begin{proof}
+We can find 
+real numbers $\alpha,\beta,\gamma,\delta$ and write:
+$U =
+e^{i\alpha}\,
+R_z(\beta)\,
+H\,
+R_z(\gamma)\,
+H\,
+R_z(\delta)$.
+\end{proof}
+
+% \begin{lemma}[\bf Chang, Vala, Sastry, and Whaley 2003]
+% We can implement any 2-qubit unitary using 
+% 6 $\C{X}$ gates, 16 $H$ gates, 8 $S$ gates, and 15 $R_z(\theta)$ gates,
+% up to a global phase.
+% \label{lem:clifford-plus-rx-is-universal-for-2-qubit-gates}
+% \end{lemma}
+% 
+% \begin{proof}
+% Let $U$ be a 2-qubit unitary.
+% We can find 1-qubit unitaries $V_1, V_2, V_3, V_4$ and
+% real numbers $\theta_X, \theta_Y, \theta_Z$ and write:
+% \(
+% U
+% &=&
+% (V_1 \otimes V_2)\
+% e^{i \theta_X (X \otimes X)}\
+% e^{i \theta_Y (Y \otimes Y)}\
+% e^{i \theta_Z (Z \otimes Z)}\
+% (V_3 \otimes V_4),
+% \\[1ex]
+% e^{i \theta_X (X \otimes X)}
+% &=&
+% (H \otimes H)\
+% \C{X}\
+% (I \otimes R_z(2\theta_X))\
+% \C{X}\
+% (H \otimes H),
+% \\[1ex]
+% e^{i \theta_Y (Y \otimes Y)}
+% &=&
+% (SH \otimes SH)\
+% \C{X}\
+% (I \otimes R_z(2\theta_Y))\
+% \C{X}\
+% (HS^\dagger \otimes HS^\dagger),
+% \\[1ex]
+% e^{i \theta_Z (Z \otimes Z)}
+% &=&
+% \C{X}\
+% (I \otimes R_z(2\theta_Z))\
+% \C{X}.
+% \)
+% We use Lemma~\ref{lem:clifford-plus-rx-is-universal-for-1-qubit-gates} to 
+% get counts for the four 1-qubit unitaries, and we write $S^\dag = SSS$.
+% \end{proof}
+
+Our next lemma states the Cosine-Sine decomposition,
+also known as the CS-decomposition.
+
+\begin{lemma} {\bf (Paige and Wei 1994)}
+For one n-qubit gate $U$, there exist $2^{n-1}$ 1-qubit gates $R_y(\theta_0)$, $R_y(\theta_1)$, $\cdots$, and $R_y(\theta_{2^{n-1}-1})$, four $(n-1)$-qubit gates $P_0$, $P_1$, $Q_0$, and $Q_1$, and three n-qubit gates $P = \outer{0}{0} \otimes P_{0} + \outer{1}{1} \otimes P_{1}$, $R = \sum^{2^{n-1}-1}_{i=0}R_y(\theta_i) \otimes \outer{i}{i}$, and $Q= \outer{0}{0} \otimes Q_{0} + \outer{1}{1} \otimes Q_{1}$, 
+such that
+\[ 
+\Qcircuit @C=0.5em @R=0.4em {
+  & \qw & \multigate{2}{U} & \qw & &&  & & \qw & \gate{} \qwx[2]& \gate{R}      &\gate{} \qwx[2]&\qw\\
+ &  &                &     & &=& &   &    &          &                 &               &   \\
+ & \qw / & \ghost{U}        & \qw &  && & & \qw / & \gate{Q}       & \gate{} \qwx[-2]&\gate{P}       &\qw\\
+}
+\]
+\label{cosinesine}
+\end{lemma}
+
+% \newpage
+
+Our next lemma says that we can implement an $R_y(\alpha)$ gate via use of 
+an $R_z(-\alpha)$ gate.
+
+\begin{lemma} {\bf (Shende, Markov, and Bullock 2004)}
+The following circuit equality is correct: 
+$R_y(\alpha) = S^\dagger\ H\ R_z(-\alpha)\ H\ S$, which can be written
+also in circuit notation:
+\[ 
+\Qcircuit @C=0.5em @R=0.4em {
+ & \gate{R_y(\alpha)} & \qw & & = & &  & \gate{S} & \gate{H} & \gate{R_z(-\alpha)}      &\gate{H}    & \gate{S^\dag} & \qw 
+}
+\]
+\label{ryrz}
+\end{lemma}
+
+\vspace*{-0.8cm}
+
+\begin{proof}
+We calculate:
+%
+\(
+S^\dagger\ H\ R_z(-\alpha)\ H\ S
+&=&
+S^\dagger\ H\ [\cos(-\alpha/2)\ I - i\sin(-\alpha/2)\ Z]\ H\ S
+\\
+&=&
+S^\dagger\ [\cos(-\alpha/2)\ I - i\sin(-\alpha/2)\ X]\ S
+\\
+&=&
+[\cos(-\alpha/2)\ I - i\sin(-\alpha/2)\ (-Y)]
+\\
+&=&
+\cos(\alpha/2)\ I - i\sin(\alpha/2)\ Y
+\\
+&=&
+R_y(\alpha)
+\)
+In the second step, we use $H H = I$ and $H Z H = X$.
+In the third step, we use $S^\dagger S = I$ and $S^\dagger X S = - Y$.
+\end{proof}
+
+\begin{lemma} {\bf (Shende, Bullock, and Markov 2005)}
+For two $(n-1)$-qubit gates $U_{0}$ and $U_{1}$ and one n-qubit gate $U = \outer{0}{0} \otimes U_{0} + \outer{1}{1} \otimes U_{1}$, there exist $2^{n-1}$ 1-qubit gates $R_z(\alpha_0)$, $R_z(\alpha_1)$, $\cdots$, and $R_z(\alpha_{2^{n-1}-1})$, two $(n-1)$-qubit gates $P$ and $Q$, and one n-qubit gate $R = \sum^{2^{n-1}-1}_{i=0}R_{z}(\alpha_i) \otimes \outer{i}{i}$, such that
+\[ 
+\Qcircuit @C=0.5em @R=0.4em {
+& \qw & \gate{} \qwx[2] & \qw &  && &  & \qw & \qw       & \gate{R}      &\qw            &\qw\\  
+& & &     & & = & &  &             &        &         &               &   \\
+& \qw / & \gate{U}       & \qw &  && &  & \qw / & \gate{Q}       & \gate{} \qwx[-2]&\gate{P}       &\qw\\
+}
+\]
+\label{demultiplexing}
+\end{lemma}
+
+Now we can count the number of gates needed to implement 
+a multiplexed $R_z(\alpha)$ gate.
+
+\begin{lemma}
+Let $R$ be the $n$-qubit gate 
+$\sum_{i=0}^{2^{n-1}-1} R_z(\alpha_i) \otimes \outer{i}{i}$.
+We can implement $R$ using 
+$2^n - 2$ $\C{X}$ gates and 
+$2^{n-1}$ $R_z(\theta)$ gates.
+\label{rzcount}
+\end{lemma}
+
+We defer the proof of Lemma~\ref{rzcount} until later.
+
+\paragraph{Transition to MP2:}
+Now we move on to a proof for an easy gate set.
+
+\newpage
+
+\paragraph{Main Point 2:}
+We will first prove a version of the theorem that works with $R_z$ gates. 
+
+\mbox{} \\ \hspace*{1cm}
+   [We prove the simple version of the theorem] \\
+We prove Lemma~\ref{lem:clifford-plus-rx-is-universal},
+which states that we can implement any unitary $U$ using Clifford+R$_z$ gates.
+
+\begin{proof}[Proof of Lemma~\ref{lem:clifford-plus-rx-is-universal}]
+Suppose $U$ is an $n$-qubit unitary.
+We proceed by induction on $n$.
+
+In the base case of $n=1$, we use 
+Lemma~\ref{lem:clifford-plus-rx-is-universal-for-1-qubit-gates}.
+
+In the induction step, suppose Lemma~\ref{lem:clifford-plus-rx-is-universal} 
+holds for $n$, where $n\geq 2$.  
+Consider the case of where $U$ is an $(n+1)$-qubit unitary.
+We calculate as follows.
+%
+\begin{eqnarray}
+% && 
+\Qcircuit @C=0.5em @R=1em {
+& \qw & \multigate{2}{U}  & \qw \\
+& \qw & \ghost{U} & \qw \\
+& / \qw & \ghost{U}  & \qw 
+}\nonumber
+% \\[0.4cm] &&
+& \;\;\;\;\;\;\; &
+\Qcircuit @C=0.5em @R=1em {
+& \qw & \gate{} \qwx[1] & \gate{R}  & \gate{} \qwx[1] & \qw \\
+\lstick{= \;\;\;\; } & \qw & \multigate{1}{Q} &  \gate{} \qwx[-1] & \multigate{1}{P} & \qw \\
+& / \qw & \ghost{Q}  &  \gate{} \qwx[-1] & \ghost{P}  & \qw 
+}\nonumber
+% \\[0.4cm] &&
+\;\;\;\;\;\;\; \;\;\;\;\;\;\;\,
+\Qcircuit @C=0.5em @R=1em {
+& \qw & \gate{} \qwx[1] & \gate{S} & \gate{H} & \gate{R_1} & \gate{H} &\gate{S^\dag} & \gate{} \qwx[1] & \qw \\
+\lstick{= \;\;\;\; } & \qw & \multigate{1}{Q} & \qw & \qw &  \gate{} \qwx[-1] & \qw & \qw & \multigate{1}{P} & \qw \\
+& / \qw & \ghost{Q} & \qw & \qw &  \gate{} \qwx[-1] & \qw & \qw & \ghost{P}  & \qw 
+}\nonumber
+% \\[0.4cm] &&
+% \Qcircuit @C=0.5em @R=1em {
+% & \qw & \gate{} \qwx[1] & \gate{S} & \gate{H} & \gate{R_1} & \gate{H} &\gate{S^\dag} & \qw & \gate{R_0} \qwx[1] & \qw & \qw \\
+% \lstick{= \;\;\;\; } & \qw & \multigate{1}{Q} & \qw & \qw &  \gate{} \qwx[-1] & \qw & \qw & \multigate{1}{W} & \gate{} \qwx[-1] & \multigate{1}{V} & \qw \\
+% & / \qw & \ghost{Q} & \qw & \qw &  \gate{} \qwx[-1] & \qw & \qw & \ghost{W} & \gate{} \qwx[-1] & \ghost{V}  & \qw 
+% }\nonumber
+\\[0.4cm] &&
+\Qcircuit @C=0.5em @R=1em {
+& \qw & \qw & \gate{R_2} \qwx[1] & \qw & \gate{S} & \gate{H} & \gate{R_1} & \gate{H} &\gate{S^\dag} & \qw & \gate{R_0} \qwx[1] & \qw & \qw \\
+\lstick{= \;\;\;\; } & \qw & \multigate{1}{N} & \gate{} \qwx[-1] & \multigate{1}{M} & \qw & \qw &  \gate{} \qwx[-1] & \qw & \qw & \multigate{1}{W} & \gate{} \qwx[-1] & \multigate{1}{V} & \qw \\
+& / \qw & \ghost{N} & \gate{} \qwx[-1] & \ghost{M} & \qw & \qw &  \gate{} \qwx[-1] & \qw & \qw & \ghost{W} & \gate{} \qwx[-1] & \ghost{V}  & \qw
+}\nonumber
+\end{eqnarray}
+
+In the first step, according to Lemma~\ref{cosinesine}, for every $n$-qubit gate $U$, there exist $2^{n-1}$ 1-qubit gates $R_y(\theta_0)$, $R_y(\theta_1)$, $\cdots$, and $R_y(\theta_{2^{n-1}-1})$, four $(n-1)$-qubit gates $P_0$, $P_1$, $Q_0$, and $Q_1$, and three n-qubit gates $P = \outer{0}{0} \otimes P_{0} + \outer{1}{1} \otimes P_{1}$, $R = \sum^{2^{n-1}-1}_{i=0}R_y(\theta_i) \otimes \outer{i}{i}$, and $Q= \outer{0}{0} \otimes Q_{0} + \outer{1}{1} \otimes Q_{1}$, 
+such that the first step is valid. 
+
+In the second step, according to Lemma~\ref{ryrz}, for $R = \sum^{2^{n-1}-1}_{i=0}R_y(\theta_i) \otimes \outer{i}{i}$ gate, there exists one $n$-qubit gate $R_1 = \sum^{2^{n-1}-1}_{i=0}R_z(-\theta_i) \otimes \outer{i}{i}$, such that 
+\begin{eqnarray*}
+R & = & \sum^{2^{n-1}-1}_{i=0}R_y(\theta_i) \otimes \outer{i}{i} 
+% \\ & = & 
+\;\;=\;\;
+\sum^{2^{n-1}-1}_{i=0} ( S^\dag \cdot H \cdot R_z(-\theta_i) \cdot H \cdot S )\otimes \outer{i}{i} \\
+& = & \sum^{2^{n-1}-1}_{i=0} ( S^\dag \cdot H )\otimes \outer{i}{i} \cdot  \sum^{2^{n-1}-1}_{i=0}   R_z(-\theta_i) \otimes \outer{i}{i}  \cdot \sum^{2^{n-1}-1}_{i=0} ( H \cdot S )\otimes \outer{i}{i} \\
+& = & (S^\dag \otimes I^{n-1}) \cdot (H \otimes I^{n-1}) \cdot R_1 \cdot (H \otimes I^{n-1}) \cdot (S \otimes I^{n-1})
+\end{eqnarray*}
+
+In the third step, according to Lemma~\ref{demultiplexing}, for $P = \outer{0}{0} \otimes P_{0} + \outer{1}{1} \otimes P_{1} $ gate, there exist $2^{n-1}$ 1-qubit gates $R_z(\alpha_0)$, $R_z(\alpha_1)$, $\cdots$, and $R_z(\alpha_{2^{n-1}-1})$, two $(n-1)$-qubit gates $V$ and $W$, and one n-qubit gate $R_0 = \sum^{2^{n-1}-1}_{i=0}R_{z}(\alpha_i) \otimes \outer{i}{i}$, such that the right-most 
+change in the third step is valid. 
+Similarly, according to Lemma~\ref{demultiplexing}, for $Q = \outer{0}{0} \otimes Q_{0} + \outer{1}{1} \otimes Q_{1} $ gate, there exist $2^{n-1}$ 1-qubit gates $R_z(\beta_0)$, $R_z(\beta_1)$, $\cdots$, and $R_z(\beta_{2^{n-1}-1})$, two $(n-1)$-qubit gates $M$ and $N$, and one n-qubit gate $R_2 = \sum^{2^{n-1}-1}_{i=0}R_{z}(\beta_i) \otimes \outer{i}{i}$, such that left-most change in the third step is valid.
+
+We have arrived at a circuit that uses 
+3 multiplexed $(n+1)$-qubit $R_z(\theta)$ gates,
+4 $n$-qubit gates,
+2 $H$ gates, and
+4 $S$ gates
+(because the $S^\dag$ gate can be written $S^\dag = SSS$).
+
+We can now apply Lemma~\ref{rzcount} to 
+the 3 multiplexed $(n+1)$-qubit $R_z(\theta)$ gates, and
+we can apply the induction hypothesis to 
+4 $n$-qubit gates.
+The result is an implementation of $U$ built from 
+$\{\C{X}, H, S, R_z(\theta)\}$.
+
+Let $\mathcal{U}(n)$ denote the number of Clifford+R$_z$ gates
+needed to implement an $n$-qubit unitary $U$.
+We will show that
+$\mathcal{U}(n) = 14 \times 4^{n-1} - 9 \times 2^{n-1}$.
+
+In the base case of $n=1$, we have from 
+Lemma~\ref{lem:clifford-plus-rx-is-universal-for-1-qubit-gates}
+that
+$\mathcal{U}(1) = 5$, and we see that
+$\mathcal{U}(1) = 14 \times 4^{1-1} - 9 \times 2^{1-1} = 5$.
+
+In the induction step, suppose the property holds for $n$,
+where $n \geq 1$.
+Consider the case of an $(n+1)$-qubit unitary $U$.
+From the above calculation, we have
+\(
+\mathcal{U}(n+1) &=& 
+4 \times \mathcal{U}(n) + 3 \times (2^{n+1} - 2 + 2^n) + 6
+\;\;=\;\;
+4 \times \mathcal{U}(n) + 9 \times 2^n
+\)
+where we use $S^\dag = SSS$.
+
+Now we use the above equation and the induction hypothesis:
+\begin{eqnarray}
+\mathcal{U}(n+1)
+& = &     4 \times \mathcal{U}(n) + 9 \times 2^n \nonumber
+\;\;=\;\; 4 \times (14 \times 4^{n-1} - 9 \times 2^{n-1}) + 9 \times 2^n
+\;\;=\;\;       14 \times 4^n - 9 \times 2^n \nonumber
+\end{eqnarray}
+which completes the proof.
+\end{proof}
+
+\mbox{} \\ \hspace*{1cm}
+   [We need exponentially many gates to implement an $n$-qubit unitary in the worst case] \\
+Notice that an $n$-qubit unitary $U$ has 
+$2^n \times 2^n = (2^n)^2 = (2^2)^n = 4^n$ entries.
+This makes the worst-case $14 \times 4^{n-1} - 9 \times 2^{n-1}$ gates 
+needed to implement $U$ seem reasonable.
+
+\mbox{} \\ \hspace*{1cm}
+   [We prove one of the known lemmas] \\
+Our next goal is to prove Lemma~\ref{rzcount}.
+As a key step, we prove Lemma~\ref{rzrz} that decomposes 
+an $(n+1)$-qubit multiplexed $R_z(\alpha)$ gate
+into 
+two $n$-qubit multiplexed $R_z(\alpha)$ gates 
+plus
+two $\C{X}$ gates.
+
+\begin{lemma} {\bf (M{\"{o}}tt{\"{o}}nen et al.\ 2004)}
+For $n \geq 1$,
+let $R$ be the $(n+1)$-qubit gate 
+$\sum_{i=0}^{2^n-1} R_z(\alpha_i) \otimes \outer{i}{i}$.
+We can pick angles $\beta_i$ and $\gamma_i$ (for $0 \leq i < 2^{n-1}$) and
+define 
+$R_0 = \sum^{2^{n-1}-1}_{i=0}R_{z}(\beta_i) \otimes \outer{i}{i}$ and 
+$R_1 = \sum^{2^{n-1}-1}_{i=0}R_{z}(\gamma_i) \otimes \outer{i}{i}$ 
+such that 
+the following circuit equality is correct:
+\[ 
+\Qcircuit @C=0.5em @R=0.4em {
+  & \qw & \gate{R} \qwx[1] & \qw & &&  & & \qw & \targ & \gate{R_0}      & \targ & \gate{R_1} & \qw\\
+ &  \qw &   \gate{} \qwx[1]     &  \qw   & &=& &   &   \qw &     \ctrl{-1}     &  \qw               &        \ctrl{-1}       & \qw  & \qw \\
+ & \qw / & \gate{}        & \qw &  && & & \qw / & \qw       & \gate{} \qwx[-2] & \qw  &\gate{} \qwx[-2]    &\qw\\
+}
+\]
+\label{rzrz}
+\end{lemma}
+
+Now we prove Lemma~\ref{rzcount}.
+
+\begin{proof}[Proof of Lemma~\ref{rzcount}]
+Let $\mathcal{R}_{\C{X}}(n)$ denote the number of $\C{X}$ gates 
+needed to implement an $n$-qubit multiplexed $R_z(\alpha)$ gate.
+Similarly, let $\mathcal{R}_{z}(n)$ denote the number of $R_z(\alpha)$ gates 
+needed to implement an $n$-qubit multiplexed $R_z(\alpha)$ gate.
+We will show that
+$\mathcal{R}_{\C{X}}(n) = 2^n - 2$ and
+$\mathcal{R}_{z}(n)    = 2^{n-1}$.
+
+In the base case of $n=1$, we have that 
+$\mathcal{R}_{\C{X}}(1) = 2^1 - 2 = 0$ and
+$\mathcal{R}_{z}(1)    = 2^{1-1} = 1$, 
+which is correct.
+
+In the induction step, suppose the property holds for $n$, 
+where $n \geq 1$.
+Consider the case of an $(n+1)$-qubit multiplexed $R_z(\alpha)$ gate.
+From Lemma~\ref{rzrz}, we have
+\(
+\mathcal{R}_{\C{X}}(n+1) &=& 2 \times \mathcal{R}_{\C{X}}(n) + 2 \\
+\mathcal{R}_{z}(n+1)    &=& 2 \times \mathcal{R}_{z}(n)
+\)
+Now we use the two above equations and the induction hypothesis:
+\begin{eqnarray}
+\mathcal{R}_{\C{X}}(n+1) 
+& = &     2 \times \mathcal{R}_{\C{X}}(n) + 2 
+\;\;=\;\; 2 \times (2^n - 2) + 2 
+\;\;=\;\; 2^{n+1} - 2 \nonumber
+\\ 
+\mathcal{R}_{z}(n+1) 
+& = & 2 \times \mathcal{R}_{z}(n) 
+\;\;=\;\; 2 \times 2^{n-1}
+\;\;=\;\; 2^n \nonumber
+\end{eqnarray}
+which completes the proof.
+\end{proof}
+
+
+\newpage
+
+\paragraph{Transition to MP3:}
+Now we can finish the proof by focusing on approximation.
+
+\paragraph{Main Point 3:}
+We will prove the full theorem by approximating the $R_z$ gates. \\
+\mbox{} \\ \hspace*{1cm}
+   [We list properties of approximation of unitaries] \\
+
+\begin{lemma}
+\label{lem:hs-distance-to-itself-is-zero}
+If $U \sim V$, then $d(U,V) = 0$. 
+\end{lemma}
+
+\begin{proof}
+We can write $U = e^{i\alpha} V$, where $e^{i\alpha}$ is the global phase.
+Notice $Tr( V^\dagger V ) = Tr( I_N ) = N$.
+We calculate:
+\(
+d(U,V) &=& \sqrt{ 1 - \frac{ | Tr( U^\dagger V ) |^2 }{ N^2 } } 
+ \;\;=\;\; \sqrt{ 1 - \frac{ | Tr( e^{-i\alpha} V^\dag V ) |^2 }{ N^2 } }
+ \;\;=\;\; \sqrt{ 1 - \frac{ | N |^2 }{ N^2 } } 
+ \;\;=\;\; 0
+\)
+\end{proof}
+
+\begin{lemma}
+\label{lem:hs-distance-and-global-phase}
+If $U_1 \sim U_2$ and $V_1 \sim V_2$, then $d(U_1,V_1) = d(U_2,V_2)$.
+\end{lemma}
+
+\begin{proof}
+From $U_1 \sim U_2$, we have that 
+there exists $\alpha$ such that $U_1 = e^{i\alpha} U_2$.
+From $V_1 \sim V_2$, we have that 
+there exists $\beta$  such that $V_1 = e^{i\beta} V_2$.
+We calculate:
+\(
+d(U_1,V_1) 
+&=&
+d(e^{i\alpha} U_2, e^{i\beta} V_2)
+\\
+&=&
+\sqrt{ 1 - \frac{ | Tr( (e^{i\alpha} U_2)^\dagger (e^{i\beta} V_2) ) |^2 }{ N^2 } }
+\\
+&=&
+\sqrt{ 1 - \frac{ | e^{-i\alpha} e^{i\beta} Tr( U_2^\dagger V_2 ) |^2 }{ N^2 } }
+\\
+&=&
+\sqrt{ 1 - \frac{ | Tr( U_2^\dagger V_2 ) |^2 }{ N^2 } }
+\\
+&=&
+d(U_2,V_2)
+\)
+\end{proof}
+
+\begin{lemma}
+$d(U_1 U_2, V_1 V_2) = d(V_1^\dag U_1, V_2 U_2^\dag)$.
+\label{lem:distance-equality-for-products}
+\end{lemma}
+
+\begin{proof}
+Notice that
+\begin{eqnarray}
+Tr((U_1 U_2)^\dag\ (V_1 V_2)) 
+\;=\;
+Tr(U_2^\dag U_1^\dag V_1 V_2) 
+\;=\;
+Tr(U_1^\dag V_1 V_2 U_2^\dag)
+\;=\;
+Tr((V_1^\dag U_1)^\dag V_2 U_2^\dag)
+\label{eq:trace-equality-between-products}
+\end{eqnarray}
+In the first step, we use $(UV)^\dag = V^\dag\ U^\dag$.
+In the second step, we use $Tr(UV) = Tr(VU)$.
+In the third step, we use $(UV)^\dag = V^\dag\ U^\dag$.
+
+Now we calculate:
+\(
+d(U_1 U_2, V_1 V_2) &=&
+\sqrt{ 1 - \frac{ | Tr( (U_1 U_2)^\dag\ (V_1 V_2) ) |^2 }{ N^2 } }
+\\ &=&
+\sqrt{ 1 - \frac{ | Tr( (V_1^\dag U_1)^\dag\ (V_2 U_2^\dag) ) |^2 }{ N^2 } }
+\\ &=&
+d(V_1^\dag U_1, V_2 U_2^\dag)
+\)
+In the second step, we use Equation~\ref{eq:trace-equality-between-products}.
+\end{proof}
+
+\begin{lemma}
+$d(I, V_1 V_2) = d(V_1^\dag, V_2)$ and
+$d(U_1 U_2, I) = d(U_1, U_2^\dag)$.
+\label{lem:distance-to-identity}
+\end{lemma}
+
+\begin{proof}
+Immediate from Lemma~\ref{lem:distance-equality-for-products}.
+\end{proof}
+
+\begin{lemma}
+$d(U,V) = d(V^\dag, U^\dag)$.
+\label{lem:distance-of-conjugated-unitaries}
+\end{lemma}
+
+\begin{proof}
+Immediate from Lemma~\ref{lem:distance-equality-for-products}.
+\end{proof}
+
+For approximation of a product of gates, errors add at most linearly.
+
+\begin{lemma} {\bf (Wang and Zhang, 1994)}
+$d(U,V) \leq d(U,I) + d(I,V)$.
+\label{lem:trace-inequality}
+\end{lemma}
+
+\begin{lemma}
+$d(U_1 U_2, V_1 V_2) \;\leq\; d(U_1, V_1) \;+\; d(U_2, V_2)$.
+\label{lem:hs-small-product-rule}
+\end{lemma}
+
+\begin{proof}
+We calculate:
+\(
+d(U_1 U_2, V_1 V_2) &=&
+d(V_1^\dag U_1, V_2 U_2^\dag) 
+\\ &\leq&
+d(V_1^\dag U_1, I) + d(I, V_2 U_2^\dag)
+\\ &=&
+d(V_1^\dag, U_1^\dag) + d(V_2^\dag, U_2^\dag)
+\\ &=&
+d(U_1,V_1) + d(U_2,V_2)
+\)
+In the first step, we use Lemma~\ref{lem:distance-equality-for-products}.
+In the second step, we use Lemma~\ref{lem:trace-inequality}.
+In the third step, we use Lemma~\ref{lem:distance-to-identity}.
+In the fourth step, we use Lemma~\ref{lem:distance-of-conjugated-unitaries}.
+\end{proof}
+
+\begin{lemma}
+$d(\ U_1 \ldots U_n,\ \ V_1 \ldots V_n\ ) \;\leq\; \sum_{i=1}^n d(U_i,V_i)$.
+\label{lem:hs-big-product-rule}
+\end{lemma}
+
+\begin{proof}
+We proceed by induction on $n$.
+
+In the base case of $n=1$, we have $d(U_1,V_1) \leq d(U_1,V_1)$, as required.
+
+In the induction step, suppose the lemma holds for $n$.
+Consider the case of $n+1$.
+\(
+d(\ U_1 \ldots U_{n+1},\ \ V_1 \ldots V_{n+1}\ ) 
+&\leq&
+d(\ U_1 \ldots U_n,\ \ V_1 \ldots V_n\ ) + d(U_{n+1},V_{n+1}) 
+\\ &\leq&
+\sum_{i=1}^n d(U_i,V_i) + d(U_{n+1},V_{n+1})
+\\ &=&
+\sum_{i=1}^{n+1} d(U_i,V_i) 
+\)
+In the first step, we use Lemma~\ref{lem:hs-small-product-rule}.
+\end{proof}
+
+
+\newpage
+
+\hspace*{1cm}
+   [We show how to approximate $R_z$ gates] \\
+Recall that our goal is to replace each $R_z(\theta)$ gate by 
+a circuit over $\{H,T\}$. 
+Lemma~\ref{lem:approximation-of-rz} below states precisely that we can always
+use $\{H, T\}$ to approximate $R_z(\theta)$, in the sense of using
+$\{H, T\}$ to get as close as we like to any $R_z(\theta)$ gate,
+% Indeed, $\{H, T\}$ is universal for defining $R_z(\theta)$ gates,
+
+\begin{lemma}
+For any real number $\theta$ and for $\epsilon > 0$,
+there exists a circuit $C$ built from $\{H, T\}$,
+such that $d(R_z(\theta),C) < \epsilon$.
+\label{lem:approximation-of-rz}
+\end{lemma}
+
+We will prove Lemma~\ref{lem:approximation-of-rz} in three steps:
+\begin{enumerate}
+\item We express $R_z(\theta)$, up to a global phase, in terms of
+real powers of two new gates $G_1$ and $G_2$ built from $\{H,T\}$.
+\item We replace those real powers by nearby integer powers.
+\item We prove that those integer powers provide arbitrarily close
+approximations of the original real powers.
+\end{enumerate}
+%
+Now we turn to the first step of the proof.
+We define an intermediate gate set between $R_z(\theta)$ and
+$\{H, T\}$, namely $\{G_1,G_2\}$, where
+\(
+G_1 &=& e^{-3i\pi/8}\ THTHT \\
+G_2 &=& (HT^4)\ G_1\ (HT^4)^\dagger
+\)
+At first glance, the choice of $G_1$ and $G_2$ may seem mysterious. 
+The following observations explain why these gates are useful.
+The idea behind $G_1$ and $G_2$ is that 
+they are rotations by irrational angles about orthogonal axes.
+Orthogonality allows us to apply the Euler-style decomposition stated in
+Lemma~\ref{lem:generalized-euler-decomposition} below.
+Irrationality implies that the integer powers of $G_1$ and $G_2$ can come 
+arbitrarily close to any rotation about their respective axes, 
+as expressed by Lemma~\ref{%
+lem:approximate-g-to-the-m-when-is-a-rotation-by-an-irr-multiple-of-pi} 
+below.
+
+Lemma~\ref{lem:properties-of-g1-g2} summarizes the key properties of $G_1,G_2$.
+
+\begin{lemma}
+\label{lem:properties-of-g1-g2}
+$\det(G_1) = \det(G_2) = 1$ and
+$Tr(G_1) = Tr(G_2) = \sqrt{1 + 1/\sqrt{2}}$ and 
+$G_1G_2 \neq G_2G_1$.
+\end{lemma}
+
+\begin{proof}
+The proof is by straightforward matrix calculation.
+% In particular, we get:
+% \(
+% G_1G_2 &=& 
+% \frac{1}{8}
+% \left(
+% \begin{array}{cc}
+%  2 + \sqrt{2} - \sqrt{2} i        &  -6 + \sqrt{2} - (4 + \sqrt{2}) i \\
+%  6 - \sqrt{2} - (4 + \sqrt{2}) i  &  2 + \sqrt{2} + \sqrt{2} i
+% \end{array}
+% \right)
+% \\
+% G_2G_1 &=&
+% \frac{1}{8}
+% \left(
+% \begin{array}{cc}
+%  2 + \sqrt{2} - \sqrt{2} i        &  6 - \sqrt{2} - (4 + \sqrt{2}) i \\
+% -6 + \sqrt{2} - (4 + \sqrt{2}) i  &  2 + \sqrt{2} + \sqrt{2} i
+% \end{array}
+% \right)
+% \)
+% and we see that the off-diagonal real parts change sign
+% so $G_1G_2 \neq G_2G_1$.
+\end{proof}
+
+We chose $G_1$ and $G_2$ such that
+they have determinant 1, 
+are rotations by irrational angles about orthogonal axes, and 
+do not commute. 
+These are exactly the properties needed for the lemmas that follow.
+
+\begin{lemma}[\bf Nielsen and Chuang 2000, Exercise 4.8]
+\label{lem:from-unitary-to-exponentiated-hamiltonian}
+For any unitary $2 \times 2$ matrix $G$ such that $\det(G) = 1$,
+there exists a Hermitian matrix $A$ and a real number $\alpha$
+such that $A^2 = I$ and $G = e^{i\alpha A}$.
+\end{lemma}
+
+Lemma~\ref{lem:from-unitary-to-exponentiated-hamiltonian} lets us represent
+$G_1,G_2$ by Hermitian matrices $A_1,A_2$ and real numbers $\alpha_1,\alpha_2$ 
+such that
+\begin{eqnarray}
+A_1^2=I,
+&&
+A_2^2=I,
+\label{eq:a1-squared-equals-a2-squared-equals-i}
+\\
+G_1 = e^{i\alpha_1 A_1}
+&&
+G_2 = e^{i\alpha_2 A_2}
+\label{eq:g1-equals-the-exponentiation-of-h1-and-same-for-g2}
+\end{eqnarray}
+For the remainder of the proof, we fix particular choices of $A_1,A_2$ and 
+$\alpha_1,\alpha_2$.
+We will not need explicit formulas for them, but we will rely on
+two key properties that are expressed by
+Lemma~\ref{lem:a1-and-a2-anticommute} and
+Lemma~\ref{lem:trace-of-g1-and-trace-of-g2-expressed-via-alphas}.
+
+\newpage
+
+\begin{lemma}
+\label{lem:a1-and-a2-anticommute}
+$A_1 A_2 = - A_2 A_1$.
+\end{lemma}
+
+% \begin{proof}
+% If $A_1$ and $A_2$ were scalar multiples of one another,
+% then $G_1$ and $G_2$ would commute,
+% but Lemma~\ref{lem:properties-of-g1-g2} says that $G_1G_2 \neq G_2G_1$.
+% \end{proof}
+
+\begin{lemma}
+\label{lem:trace-of-g1-and-trace-of-g2-expressed-via-alphas}
+% We have 
+$Tr(G_1) = 2 \cos(\alpha_1)$ and
+$Tr(G_2) = 2 \cos(\alpha_2)$.
+\end{lemma}
+
+\begin{proof}
+Since $A_i$ is Hermitian and $A_i^2 = I$, its eigenvalues are $\{+1,-1\}$.
+Therefore, the eigenvalues of $G_i = e^{i\alpha_i A_i}$ are
+$e^{i\alpha_i}$ and $e^{-i\alpha_i}$,
+from which we get
+$Tr(G_i) = 2 \cos(\alpha_i)$.
+\end{proof}
+
+Lemma~\ref{lem:generalized-euler-decomposition} below is 
+a generalized Euler decomposition of a unitary matrix $U$
+with $\det(U) = 1$ for two orthogonal rotation axes $A_1,A_2$
+that satisfy $A_1 A_2 = - A_2 A_1$
+(Lemma~\ref{lem:a1-and-a2-anticommute}).
+
+\begin{lemma}[{\bf Nielsen and Chuang 2000, Exercise 4.11}]
+% {\bf Segercrantz (1966)}]
+\label{lem:generalized-euler-decomposition}
+For any unitary $2 \times 2$ matrix $G$ such that $\det(G) = 1$,
+there exist real numbers $a,b,c$ such that
+$G \sim e^{iaA_1}\ e^{ibA_2}\ e^{icA_1}$.
+\end{lemma}
+
+For a unitary $G = e^{i\alpha A}$, where 
+$\alpha$ is a real number and
+$A$ is a Hermitian matrix,
+we define $G^a = e^{i a\alpha A}$.
+Notice that this definition only applies to matrices that are written in 
+the form $e^{i \alpha A}$.
+We can combine this definition with
+Equation~\ref{eq:g1-equals-the-exponentiation-of-h1-and-same-for-g2} and write:
+\begin{eqnarray}
+G_1^a = e^{ia\alpha_1A_1},
+\qquad
+G_2^b = e^{ib\alpha_2A_2}.
+\label{eq:g-1-a-and-g-2-b}
+\end{eqnarray}
+
+We can define $R_z(\theta)$ 
+in terms of $\{G_1,G_2\}$, as expressed by Lemma~\ref{lem:from-rz-to-g1-g2}.
+
+\begin{lemma}
+\label{lem:from-rz-to-g1-g2}
+For any $\theta$, there exist real numbers $a, b, c$ such that
+$R_z(\theta) \sim G_1^a\ G_2^b\ G_1^c$.
+\end{lemma}
+
+\begin{proof}
+We have that $R_z(\theta)$ is a unitary matrix and $\det(R_z(\theta)) = 1$. 
+From Lemma~\ref{lem:generalized-euler-decomposition}, there exist real numbers
+$x,y,z$ such that
+\[
+R_z(\theta)
+\sim
+e^{ixA_1}e^{iyA_2}e^{izA_1}.
+\]
+
+Equation~\ref{eq:g-1-a-and-g-2-b} says:
+\[
+G_1^a = e^{ia\alpha_1A_1},
+\qquad
+G_2^b = e^{ib\alpha_2A_2}.
+\]
+Thus, choosing
+\[
+a=\frac{x}{\alpha_1},
+\qquad
+b=\frac{y}{\alpha_2},
+\qquad
+c=\frac{z}{\alpha_1},
+\]
+we obtain
+\[
+R_z(\theta) 
+\sim 
+G_1^a\ G_2^b\ G_1^c.
+\]
+\end{proof}
+
+If the real numbers $a,b,c$ were integers, we would be done:
+$G_1^a\ G_2^b\ G_1^c$ would be represented by a circuit built from $\{H,T\}$, 
+up to a global phase.
+
+The second step is to find integers $m,n,p$ that we can use 
+instead of the real numbers $a,b,c$ in
+Lemma~\ref{lem:from-rz-to-g1-g2} and 
+get us as close as we like to $R_z(\theta)$.
+The idea is that irrational rotations have integer powers that 
+are dense among all rotations about the same axis.
+The key lemma for this approximation is
+Lemma~\ref{lem:approximate-g1-a-g2-b}, which is a special case of 
+Lemma~\ref{%
+lem:approximate-g-to-the-m-when-is-a-rotation-by-an-irr-multiple-of-pi}.
+Intuitively, 
+Lemma~\ref{%
+lem:approximate-g-to-the-m-when-is-a-rotation-by-an-irr-multiple-of-pi}
+talks about approximation based on a 1-qubit unitary $G$ that is a rotation by 
+an irrational multiple of $\pi$.
+
+\begin{lemma}[{\bf Hardy and Wright 2008}]
+If the real number $\lambda$ is irrational, then 
+\[
+\{\,m\lambda \bmod 2 : m\in\mathbb Z\,\}
+\]
+is dense in $[0,2)$.
+\label{lem:for-irrational-lambda-we-have-m-lambda-is-dense-mod-2}
+\end{lemma}
+
+\begin{lemma}
+\label{lem:approximate-g-to-the-m-when-is-a-rotation-by-an-irr-multiple-of-pi}
+For any $G = e^{i\lambda \pi A}$, where $\lambda$ is irrational and
+$A$ is a Hermitian matrix that satisfies $e^{i 2 \pi A} = I$, 
+and for any $\epsilon > 0$ and real number $a$, 
+there exists an integer $m$ such that 
+$d(G^a, G^m) < \epsilon$.
+\end{lemma}
+
+\begin{proof}
+% Notice that $G^a = e^{i a \lambda \pi A}$.
+% 
+The function that maps $t$ to $e^{i t \pi A}$ is continuous,
+so for our given $\epsilon$, we can find $\delta > 0$ such that
+for all real numbers $t$, if $|a\lambda - t| < \delta$, then 
+\(
+d(e^{i (a \lambda) \pi A},\ e^{i t \pi A}) 
+&<&
+\epsilon
+\)
+Since $\lambda$ is irrational, we have from
+Lemma~\ref{lem:for-irrational-lambda-we-have-m-lambda-is-dense-mod-2} 
+that 
+\[
+\{\,m\lambda \bmod 2 : m\in\mathbb Z\,\}
+\]
+is dense in $[0,2)$.
+Therefore, for our chosen $\delta$, there exist integers $m, k$ such that
+\(
+|a\lambda - (m \lambda + 2k)| &<& \delta
+\)
+from which we get
+\(
+d(e^{i (a \lambda) \pi A},\ e^{i (m \lambda + 2k) \pi A})
+&<&
+\epsilon
+\)
+Notice that
+\(
+e^{i (a \lambda) \pi A} 
+&=&
+G^a
+\\
+e^{i (m \lambda + 2k) \pi A}
+&=&
+e^{i (m \lambda) \pi A}
+\;\;=\;\;
+G^m
+\)
+so we conclude 
+$d(G^a, G^m) < \epsilon$.
+\end{proof}
+
+\begin{lemma}
+\label{lem:a-specific-lambda-is-irrational}
+The real number $\frac{1}{\pi}
+\arccos\!\left(
+\frac{1}{2}
+\sqrt{1 + 1/\sqrt{2}}
+\right)$
+is irrational.
+\end{lemma}
+
+\begin{proof}
+Suppose, for contradiction, that $\lambda$ is rational.
+Then $e^{i\lambda\pi}$ is a root of unity, so it is an algebraic integer.
+Therefore,
+$e^{-i\lambda\pi}$ is also an algebraic integer.
+Let $x = e^{i\lambda\pi} + e^{-i\lambda\pi}$.
+Since algebraic integers are closed under addition, we get:
+\[
+x 
+\;\;=\;\;
+e^{i\lambda\pi}+e^{-i\lambda\pi}
+\;\;=\;\;
+2\cos(\lambda\pi)
+\;\;=\;\;
+\sqrt{1+1/\sqrt{2}}
+\]
+is also an algebraic integer.
+Notice that
+\(
+x^2-1 &=& \frac{1}{\sqrt{2}}.
+\)
+since algebraic integers are closed under subtraction and multiplication, we get
+that $\frac{1}{\sqrt{2}}$ is an algebraic integer.
+However, $\frac{1}{\sqrt{2}}$ has minimal polynomial
+\[
+2X^2-1,
+\]
+which is not monic, so $\frac{1}{\sqrt{2}}$ is not an algebraic integer.
+This is a contradiction so $\lambda$ is irrational.
+\end{proof}
+
+\newpage
+
+\begin{lemma}
+\label{lem:approximate-g1-a-g2-b}
+For any $\epsilon > 0$ and real number $a$,
+there exists an integer $m$ such that 
+$d(G_1^a, G_1^m) < \epsilon$.
+Similarly, for any $\epsilon > 0$ and real number $b$,
+there exists an integer $n$ such that 
+$d(G_2^b, G_2^n) < \epsilon$.
+\end{lemma}
+
+\begin{proof}%[Proof of Lemma~\ref{lem:approximate-g1-a-g2-b}]
+From 
+Lemma~\ref{lem:properties-of-g1-g2} and
+Lemma~\ref{lem:trace-of-g1-and-trace-of-g2-expressed-via-alphas},
+we have
+\(
+Tr(G_i) 
+= 2 \cos(\alpha_i) 
+= \sqrt{1 + 1/\sqrt{2}}
+\)
+Now let us define 
+\[
+\lambda
+=
+\frac{1}{\pi}
+\arccos\!\left(
+\frac{1}{2}
+\sqrt{1 + 1/\sqrt{2}}
+\right)
+\]
+Hence, 
+\(
+\cos(\alpha_i) &=&
+\frac{1}{2} \sqrt{1 + 1/\sqrt{2}} 
+\;\;=\;\; \cos(\lambda \pi)
+\)
+Since $0 < \alpha_i < \pi$, 
+we have
+$\alpha_i=\lambda\pi$.
+
+From Lemma~\ref{lem:a-specific-lambda-is-irrational}, 
+we have that $\lambda$ is irrational.
+From Equation~\ref{eq:a1-squared-equals-a2-squared-equals-i}, 
+we get
+\(
+e^{i 2 \pi A_1} = I 
+&&
+e^{i 2 \pi A_2} = I
+\)
+Now the result follows from 
+Lemma~\ref{lem:approximate-g-to-the-m-when-is-a-rotation-by-an-irr-multiple-of-pi}.
+\end{proof}
+
+% \begin{lemma}
+% \label{lem:approximate-g2-b}
+% For any real number $b$ and every $\epsilon > 0$, 
+% there exists an integer $n$ such that \\
+% $d(G_2^b, G_2^n) < \epsilon$.
+% \end{lemma}
+% 
+% \begin{proof}%[Proof of Lemma~\ref{lem:approximate-g2-b}]
+% We can show that $G_2$ is a rotation by an irrational multiple of $\pi$.
+% Then the result follows from 
+% Lemma~\ref{lem:approximate-g-to-the-m-when-is-a-rotation-by-an-irr-multiple-of-pi}.
+% \end{proof}
+
+The third step is to use
+Lemmas~\ref{lem:from-rz-to-g1-g2} and \ref{lem:approximate-g1-a-g2-b}, and
+to prove Lemma~\ref{lem:approximation-of-rz}.
+
+\begin{proof}[Proof of Lemma~\ref{lem:approximation-of-rz}]
+For a given $\theta$, 
+we use Lemma~\ref{lem:from-rz-to-g1-g2} to find real numbers $a,b,c$ such that
+\(
+R_z(\theta) &\sim& G_1^a\ G_2^b\ G_1^c
+\)
+For a given $\epsilon > 0$, we use 
+Lemma~\ref{lem:approximate-g1-a-g2-b} 
+to find integers $m,n,p$ such that:
+\(
+d(G_1^a, G_1^m) &<& \epsilon/3 \\
+d(G_2^b, G_2^n) &<& \epsilon/3 \\
+d(G_1^c, G_1^p) &<& \epsilon/3
+\)
+Now we can calculate as follows:
+\(
+d(R_z(\theta), G_1^m\ G_2^n\ G_1^p) 
+&=& 
+d(G_1^a\ G_2^b\ G_1^c,\ G_1^m\ G_2^n\ G_1^p) 
+\\
+&\leq&
+d(G_1^a, G_1^m) + d(G_2^b, G_2^n) + d(G_1^c, G_1^p)
+\\
+&<&
+\epsilon/3 + \epsilon/3 + \epsilon/3
+\;\;=\;\; 
+\epsilon
+\)
+In the first step, we use Lemma~\ref{lem:hs-distance-and-global-phase}.
+In the second step, we use Lemma~\ref{lem:hs-big-product-rule}.
+
+If the integers $m,n,p$ were nonnegative, we would be done:
+$G_1^m\ G_2^n\ G_1^p$ would be represented by a circuit built from $\{H,T\}$,
+up to a global phase.
+If $m < 0$, then notice that 
+$G_1^m = (G_1^{-1})^{-m}$, where 
+\(
+G_1^{-1} &=& G_1^\dag 
+\;\;\sim\;\; 
+(THTHT)^\dag 
+\;\;=\;\;
+T^\dag\ H^\dag\ T^\dag\ H^\dag\ T^\dag
+\;\;=\;\;
+T^7\ H\ T^7\ H\ T^7
+\)
+Thus, also for $m < 0$, we have that $G_1^m$ is a circuit built from $\{H,T\}$.
+If $n < 0$ or $p < 0$, we can handle those cases similarly.
+We conclude that we can implement $G_1^m\ G_2^n\ G_1^p$ as a circuit built 
+from $\{H,T\}$, 
+up to a global phase.
+\end{proof}
+
+We have seen how the proof of Lemma~\ref{lem:approximation-of-rz}
+rests on that irrational rotations generate dense sets of rotations about 
+their axes. 
+This mean that two suitably chosen axes are enough to generate 
+all $R_z(\theta)$ gates.
+
+Overall, the proof relied on two ideas. 
+First, the generalized Euler decomposition lets us express 
+any one-qubit rotation in terms of rotations about two fixed axes. 
+Second, because those rotations are by irrational angles, 
+integer powers can approximate arbitrary real powers. 
+Together, these ideas show that 
+the gate set $\{H,T\}$ can approximate every $R_z(\theta)$ gate.
+
+\mbox{} \\ \hspace*{1cm}
+   [We prove the full version of the theorem] \\
+Now we can prove Theorem~\ref{thm:clifford-plus-t-is-universal}.
+
+\begin{proof}[Proof of Theorem~\ref{thm:clifford-plus-t-is-universal}]
+For a unitary $U$ and $\epsilon > 0$,
+Lemma~\ref{lem:clifford-plus-rx-is-universal} says that
+there exists a circuit $C_1$ built from $\{\C{X}, H, S, R_z(\theta)\}$,
+such that $U \sim C_1$.
+
+Let $k$ be the number of $R_z$ gates in $C_1$, and
+let $\theta_1, \ldots, \theta_k$ be the angles used in those gates.
+We have two cases.
+
+In the first case,
+if $k=0$, then $C_1$ is built from $\{\C{X},H,S\}$, and since
+$S=T^2$, it is also built from $\{\C{X},H,T\}$.
+
+In the second case, if $k>0$, then
+from Lemma~\ref{lem:approximation-of-rz} we get circuits $W_j$ 
+built from $\{H,T\}$ such that
+\begin{eqnarray}
+d(R_z(\theta_j),W_j) &<& \epsilon/k
+\label{eq:approximation-of-r-z}
+\end{eqnarray}
+Let $C_2$ be a version of $C_1$ in which we have replaced
+each $R_z(\theta_j)$ by $W_j$ and we have replaced each $S$ by $T^2$.
+We calculate:
+\(
+d(U, C_2) &=& 
+d(C_1, C_2) \;\;\leq\;\;
+\sum_{j=1}^k d(R_z(\theta_j),W_j) \;\;<\;\;
+k \cdot (\epsilon/k) \;\;=\;\; 
+\epsilon
+\)
+In the first step, we use
+Lemma~\ref{lem:hs-distance-and-global-phase}.
+In the second step, we use 
+Lemma~\ref{lem:hs-distance-to-itself-is-zero} and
+Lemma~\ref{lem:hs-big-product-rule}.
+In the third step, we use Equation~(\ref{eq:approximation-of-r-z}).
+\end{proof}
+
+\paragraph{Transition to Close:} 
+So there you have it.
+
+\paragraph{Review:}
+The key property of a universal gate set is that 
+it can approximate any unitary.
+Our proof strategy is to first prove the theorem for an easy gate set and then
+extend to $\{\C{X}, H, T\}$.
+
+\paragraph{Strong finish:}
+Quantum computing has probabilities built in and
+the idea of a universal gate set has approximation built in.
+Quantum algorithms have no requirement to be exact; 
+rather, they can try to get close.
+
+\paragraph{Call to action:}
+Implement the procedure for compiling any unitary into the easy gate set.
+
+\end{document}
+

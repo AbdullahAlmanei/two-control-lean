@@ -6,14 +6,17 @@ namespace Clifford
 namespace Universal
 
 /-!
-Final theorem interface for the `doc.tex` universality track.
+Final theorem interface for the `universal_new_gates.tex` universality track.
 
 The proof route is:
 
-1. use Lemma 1 to get an exact easy-gate circuit;
-2. use Lemma 11 to replace arbitrary two-qubit gates by Clifford+`R_z`;
-3. use Lemma 12 to replace each `R_z` by `{H,T}`;
-4. use Lemmas 7--10 from the distance layer to bound accumulated error.
+1. `clifford_rz_universal`: exact synthesis into `{CX, H, S, S†, R_z}` up to
+   global phase (paper Lemma `clifford-plus-rx-is-universal`, induction with
+   a one-qubit base case);
+2. `clifford_rz_to_clifford_t_rz`: rewrite `S = T²`, `S† = T⁶`;
+3. Lemma 12 (`lemma12_rz_approximation_by_ht`, the `G₁/G₂` track): replace
+   each `R_z` by an `{H,T}` circuit;
+4. the distance layer bounds the accumulated error.
 -/
 
 private theorem hsDistance_eq_of_globalPhaseEquivalent_left {N : ℕ}
@@ -232,84 +235,6 @@ private theorem norm_eq_one_of_conj_mul_eq_one {z : ℂ} (hz : star z * z = 1) :
     exact_mod_cast hsq_complex
   nlinarith [norm_nonneg z]
 
-private theorem two_kron_one (U : Square 2) :
-    U ⊗ₖ (1 : Square 1) = U := by
-  ext i j
-  let i' : Fin 2 := ((@finProdFinEquiv 2 1).symm i).1
-  let j' : Fin 2 := ((@finProdFinEquiv 2 1).symm j).1
-  have hi0 : ((@finProdFinEquiv 2 1).symm i).2 = 0 := Subsingleton.elim _ _
-  have hj0 : ((@finProdFinEquiv 2 1).symm j).2 = 0 := Subsingleton.elim _ _
-  have hi : (@finProdFinEquiv 2 1 (i', 0) : Fin 2) = i := by
-    dsimp [i']
-    rw [← hi0]
-    exact (@finProdFinEquiv 2 1).apply_symm_apply i
-  have hj : (@finProdFinEquiv 2 1 (j', 0) : Fin 2) = j := by
-    dsimp [j']
-    rw [← hj0]
-    exact (@finProdFinEquiv 2 1).apply_symm_apply j
-  have hi' : i' = i := by
-    fin_cases i <;> rfl
-  have hj' : j' = j := by
-    fin_cases j <;> rfl
-  convert (TwoControl.kron_apply (A := U) (B := (1 : Square 1)) i' 0 j' 0) using 1
-  · simp [hi, hj]
-  · simp [hi', hj']
-
-private theorem one_kron_two (U : Square 2) :
-    (1 : Square 1) ⊗ₖ U = U := by
-  ext i j
-  convert (TwoControl.kron_apply (A := (1 : Square 1)) (B := U) 0 i 0 j) using 1
-  simp
-
-private def oneQubitPlacement1 : OneQubitPlacement 1 :=
-  { target := 0
-    left := 1
-    right := 1
-    dimension_eq := by norm_num
-    permutation := Equiv.refl _ }
-
-private theorem oneQubitPlacement1_embed_eq (U : Square 2) :
-    oneQubitPlacement1.embed U = U := by
-  dsimp [oneQubitPlacement1, OneQubitPlacement.embed, OneQubitPlacement.tensor]
-  rw [two_kron_one, one_kron_two]
-  simp [castSquare, reindexSquare]
-
-private theorem one_qubit_clifford_rz_synthesis
-    (U : Square 2) (hU : U ∈ Matrix.unitaryGroup (Fin 2) ℂ) :
-    SynthesizesUpToGlobalPhase (CliffordTRzGate 1) U := by
-  rcases one_qubit_exact_h_t_rz U hU with ⟨gates, hPhase⟩
-  refine ⟨embedOneQubitCircuit oneQubitPlacement1 gates,
-    CircuitOver_embedOneQubitCircuit_cliffordTRz oneQubitPlacement1 gates, ?_⟩
-  rw [circuitMatrix_embedOneQubitCircuit, oneQubitPlacement1_embed_eq]
-  exact hPhase
-
-/-- One-qubit universality obtained by combining the exact `{H,T,R_z}`
-synthesis with the Branch 5 `R_z`-to-`{H,T}` approximation theorem. -/
-theorem one_qubit_clifford_t_is_universal
-    (U : Square 2)
-    (hU : U ∈ Matrix.unitaryGroup (Fin 2) ℂ)
-    {ε : ℝ} (hε : 0 < ε) :
-    ∃ gates : List (Square 2),
-      CircuitOver (CliffordTGate 1) gates ∧
-      hsDistance U (circuitMatrix gates) < ε := by
-  have hdim : 0 < 2 ^ 1 := by
-    norm_num
-  simpa using clifford_rz_synthesis_approximates_by_clifford_t (n := 1) hdim U
-    (one_qubit_clifford_rz_synthesis U hU) hε
-
-/-- The original `n ≥ 2` universality statement, kept as the higher-dimensional
-branch of the paper-facing wrapper theorem below. -/
-theorem clifford_t_is_universal_of_two_le {n : ℕ} (hn : 2 ≤ n)
-    (U : Square (2 ^ n))
-    (hU : U ∈ Matrix.unitaryGroup (Fin (2 ^ n)) ℂ)
-    {ε : ℝ} (hε : 0 < ε) :
-    ∃ gates : List (Square (2 ^ n)),
-      CircuitOver (CliffordTGate n) gates ∧
-      hsDistance U (circuitMatrix gates) < ε := by
-  have hdim : 0 < 2 ^ n := Nat.pow_pos (by decide : 0 < 2)
-  exact clifford_rz_synthesis_approximates_by_clifford_t hdim U
-    (clifford_rz_synthesis_from_lemma1 hn U hU) hε
-
 private theorem one_by_one_globalPhaseEquivalent_one
     (U : Square 1) (hU : U ∈ Matrix.unitaryGroup (Fin 1) ℂ) :
     GlobalPhaseEquivalent U (1 : Square 1) := by
@@ -348,11 +273,13 @@ private theorem zero_qubit_clifford_t_is_universal
     rw [hZero]
     exact hε
 
-/-- Main theorem from `doc.tex`, with Lemma 12 assumed by
-`lemma12_rz_approximation_by_ht` and recursive Lemma 1 assumed by
-`lemma1_decomposition_to_easy_gate_set`.  The wrapper now covers the paper's
-one-qubit case directly and has a trivial zero-qubit base case, so the theorem
-statement no longer carries an `n ≥ 2` side condition. -/
+/-- **Clifford+T is universal** (`universal_new_gates.tex`, main theorem).
+
+For `n ≥ 1` the proof is the paper's single path:
+`clifford_rz_universal` (exact synthesis into `{CX, H, S, S†, R_z}`, up to
+global phase, induction with a one-qubit base case), then
+`clifford_rz_to_clifford_t_rz` (`S = T²`, `S† = T⁶`), then the Lemma-12
+`R_z`-approximation pipeline.  The zero-qubit case is a trivial phase. -/
 theorem clifford_t_is_universal {n : ℕ}
     (U : Square (2 ^ n))
     (hU : U ∈ Matrix.unitaryGroup (Fin (2 ^ n)) ℂ)
@@ -363,15 +290,11 @@ theorem clifford_t_is_universal {n : ℕ}
   cases n with
   | zero =>
       simpa using zero_qubit_clifford_t_is_universal U hU hε
-  | succ n =>
-      cases n with
-      | zero =>
-          simpa using one_qubit_clifford_t_is_universal U hU hε
-      | succ n =>
-          exact clifford_t_is_universal_of_two_le
-            (n := n.succ.succ)
-            (Nat.succ_le_succ (Nat.succ_le_succ (Nat.zero_le n)))
-            U hU hε
+  | succ m =>
+      have hdim : 0 < 2 ^ (m + 1) := Nat.pow_pos (by decide : 0 < 2)
+      exact clifford_rz_synthesis_approximates_by_clifford_t hdim U
+        (clifford_rz_to_clifford_t_rz
+          (clifford_rz_universal (Nat.succ_le_succ (Nat.zero_le m)) U hU)) hε
 
 end Universal
 end Clifford

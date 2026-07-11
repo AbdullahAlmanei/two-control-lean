@@ -1,4 +1,4 @@
-import TwoControl.Clifford.Lemma12.Boykin.BoykinDensity
+import TwoControl.Clifford.Lemma12.G1G2.RzApprox
 
 namespace TwoControl
 namespace Clifford
@@ -9,18 +9,19 @@ open TwoControl.Clifford.Universal
 /-!
 # Lemma 12: {H,T} approximates arbitrary Rz rotations
 
-Lemma 12 of `doc.tex`: every `R_z(θ)` is approximable by `{H,T}` circuits in
-Hilbert-Schmidt distance.
+Every `R_z(θ)` is approximable by `{H,T}` circuits in Hilbert-Schmidt
+distance.
 
-The proof now uses the Boykin-style density theorem `HT_Rz_dense`, which proves
-that {H,T} circuits are dense in SU(2) by constructing irrational rotations
-around orthogonal axes.
-
-The proof path here is Boykin's concrete irrational-rotation construction,
-specialized to the z rotations needed by Lemma 12.
+The proof follows `reference/cliff/universal_new_gates.tex` (July 2026):
+the gates `G₁ = e^{-3iπ/8}·THTHT` and `G₂ = (HT⁴)·G₁·(HT⁴)†` are rotations
+by a common irrational angle about *orthogonal* axes
+(`G1G2/Generators.lean`, `G1G2/AngleIdentification.lean`,
+`G1G2/Orthogonality.lean`), so the two-axis Euler decomposition expresses
+any `R_z` exactly as a three-factor product, and integer powers of the
+`G₁, G₂` gate words approximate each factor (`G1G2/RzApprox.lean`).
 -/
 
-/-- **Lemma 12** in `doc.tex`: `{H,T}` approximates every `R_z(θ)` to arbitrary
+/-- **Lemma 12**: `{H,T}` approximates every `R_z(θ)` to arbitrary
 Hilbert-Schmidt precision.
 
 This is the main universality result needed for Clifford+T compilation:
@@ -30,7 +31,7 @@ theorem lemma12_rz_approximation_by_ht
     (θ : ℝ) {ε : ℝ} (hε : 0 < ε) :
     ∃ gates : List OneQubitHTPrimitive,
       hsDistance (rz θ) (oneQubitHTCircuitMatrix gates) < ε := by
-  simpa [HTCircuit.eval] using HT_Rz_dense θ hε
+  simpa [HTCircuit.eval] using G1G2.HT_rz_dense_g1g2 θ hε
 
 end Lemma12
 end Clifford

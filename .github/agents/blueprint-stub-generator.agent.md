@@ -10,16 +10,16 @@ Your single job: turn one generation packet into one first-Blueprint section fil
 ## Inputs
 
 Primary source:
-- `docs/migration/generation/sectionN_generation_packet.md`
+- `docs/migration/archive/generation/sectionN_generation_packet.md`
 
 Optional existing target:
 - `blueprint/src/chapters/sectionN.tex`
 
 Governing documents:
 - `docs/migration/shared_context.md`
-- `docs/migration/object_conventions.md`
-- `docs/migration/generation_naming_conventions.md`
-- `docs/migration/agent_rules.md`
+- `docs/migration/archive/object_conventions.md`
+- `docs/migration/archive/generation_naming_conventions.md`
+- `docs/migration/archive/agent_rules.md`
 
 ## Output
 

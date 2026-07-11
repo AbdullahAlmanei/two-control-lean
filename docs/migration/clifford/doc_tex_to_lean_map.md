@@ -41,9 +41,11 @@ Primary import spine:
 | [`TwoControl.Clifford.Lemma12.MainTheorem`](../../../TwoControl/Clifford/Lemma12/MainTheorem.lean#L1) | Paper Lemma 12 statement. |
 | [`TwoControl.Clifford.Lemma12.Boykin.BoykinDensity`](../../../TwoControl/Clifford/Lemma12/Boykin/BoykinDensity.lean#L1) | Actual proof of Lemma 12. |
 
-`TwoControl.Clifford.Main` also imports [`TwoControl.RossSelinger.Main`](../../../TwoControl/RossSelinger/Main.lean#L1),
-but Ross-Selinger is currently a separate approximation/compiler leg.  It is
-not imported by `Universal.MainTheorem` and is not the proof of paper Lemma 12.
+Ross-Selinger is a separate, currently paused approximation/compiler leg; it
+lives in the top-level [`RossSelinger/`](../../../RossSelinger.lean) and
+[`KMM/`](../../../KMM.lean) libraries (not under `TwoControl/`), is not built
+by default, and is not imported by `Universal.MainTheorem` or any proof of
+paper Lemma 12.
 
 ## Core Infrastructure Not Present In The Paper
 
