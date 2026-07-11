@@ -48,41 +48,12 @@ def CircuitOver {N : ℕ} (allowed : Square N → Prop) (gates : List (Square N)
   intro gate hgate
   simp at hgate
 
-theorem CircuitOver_cons {N : ℕ} {allowed : Square N → Prop}
-    {gate : Square N} {gates : List (Square N)}
-    (hgate : allowed gate) (hgates : CircuitOver allowed gates) :
-    CircuitOver allowed (gate :: gates) := by
-  intro V hV
-  rcases List.mem_cons.1 hV with hV | hV
-  · cases hV
-    exact hgate
-  · exact hgates V hV
-
 theorem CircuitOver_append {N : ℕ} {allowed : Square N → Prop}
     {left right : List (Square N)}
     (hleft : CircuitOver allowed left) (hright : CircuitOver allowed right) :
     CircuitOver allowed (left ++ right) := by
   intro gate hgate
   exact (List.mem_append.1 hgate).elim (hleft gate) (hright gate)
-
-theorem CircuitOver_append_iff {N : ℕ} {allowed : Square N → Prop}
-    {left right : List (Square N)} :
-    CircuitOver allowed (left ++ right) ↔
-      CircuitOver allowed left ∧ CircuitOver allowed right := by
-  constructor
-  · intro h
-    exact ⟨fun gate hgate => h gate (List.mem_append_left right hgate),
-      fun gate hgate => h gate (List.mem_append_right left hgate)⟩
-  · intro h
-    exact CircuitOver_append h.1 h.2
-
-theorem CircuitOver.mono {N : ℕ} {allowed₁ allowed₂ : Square N → Prop}
-    {gates : List (Square N)}
-    (hsub : ∀ gate, allowed₁ gate → allowed₂ gate)
-    (hgates : CircuitOver allowed₁ gates) :
-    CircuitOver allowed₂ gates := by
-  intro gate hgate
-  exact hsub gate (hgates gate hgate)
 
 /-- Exact synthesis by a gate set. -/
 def Synthesizes {N : ℕ} (allowed : Square N → Prop) (U : Square N) : Prop :=
@@ -522,34 +493,6 @@ theorem CliffordRzGate.rz {n : ℕ} (θ : ℝ) {U : Square (2 ^ n)}
     (hU : IsEmbeddedOneQubitGate n (rz θ) U) :
     CliffordRzGate n U :=
   Or.inr (Or.inr (Or.inr (Or.inr ⟨θ, hU⟩)))
-
-/-- Every paper gate is in particular an easy gate. -/
-theorem CliffordRzGate.easyGate {n : ℕ} {U : Square (2 ^ n)}
-    (hU : CliffordRzGate n U) :
-    EasyGate n U := by
-  rcases hU with hCnot | hH | hS | hSdg | ⟨θ, hRz⟩
-  · exact EasyGate.of_embedded_two_qubit cnot_mem_unitaryGroup hCnot
-  · exact EasyGate.hadamard hH
-  · exact EasyGate.phaseS hS
-  · exact EasyGate.phaseSdagger hSdg
-  · exact EasyGate.rz θ hRz
-
-theorem EasyGate.mem_unitaryGroup {n : ℕ} {U : Square (2 ^ n)}
-    (hU : EasyGate n U) :
-    U ∈ Matrix.unitaryGroup (Fin (2 ^ n)) ℂ := by
-  rcases hU with hTwo | hH | hS | hSdg | hRz
-  · rcases hTwo with ⟨V, hV, hEmbedded⟩
-    exact hEmbedded.mem_unitaryGroup hV
-  · exact hH.mem_unitaryGroup hadamard2_mem_unitaryGroup
-  · exact hS.mem_unitaryGroup phaseS_mem_unitaryGroup
-  · exact hSdg.mem_unitaryGroup phaseSdagger_mem_unitaryGroup
-  · rcases hRz with ⟨θ, hEmbedded⟩
-    exact hEmbedded.mem_unitaryGroup (rz_mem_unitaryGroup θ)
-
-theorem CliffordRzGate.mem_unitaryGroup {n : ℕ} {U : Square (2 ^ n)}
-    (hU : CliffordRzGate n U) :
-    U ∈ Matrix.unitaryGroup (Fin (2 ^ n)) ℂ :=
-  hU.easyGate.mem_unitaryGroup
 
 theorem CliffordTRzGate.mem_unitaryGroup {n : ℕ} {U : Square (2 ^ n)}
     (hU : CliffordTRzGate n U) :

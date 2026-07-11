@@ -32,55 +32,9 @@ def easyFactorToCliffordRzBound : ℕ :=
 def cliffordRzBound (n : ℕ) : ℕ :=
   easyFactorToCliffordRzBound * easyBound n
 
-private lemma phaseT_sq_eq_phaseS_bound :
-    phaseT * phaseT = phaseS := by
-  ext i j
-  fin_cases i <;> fin_cases j
-  · simp [phaseT, phaseS, diag2, Matrix.mul_apply, Fin.sum_univ_two]
-  · simp [phaseT, phaseS, diag2, Matrix.mul_apply, Fin.sum_univ_two]
-  · simp [phaseT, phaseS, diag2, Matrix.mul_apply, Fin.sum_univ_two]
-  · simp [phaseT, phaseS, diag2, Matrix.mul_apply, Fin.sum_univ_two]
-    calc
-      Complex.exp (Complex.I * (Real.pi / 4)) *
-          Complex.exp (Complex.I * (Real.pi / 4))
-          = Complex.exp (Real.pi / 2 * Complex.I) := by
-              rw [← Complex.exp_add]
-              congr 1
-              ring
-      _ = Complex.I := by simpa [mul_comm] using Complex.exp_pi_div_two_mul_I
-
-private lemma phaseS_cubed_eq_phaseSdagger_bound :
-    phaseS * phaseS * phaseS = phaseSdagger := by
-  ext i j
-  fin_cases i <;> fin_cases j <;>
-    simp [phaseS, phaseSdagger, diag2, Matrix.mul_apply, Fin.sum_univ_two]
-
-private lemma phaseT_six_eq_phaseSdagger_bound :
-    phaseT * phaseT * phaseT * phaseT * phaseT * phaseT = phaseSdagger := by
-  calc
-    phaseT * phaseT * phaseT * phaseT * phaseT * phaseT
-        = (phaseT * phaseT) * ((phaseT * phaseT) * (phaseT * phaseT)) := by
-            simp [mul_assoc]
-    _ = phaseS * (phaseS * phaseS) := by rw [phaseT_sq_eq_phaseS_bound]
-    _ = phaseSdagger := by simpa [mul_assoc] using phaseS_cubed_eq_phaseSdagger_bound
-
-private lemma localOnFirst_mul_bound (A B : Square 2) :
-    localOnFirst (A * B) = localOnFirst A * localOnFirst B := by
-  unfold localOnFirst
-  simpa using
-    (KronHelpers.kron_mul_reindex (A := A) (B := B)
-      (C := (1 : Square 2)) (D := (1 : Square 2)))
-
-private lemma localOnSecond_mul_bound (A B : Square 2) :
-    localOnSecond (A * B) = localOnSecond A * localOnSecond B := by
-  unfold localOnSecond
-  simpa using
-    (KronHelpers.kron_mul_reindex (A := (1 : Square 2)) (B := (1 : Square 2))
-      (C := A) (D := B))
-
 private lemma oneQubitCircuitMatrix_phaseS_bound :
     oneQubitCircuitMatrix [.t, .t] = phaseS := by
-  simpa [oneQubitCircuitMatrix, OneQubitPrimitive.eval] using phaseT_sq_eq_phaseS_bound
+  simpa [oneQubitCircuitMatrix, OneQubitPrimitive.eval] using phaseT_sq_eq_phaseS
 
 private lemma oneQubitCircuitMatrix_phaseSdagger_bound :
     oneQubitCircuitMatrix [.t, .t, .t, .t, .t, .t] = phaseSdagger := by
@@ -88,7 +42,7 @@ private lemma oneQubitCircuitMatrix_phaseSdagger_bound :
     oneQubitCircuitMatrix [.t, .t, .t, .t, .t, .t]
         = phaseT * phaseT * phaseT * phaseT * phaseT * phaseT := by
             simp [oneQubitCircuitMatrix, OneQubitPrimitive.eval, mul_assoc]
-    _ = phaseSdagger := phaseT_six_eq_phaseSdagger_bound
+    _ = phaseSdagger := phaseT_six_eq_phaseSdagger
 
 private lemma twoQubitCircuitMatrix_onFirst_phaseS_bound :
     twoQubitCircuitMatrix [.onFirst .t, .onFirst .t] =
@@ -97,8 +51,8 @@ private lemma twoQubitCircuitMatrix_onFirst_phaseS_bound :
     twoQubitCircuitMatrix [.onFirst .t, .onFirst .t]
         = localOnFirst phaseT * localOnFirst phaseT := by
             simp [twoQubitCircuitMatrix, TwoQubitPrimitive.eval, OneQubitPrimitive.eval]
-    _ = localOnFirst (phaseT * phaseT) := by rw [← localOnFirst_mul_bound]
-    _ = localOnFirst phaseS := by rw [phaseT_sq_eq_phaseS_bound]
+    _ = localOnFirst (phaseT * phaseT) := by rw [← localOnFirst_mul]
+    _ = localOnFirst phaseS := by rw [phaseT_sq_eq_phaseS]
 
 private lemma twoQubitCircuitMatrix_onSecond_phaseS_bound :
     twoQubitCircuitMatrix [.onSecond .t, .onSecond .t] =
@@ -107,8 +61,8 @@ private lemma twoQubitCircuitMatrix_onSecond_phaseS_bound :
     twoQubitCircuitMatrix [.onSecond .t, .onSecond .t]
         = localOnSecond phaseT * localOnSecond phaseT := by
             simp [twoQubitCircuitMatrix, TwoQubitPrimitive.eval, OneQubitPrimitive.eval]
-    _ = localOnSecond (phaseT * phaseT) := by rw [← localOnSecond_mul_bound]
-    _ = localOnSecond phaseS := by rw [phaseT_sq_eq_phaseS_bound]
+    _ = localOnSecond (phaseT * phaseT) := by rw [← localOnSecond_mul]
+    _ = localOnSecond phaseS := by rw [phaseT_sq_eq_phaseS]
 
 private lemma twoQubitCircuitMatrix_onFirst_phaseSdagger_bound :
     twoQubitCircuitMatrix
@@ -124,11 +78,11 @@ private lemma twoQubitCircuitMatrix_onFirst_phaseSdagger_bound :
             simp [twoQubitCircuitMatrix, TwoQubitPrimitive.eval, OneQubitPrimitive.eval]
     _ = localOnFirst
             (phaseT * (phaseT * (phaseT * (phaseT * (phaseT * phaseT))))) := by
-            repeat rw [← localOnFirst_mul_bound]
+            repeat rw [← localOnFirst_mul]
     _ = localOnFirst (phaseT * phaseT * phaseT * phaseT * phaseT * phaseT) := by
             congr 1
             simp [mul_assoc]
-    _ = localOnFirst phaseSdagger := by rw [phaseT_six_eq_phaseSdagger_bound]
+    _ = localOnFirst phaseSdagger := by rw [phaseT_six_eq_phaseSdagger]
 
 private lemma twoQubitCircuitMatrix_onSecond_phaseSdagger_bound :
     twoQubitCircuitMatrix
@@ -146,41 +100,11 @@ private lemma twoQubitCircuitMatrix_onSecond_phaseSdagger_bound :
             simp [twoQubitCircuitMatrix, TwoQubitPrimitive.eval, OneQubitPrimitive.eval]
     _ = localOnSecond
             (phaseT * (phaseT * (phaseT * (phaseT * (phaseT * phaseT))))) := by
-            repeat rw [← localOnSecond_mul_bound]
+            repeat rw [← localOnSecond_mul]
     _ = localOnSecond (phaseT * phaseT * phaseT * phaseT * phaseT * phaseT) := by
             congr 1
             simp [mul_assoc]
-    _ = localOnSecond phaseSdagger := by rw [phaseT_six_eq_phaseSdagger_bound]
-
-private theorem reindexSquare_smul_bound {N M : ℕ} (e : Fin N ≃ Fin M)
-    (z : ℂ) (U : Square N) :
-    reindexSquare e (z • U) = z • reindexSquare e U := by
-  simp [reindexSquare]
-
-private theorem castSquare_smul_bound {N M : ℕ} (h : N = M)
-    (z : ℂ) (U : Square N) :
-    castSquare h (z • U) = z • castSquare h U := by
-  simpa [castSquare] using reindexSquare_smul_bound (Equiv.cast (congrArg Fin h)) z U
-
-private theorem TwoQubitPlacement.tensor_smul_bound {n : ℕ} (p : TwoQubitPlacement n)
-    (z : ℂ) (U : Square 4) :
-    p.tensor (z • U) = z • p.tensor U := by
-  unfold TwoQubitPlacement.tensor
-  rw [kron_smul_left, KronHelpers.kron_smul_right]
-
-private theorem TwoQubitPlacement.embed_smul_bound {n : ℕ} (p : TwoQubitPlacement n)
-    (z : ℂ) (U : Square 4) :
-    p.embed (z • U) = z • p.embed U := by
-  unfold TwoQubitPlacement.embed
-  rw [TwoQubitPlacement.tensor_smul_bound, castSquare_smul_bound, reindexSquare_smul_bound]
-
-private theorem TwoQubitPlacement.globalPhaseEquivalent_bound {n : ℕ}
-    (p : TwoQubitPlacement n) {A B : Square 4}
-    (hAB : GlobalPhaseEquivalent A B) :
-    GlobalPhaseEquivalent (p.embed A) (p.embed B) := by
-  rcases hAB with ⟨z, hz, hA⟩
-  refine ⟨z, hz, ?_⟩
-  rw [hA, p.embed_smul_bound]
+    _ = localOnSecond phaseSdagger := by rw [phaseT_six_eq_phaseSdagger]
 
 private noncomputable def standardRyGates_bound (θ : ℝ) :
     List OneQubitPrimitive :=
@@ -195,7 +119,7 @@ private lemma standardRyGates_bound_matrix (θ : ℝ) :
               simp [standardRyGates_bound, oneQubitCircuitMatrix,
                 OneQubitPrimitive.eval, mul_assoc]
     _ = phaseSdagger * hadamard2 * rz (-θ) * hadamard2 * phaseS := by
-          rw [phaseT_six_eq_phaseSdagger_bound, phaseT_sq_eq_phaseS_bound]
+          rw [phaseT_six_eq_phaseSdagger, phaseT_sq_eq_phaseS]
     _ = CosineSine.ry θ := by
           symm
           exact lemma3_ry_via_rz θ
@@ -390,7 +314,7 @@ private theorem conditionalRy_uses_standard_gates_bounded (θ₀ θ₁ : ℝ) :
               hadamard2 := by
               simp [oneQubitCircuitMatrix, OneQubitPrimitive.eval, mul_assoc]
       _ = phaseSdagger * hadamard2 := by
-            rw [phaseT_six_eq_phaseSdagger_bound]
+            rw [phaseT_six_eq_phaseSdagger]
   have hpost : oneQubitCircuitMatrix post = hadamard2 * phaseS := by
     dsimp [post]
     calc
@@ -399,7 +323,7 @@ private theorem conditionalRy_uses_standard_gates_bounded (θ₀ θ₁ : ℝ) :
           = hadamard2 * (phaseT * phaseT) := by
               simp [oneQubitCircuitMatrix, OneQubitPrimitive.eval]
       _ = hadamard2 * phaseS := by
-            rw [phaseT_sq_eq_phaseS_bound]
+            rw [phaseT_sq_eq_phaseS]
   refine ⟨gates, ?_, ?_⟩
   · calc
       twoQubitCircuitMatrix gates =
@@ -562,7 +486,7 @@ theorem embedded_two_qubit_clifford_rz_lift_bounded {n : ℕ} {V : Square 4}
   refine ⟨embedTwoQubitCircuit p gates,
     CircuitOver_embedTwoQubitCircuit_cliffordTRz p gates, ?_, ?_⟩
   · exact GlobalPhaseEquivalent.trans
-      (TwoQubitPlacement.globalPhaseEquivalent_bound p hPhase)
+      (TwoQubitPlacement.globalPhaseEquivalent p hPhase)
       (GlobalPhaseEquivalent.of_eq (circuitMatrix_embedTwoQubitCircuit p gates).symm)
   · simpa [embedTwoQubitCircuit] using hLen
 

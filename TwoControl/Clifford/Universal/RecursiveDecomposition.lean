@@ -24,11 +24,11 @@ demultiplexing and controlled-`R_z` steps are stated with their real input
 shapes exposed, rather than hidden behind opaque predicates.
 -/
 
-private theorem two_mul_pow_eq_pow_succ (m : ℕ) :
+theorem two_mul_pow_eq_pow_succ (m : ℕ) :
     2 * 2 ^ m = 2 ^ (m + 1) := by
   simp [pow_succ, mul_comm]
 
-private theorem four_mul_pow_eq_pow_add_two (m : ℕ) :
+theorem four_mul_pow_eq_pow_add_two (m : ℕ) :
     4 * 2 ^ m = 2 ^ (m + 2) := by
   have h4 : 4 = 2 * 2 := by decide
   rw [h4, Nat.mul_assoc, two_mul_pow_eq_pow_succ]
@@ -101,7 +101,7 @@ private theorem blockify_top_conjugation_of_controlledRzCore (m : ℕ)
     (@finProdFinEquiv 1 4 (0, i) : Fin 4) = i := by
   fin_cases i <;> rfl
 
-private theorem kron_right_one_four (U : Square 4) :
+theorem kron_right_one_four (U : Square 4) :
     U ⊗ₖ (1 : Square 1) = U := by
   ext i j
   let i' : Fin 4 := ((@finProdFinEquiv 4 1).symm i).1
@@ -124,13 +124,13 @@ private theorem kron_right_one_four (U : Square 4) :
   · simp [hi, hj]
   · simp [hi', hj']
 
-private theorem one_kron_four (U : Square 4) :
+theorem one_kron_four (U : Square 4) :
     (1 : Square 1) ⊗ₖ U = U := by
   ext i j
   convert (TwoControl.kron_apply (A := (1 : Square 1)) (B := U) 0 i 0 j) using 1
   simp
 
-private theorem two_kron_one (U : Square 2) :
+theorem two_kron_one (U : Square 2) :
     U ⊗ₖ (1 : Square 1) = U := by
   ext i j
   let i' : Fin 2 := ((@finProdFinEquiv 2 1).symm i).1
@@ -1264,12 +1264,12 @@ theorem two_qubit_unitary_is_easy_gate (U : Square 4)
   subst hgate
   exact EasyGate.of_embedded_two_qubit hU hEmbed
 
-private theorem castFin_symm_val {a b : ℕ} (h : a = b) (x : Fin b) :
+theorem castFin_symm_val {a b : ℕ} (h : a = b) (x : Fin b) :
     (((Equiv.cast (congrArg Fin h)).symm x).1) = x.1 := by
   cases h
   rfl
 
-private theorem cast_one_mul_symm_divNat {n : ℕ} (x : Fin n) :
+theorem cast_one_mul_symm_divNat {n : ℕ} (x : Fin n) :
     ((Equiv.cast (congrArg Fin (show 1 * n = n by simp))).symm x).divNat = 0 := by
   cases n with
   | zero => exact Fin.elim0 x
@@ -1284,7 +1284,7 @@ private theorem cast_one_mul_symm_divNat {n : ℕ} (x : Fin n) :
       rw [hval]
       exact Nat.div_eq_of_lt x.is_lt
 
-private theorem cast_one_mul_symm_modNat {n : ℕ} (x : Fin n) :
+theorem cast_one_mul_symm_modNat {n : ℕ} (x : Fin n) :
     ((Equiv.cast (congrArg Fin (show 1 * n = n by simp))).symm x).modNat = x := by
   cases n with
   | zero => exact Fin.elim0 x
@@ -1298,7 +1298,7 @@ private theorem cast_one_mul_symm_modNat {n : ℕ} (x : Fin n) :
         castFin_symm_val h x
       rw [hval, Nat.mod_eq_of_lt x.is_lt]
 
-private theorem one_kron_any {n : ℕ} (U : Square n) :
+theorem one_kron_any {n : ℕ} (U : Square n) :
     castSquare (show 1 * n = n by simp) ((1 : Square 1) ⊗ₖ U) = U := by
   ext i j
   simp [castSquare, reindexSquare, Matrix.reindex_apply, TwoControl.kron,
@@ -1312,7 +1312,7 @@ private theorem castFin_symm_trans {a b c : ℕ} (hab : a = b) (hbc : b = c)
   cases hbc
   rfl
 
-private theorem castSquare_trans {a b c : ℕ} (hab : a = b) (hbc : b = c)
+theorem castSquare_trans {a b c : ℕ} (hab : a = b) (hbc : b = c)
     (U : Square a) :
     castSquare hbc (castSquare hab U) = castSquare (hab.trans hbc) U := by
   ext i j
@@ -1715,7 +1715,7 @@ private theorem synthesizes_mul {N : ℕ} {allowed : Square N → Prop}
   refine ⟨gatesU ++ gatesV, CircuitOver_append hGatesU hGatesV, ?_⟩
   simp [circuitMatrix_append]
 
-private theorem castFin_val {a b : ℕ} (h : a = b) (x : Fin a) :
+theorem castFin_val {a b : ℕ} (h : a = b) (x : Fin a) :
     ((Equiv.cast (congrArg Fin h) x).1) = x.1 := by
   cases h
   rfl
@@ -1725,21 +1725,21 @@ noncomputable def topTensorEquiv {A B : ℕ} (e : Fin A ≃ Fin B) :
   ((@finProdFinEquiv 2 A).symm.trans ((Equiv.refl (Fin 2)).prodCongr e)).trans
     (@finProdFinEquiv 2 B)
 
-private theorem topTensorEquiv_cast {A B : ℕ} (h : A = B) :
+theorem topTensorEquiv_cast {A B : ℕ} (h : A = B) :
     topTensorEquiv (Equiv.cast (congrArg Fin h)) =
       Equiv.cast (congrArg Fin (congrArg (fun x => 2 * x) h)) := by
   cases h
   ext i
   simp [topTensorEquiv, Nat.mod_add_div]
 
-private theorem one_kron_reindexSquare {A B : ℕ} (e : Fin A ≃ Fin B) (U : Square A) :
+theorem one_kron_reindexSquare {A B : ℕ} (e : Fin A ≃ Fin B) (U : Square A) :
     ((1 : Square 2) ⊗ₖ reindexSquare e U) =
       reindexSquare (topTensorEquiv e) ((1 : Square 2) ⊗ₖ U) := by
   ext i j
   simp [TwoControl.kron, reindexSquare, topTensorEquiv,
     Matrix.reindexAlgEquiv_apply, Matrix.reindex_apply, Matrix.kroneckerMap_apply]
 
-private theorem castSquare_reindexSquare {B C : ℕ} (e : Fin B ≃ Fin B)
+theorem castSquare_reindexSquare {B C : ℕ} (e : Fin B ≃ Fin B)
     (h : B = C) (U : Square B) :
     castSquare h (reindexSquare e U) =
       reindexSquare
@@ -1749,7 +1749,7 @@ private theorem castSquare_reindexSquare {B C : ℕ} (e : Fin B ≃ Fin B)
   ext i j
   simp [castSquare, reindexSquare, Matrix.reindexAlgEquiv_apply, Matrix.reindex_apply]
 
-private theorem liftLowerUnitary_eq_kron (m : ℕ) (U : Square (2 ^ m)) :
+theorem liftLowerUnitary_eq_kron (m : ℕ) (U : Square (2 ^ m)) :
     liftLowerUnitary m U =
       castSquare (two_mul_pow_eq_pow_succ m) ((1 : Square 2) ⊗ₖ U) := by
   rw [liftLowerUnitary, firstQubitBlockDiag, unblockify_fromBlocks]
@@ -1968,7 +1968,7 @@ theorem controlled_rz_reduction_step (m : ℕ)
   simpa [β, γ, splitControlIndex] using
     (controlledRzPair_reduction_step (α (splitControlIndex m 0 r)) (α (splitControlIndex m 1 r)))
 
-private theorem finProd_assoc_2_encoded (n p : ℕ) (a : Fin 2) (b : Fin n) (c : Fin p) :
+theorem finProd_assoc_2_encoded (n p : ℕ) (a : Fin 2) (b : Fin n) (c : Fin p) :
     (Equiv.cast (congrArg Fin ((Nat.mul_assoc 2 n p).symm)))
       (@finProdFinEquiv 2 (n * p) (a, @finProdFinEquiv n p (b, c))) =
     @finProdFinEquiv (2 * n) p (@finProdFinEquiv 2 n (a, b), c) := by
@@ -1978,7 +1978,7 @@ private theorem finProd_assoc_2_encoded (n p : ℕ) (a : Fin 2) (b : Fin n) (c :
   · ring
   · simp [Nat.mul_assoc]
 
-private theorem one_finProdFinEquiv {l : ℕ} (a a' : Fin 2) (b b' : Fin l) :
+theorem one_finProdFinEquiv {l : ℕ} (a a' : Fin 2) (b b' : Fin l) :
     (1 : Square (2 * l)) (@finProdFinEquiv 2 l (a, b)) (@finProdFinEquiv 2 l (a', b')) =
       (1 : Square 2) a a' * ((1 : Square l) b b') := by
   by_cases haa : a = a'
@@ -1997,7 +1997,7 @@ private theorem one_finProdFinEquiv {l : ℕ} (a a' : Fin 2) (b b' : Fin l) :
       exact congrArg Prod.fst ((@finProdFinEquiv 2 l).injective h)
     simp [hneq, haa]
 
-private theorem one_kron_assoc_identity (l p : ℕ) (W : Square p) :
+theorem one_kron_assoc_identity (l p : ℕ) (W : Square p) :
     castSquare ((Nat.mul_assoc 2 l p).symm) (((1 : Square 2) ⊗ₖ ((1 : Square l) ⊗ₖ W))) =
       ((1 : Square (2 * l)) ⊗ₖ W) := by
   ext i j
@@ -2074,7 +2074,7 @@ noncomputable def lowerTwoQubitPlacement {m : ℕ} (p : TwoQubitPlacement m) :
         ((congrArg (fun x => 2 * x) p.dimension_eq).trans (two_mul_pow_eq_pow_succ m))
     permutation := lowerLiftPermutation m p.permutation }
 
-private theorem liftLower_oneQubit_embed {m : ℕ} (p : OneQubitPlacement m) (U : Square 2) :
+theorem liftLower_oneQubit_embed {m : ℕ} (p : OneQubitPlacement m) (U : Square 2) :
     liftLowerUnitary m (p.embed U) = (lowerOneQubitPlacement p).embed U := by
   rw [liftLowerUnitary_eq_kron, OneQubitPlacement.embed, OneQubitPlacement.embed]
   have hCast0 :=
@@ -2105,7 +2105,7 @@ private theorem liftLower_oneQubit_embed {m : ℕ} (p : OneQubitPlacement m) (U 
     _ = (lowerOneQubitPlacement p).embed U := by
           rfl
 
-private theorem liftLower_twoQubit_embed {m : ℕ} (p : TwoQubitPlacement m) (U : Square 4) :
+theorem liftLower_twoQubit_embed {m : ℕ} (p : TwoQubitPlacement m) (U : Square 4) :
     liftLowerUnitary m (p.embed U) = (lowerTwoQubitPlacement p).embed U := by
   rw [liftLowerUnitary_eq_kron, TwoQubitPlacement.embed, TwoQubitPlacement.embed]
   have hCast0 :=
@@ -2136,7 +2136,7 @@ private theorem liftLower_twoQubit_embed {m : ℕ} (p : TwoQubitPlacement m) (U 
     _ = (lowerTwoQubitPlacement p).embed U := by
           rfl
 
-private theorem liftLower_isEmbeddedOneQubit {m : ℕ} {U : Square 2} {E : Square (2 ^ m)}
+theorem liftLower_isEmbeddedOneQubit {m : ℕ} {U : Square 2} {E : Square (2 ^ m)}
     (hE : IsEmbeddedOneQubitGate m U E) :
     IsEmbeddedOneQubitGate (m + 1) U (liftLowerUnitary m E) := by
   rcases hE with hDirect | hRest
@@ -2151,7 +2151,7 @@ private theorem liftLower_isEmbeddedOneQubit {m : ℕ} {U : Square 2} {E : Squar
       rw [liftLower_twoQubit_embed]
       exact IsEmbeddedOneQubitGate.of_twoQubit_second (lowerTwoQubitPlacement p) U
 
-private theorem liftLower_isEmbeddedTwoQubit {m : ℕ} {U : Square 4} {E : Square (2 ^ m)}
+theorem liftLower_isEmbeddedTwoQubit {m : ℕ} {U : Square 4} {E : Square (2 ^ m)}
     (hE : IsEmbeddedTwoQubitGate m U E) :
     IsEmbeddedTwoQubitGate (m + 1) U (liftLowerUnitary m E) := by
   rcases hE with ⟨p, rfl⟩
@@ -2173,12 +2173,12 @@ private theorem liftLower_easyGate {m : ℕ} {E : Square (2 ^ m)}
         · rcases hRz with ⟨θ, hRz⟩
           exact EasyGate.rz θ (liftLower_isEmbeddedOneQubit hRz)
 
-@[simp] private theorem liftLowerUnitary_one (m : ℕ) :
+@[simp] theorem liftLowerUnitary_one (m : ℕ) :
     liftLowerUnitary m (1 : Square (2 ^ m)) = 1 := by
   rw [liftLowerUnitary_eq_kron, TwoControl.one_kron_one 2 (2 ^ m)]
   simp
 
-private theorem liftLowerUnitary_mul (m : ℕ) (U V : Square (2 ^ m)) :
+theorem liftLowerUnitary_mul (m : ℕ) (U V : Square (2 ^ m)) :
     liftLowerUnitary m (U * V) = liftLowerUnitary m U * liftLowerUnitary m V := by
   have hKron :
       ((1 : Square 2) ⊗ₖ (U * V)) =
@@ -2189,7 +2189,7 @@ private theorem liftLowerUnitary_mul (m : ℕ) (U V : Square (2 ^ m)) :
   rw [liftLowerUnitary_eq_kron, liftLowerUnitary_eq_kron, liftLowerUnitary_eq_kron, hKron]
   rw [castSquare_mul]
 
-private theorem circuitMatrix_map_liftLower (m : ℕ) (gates : List (Square (2 ^ m))) :
+theorem circuitMatrix_map_liftLower (m : ℕ) (gates : List (Square (2 ^ m))) :
     circuitMatrix (gates.map (liftLowerUnitary m)) = liftLowerUnitary m (circuitMatrix gates) := by
   induction gates with
   | nil =>
@@ -2228,11 +2228,11 @@ private theorem synthesizes_liftMiddle {m : ℕ} {W : Square (2 ^ (m + 1))}
   rw [liftMiddleUnitary]
   simpa [mul_assoc] using synthesizes_mul (synthesizes_mul hSwap hLower) hSwap
 
-private theorem liftTopOneQubit_zero (U : Square 2) :
+theorem liftTopOneQubit_zero (U : Square 2) :
     liftTopOneQubit 0 U = U := by
   simpa [liftTopOneQubit] using two_kron_one U
 
-private theorem firstQubitBlockDiag_unitary_factors {m : ℕ} {A D : Square (2 ^ m)}
+theorem firstQubitBlockDiag_unitary_factors {m : ℕ} {A D : Square (2 ^ m)}
     (h : firstQubitBlockDiag m A D ∈ Matrix.unitaryGroup (Fin (2 ^ (m + 1))) ℂ) :
     A ∈ Matrix.unitaryGroup (Fin (2 ^ m)) ℂ ∧ D ∈ Matrix.unitaryGroup (Fin (2 ^ m)) ℂ := by
   let e : Fin (2 * 2 ^ m) ≃ Fin (2 ^ (m + 1)) :=

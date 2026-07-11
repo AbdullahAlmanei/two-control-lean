@@ -14,7 +14,8 @@ This repo hosts three separate proof efforts sharing one Lean package:
    Complete and stable.
 2. **Clifford+T universality** (`TwoControl/Clifford/`, `TwoControl/CosineSine/`)
    — a quantitative Boykin-style density bound for Clifford+T universality,
-   built on top of the two-controls vocabulary. Active.
+   built on top of the two-controls vocabulary. Active; see
+   [`TwoControl/Clifford/README.md`](TwoControl/Clifford/README.md).
 3. **Ross-Selinger circuit synthesis** (`RossSelinger/`, `KMM/`, plus the
    top-level `DyadicCyclotomic`/`MatrixCompletion` libraries) — optimal
    ancilla-free circuit synthesis. Paused; see

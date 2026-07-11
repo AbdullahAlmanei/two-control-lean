@@ -80,14 +80,6 @@ private lemma vecHS_inner_eq_trace {N : ℕ} (A B : Square N) :
   simp [vecHS, PiLp.inner_apply, Matrix.trace, Matrix.mul_apply, mul_comm]
   rw [Finset.sum_comm]
 
-private lemma vecHS_inner_self_of_unitary {N : ℕ} (U : Square N)
-    (hU : U ∈ Matrix.unitaryGroup (Fin N) ℂ) :
-    inner ℂ (vecHS U) (vecHS U) = (N : ℂ) := by
-  have hUU : U† * U = (1 : Square N) := Matrix.mem_unitaryGroup_iff'.mp hU
-  rw [vecHS_inner_eq_trace]
-  rw [hUU, Matrix.trace_one]
-  simp
-
 private lemma inner_self_eq_one_of_norm_eq_one {E : Type*}
     [NormedAddCommGroup E] [InnerProductSpace ℂ E] {x : E}
     (hx : ‖x‖ = 1) :

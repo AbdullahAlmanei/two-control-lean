@@ -18,7 +18,7 @@ theorem two_qubit_gate_has_clifford_rz_circuit (U : Square 4)
       GlobalPhaseEquivalent U (twoQubitCircuitMatrix gates) :=
   lemma11_two_qubit_synthesis U hU
 
-private lemma phaseT_sq_eq_phaseS :
+lemma phaseT_sq_eq_phaseS :
     phaseT * phaseT = phaseS := by
   ext i j
   fin_cases i <;> fin_cases j
@@ -34,13 +34,13 @@ private lemma phaseT_sq_eq_phaseS :
               ring
       _ = Complex.I := by simpa [mul_comm] using Complex.exp_pi_div_two_mul_I
 
-private lemma phaseS_cubed_eq_phaseSdagger :
+lemma phaseS_cubed_eq_phaseSdagger :
     phaseS * phaseS * phaseS = phaseSdagger := by
   ext i j
   fin_cases i <;> fin_cases j <;>
     simp [phaseS, phaseSdagger, diag2, Matrix.mul_apply, Fin.sum_univ_two]
 
-private lemma phaseT_six_eq_phaseSdagger :
+lemma phaseT_six_eq_phaseSdagger :
     phaseT * phaseT * phaseT * phaseT * phaseT * phaseT = phaseSdagger := by
   calc
     phaseT * phaseT * phaseT * phaseT * phaseT * phaseT
@@ -49,14 +49,14 @@ private lemma phaseT_six_eq_phaseSdagger :
     _ = phaseS * (phaseS * phaseS) := by rw [phaseT_sq_eq_phaseS]
     _ = phaseSdagger := by simpa [mul_assoc] using phaseS_cubed_eq_phaseSdagger
 
-private lemma localOnFirst_mul (A B : Square 2) :
+lemma localOnFirst_mul (A B : Square 2) :
     localOnFirst (A * B) = localOnFirst A * localOnFirst B := by
   unfold localOnFirst
   simpa using
     (KronHelpers.kron_mul_reindex (A := A) (B := B)
       (C := (1 : Square 2)) (D := (1 : Square 2)))
 
-private lemma localOnSecond_mul (A B : Square 2) :
+lemma localOnSecond_mul (A B : Square 2) :
     localOnSecond (A * B) = localOnSecond A * localOnSecond B := by
   unfold localOnSecond
   simpa using
@@ -141,29 +141,29 @@ private lemma twoQubitCliffordT_onSecond_phaseSdagger :
             simp [mul_assoc]
     _ = localOnSecond phaseSdagger := by rw [phaseT_six_eq_phaseSdagger]
 
-private theorem reindexSquare_smul {N M : ℕ} (e : Fin N ≃ Fin M)
+theorem reindexSquare_smul {N M : ℕ} (e : Fin N ≃ Fin M)
     (z : ℂ) (U : Square N) :
     reindexSquare e (z • U) = z • reindexSquare e U := by
   simp [reindexSquare]
 
-private theorem castSquare_smul {N M : ℕ} (h : N = M)
+theorem castSquare_smul {N M : ℕ} (h : N = M)
     (z : ℂ) (U : Square N) :
     castSquare h (z • U) = z • castSquare h U := by
   simpa [castSquare] using reindexSquare_smul (Equiv.cast (congrArg Fin h)) z U
 
-private theorem TwoQubitPlacement.tensor_smul {n : ℕ} (p : TwoQubitPlacement n)
+theorem TwoQubitPlacement.tensor_smul {n : ℕ} (p : TwoQubitPlacement n)
     (z : ℂ) (U : Square 4) :
     p.tensor (z • U) = z • p.tensor U := by
   unfold TwoQubitPlacement.tensor
   rw [kron_smul_left, KronHelpers.kron_smul_right]
 
-private theorem TwoQubitPlacement.embed_smul {n : ℕ} (p : TwoQubitPlacement n)
+theorem TwoQubitPlacement.embed_smul {n : ℕ} (p : TwoQubitPlacement n)
     (z : ℂ) (U : Square 4) :
     p.embed (z • U) = z • p.embed U := by
   unfold TwoQubitPlacement.embed
   rw [TwoQubitPlacement.tensor_smul, castSquare_smul, reindexSquare_smul]
 
-private theorem TwoQubitPlacement.globalPhaseEquivalent {n : ℕ}
+theorem TwoQubitPlacement.globalPhaseEquivalent {n : ℕ}
     (p : TwoQubitPlacement n) {A B : Square 4}
     (hAB : GlobalPhaseEquivalent A B) :
     GlobalPhaseEquivalent (p.embed A) (p.embed B) := by
