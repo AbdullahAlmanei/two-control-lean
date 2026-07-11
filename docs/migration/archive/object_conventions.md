@@ -58,12 +58,12 @@ In Rocq packets:
 
 ## File naming patterns
 Per-section packet files:
-- `docs/migration/packets/sectionN_paper_packet.md`
-- `docs/migration/packets/sectionN_rocq_packet.md`
-- `docs/migration/packets/sectionN_reconciled_packet.md`
+- `docs/migration/archive/packets/sectionN_paper_packet.md`
+- `docs/migration/archive/packets/sectionN_rocq_packet.md`
+- `docs/migration/archive/packets/sectionN_reconciled_packet.md`
 
 Per-section generation files:
-- `docs/migration/generation/sectionN_generation_packet.md`
+- `docs/migration/archive/generation/sectionN_generation_packet.md`
 
 ## Output discipline
 Every packet should be a standalone file with no chatty prose outside the schema.

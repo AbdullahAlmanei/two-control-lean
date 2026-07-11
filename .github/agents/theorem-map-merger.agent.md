@@ -10,23 +10,23 @@ Your single job: read all available reconciled section packets and write the glo
 ## Inputs
 
 Potential source files:
-- `docs/migration/packets/section3_reconciled_packet.md`
-- `docs/migration/packets/section4_reconciled_packet.md`
-- `docs/migration/packets/section5_reconciled_packet.md`
-- `docs/migration/packets/section6_reconciled_packet.md`
-- `docs/migration/packets/section7_reconciled_packet.md`
+- `docs/migration/archive/packets/section3_reconciled_packet.md`
+- `docs/migration/archive/packets/section4_reconciled_packet.md`
+- `docs/migration/archive/packets/section5_reconciled_packet.md`
+- `docs/migration/archive/packets/section6_reconciled_packet.md`
+- `docs/migration/archive/packets/section7_reconciled_packet.md`
 
 Governing documents:
 - `docs/migration/shared_context.md`
-- `docs/migration/object_conventions.md`
-- `docs/migration/agent_rules.md`
-- `docs/migration/section_assignments.md`
-- `docs/migration/schemas/theorem_map_schema.md`
+- `docs/migration/archive/object_conventions.md`
+- `docs/migration/archive/agent_rules.md`
+- `docs/migration/archive/section_assignments.md`
+- `docs/migration/archive/schemas/theorem_map_schema.md`
 
 ## Output
 
 You write exactly one file:
-- `docs/migration/theorem_map.md`
+- `docs/migration/archive/theorem_map.md`
 
 ## File mode
 
@@ -66,4 +66,4 @@ You write exactly one file:
 
 Write only the markdown content for:
 
-`docs/migration/theorem_map.md`
+`docs/migration/archive/theorem_map.md`

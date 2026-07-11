@@ -17,7 +17,7 @@ When different files disagree about project status, use this order.
 
 1. Lean files in `TwoControl/`.
 2. Recent journal entries in `docs/journal/`.
-3. Migration packets and appendix citation packets in `docs/migration/packets/`.
+3. Migration packets and appendix citation packets in `docs/migration/archive/packets/`.
 4. Blueprint files in `blueprint/src/chapters/`.
 5. Older status tables in `docs/migration/`.
 
@@ -77,7 +77,7 @@ The design goal is high recall, low hallucination, and clean phase boundaries. D
 
 ### Appendix / cosine-sine path
 
-- `docs/migration/packets/appendix_cosinesine_citation_packet.md` explains the mathematical source for the local `cosinesine` claim: the square-block cosine-sine decomposition specialized to 4-by-4 unitaries, traced back to Paige and Wei.
+- `docs/migration/archive/packets/appendix_cosinesine_citation_packet.md` explains the mathematical source for the local `cosinesine` claim: the square-block cosine-sine decomposition specialized to 4-by-4 unitaries, traced back to Paige and Wei.
 - `TwoControl/CosineSine/Definitions.lean` defines the appendix-facing objects such as `blockDiag2`, `realDiag2`, `csBlockCore`, `ry`, and `conditionalRy`.
 - `TwoControl/CosineSine/Statements.lean` contains the local theorem chain that bridges the matrix decomposition to the circuit statement.
 - `TwoControl/CosineSine/Main.lean` is an isolated import target for the appendix work.
@@ -122,21 +122,21 @@ This work was validated with a successful full `lake build` after the final proo
 
 ## Current Architectural Friction
 
-- `docs/migration/theorem_map.md` and some older generation docs are historically useful, but they do not fully reflect current Lean completion status.
-- `docs/migration/lean_structure_audit.md` is still relevant: many repeated helper families remain duplicated across section files and should eventually be extracted into shared helper modules.
+- `docs/migration/archive/theorem_map.md` and some older generation docs are historically useful, but they do not fully reflect current Lean completion status.
+- `docs/migration/archive/lean_structure_audit.md` is still relevant: many repeated helper families remain duplicated across section files and should eventually be extracted into shared helper modules.
 - Performance matters. Some proofs are logically correct but elaboration-sensitive, so proof shape and local helper design matter as much as the theorem statement.
 - In the cosine-sine appendix, `squareBlockCSD_exists` is proof-heavy enough that build-time elaboration cost became part of the engineering problem.
 
 ## Key Files For A New Agent
 
 - `README.md`: high-level project purpose and local workflow commands.
-- `docs/migration/agent_rules.md`: hard constraints for the migration workflow.
-- `docs/migration/lean_structure_audit.md`: current picture of helper duplication and recommended module boundaries.
+- `docs/migration/archive/agent_rules.md`: hard constraints for the migration workflow.
+- `docs/migration/archive/lean_structure_audit.md`: current picture of helper duplication and recommended module boundaries.
 - `docs/journal/2026-04-04.md`: why the AI-agent pipeline exists.
 - `docs/journal/2026-04-08.md`: helper extraction and conservative refactor pattern.
 - `docs/journal/2026-04-09.md`: Section 4 proof-hardening lessons.
 - `docs/journal/2026-04-10.md`: completion of Sections 5-7 and build validation.
-- `docs/migration/packets/appendix_cosinesine_citation_packet.md`: source justification for the local cosine-sine appendix statement.
+- `docs/migration/archive/packets/appendix_cosinesine_citation_packet.md`: source justification for the local cosine-sine appendix statement.
 - `TwoControl/Main.lean`: current main Lean entry point.
 - `TwoControl/CosineSine/Statements.lean`: current appendix proof hotspot.
 

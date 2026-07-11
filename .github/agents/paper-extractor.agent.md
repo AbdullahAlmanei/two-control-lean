@@ -14,15 +14,15 @@ Primary source:
 
 Governing documents:
 - `docs/migration/shared_context.md`
-- `docs/migration/object_conventions.md`
-- `docs/migration/agent_rules.md`
-- `docs/migration/section_assignments.md`
-- `docs/migration/schemas/paper_packet_schema.md`
+- `docs/migration/archive/object_conventions.md`
+- `docs/migration/archive/agent_rules.md`
+- `docs/migration/archive/section_assignments.md`
+- `docs/migration/archive/schemas/paper_packet_schema.md`
 
 ## Output
 
 You write exactly one file:
-- `docs/migration/packets/sectionN_paper_packet.md`
+- `docs/migration/archive/packets/sectionN_paper_packet.md`
 
 ## File mode
 
@@ -59,4 +59,4 @@ You write exactly one file:
 
 Write only the markdown content for:
 
-`docs/migration/packets/sectionN_paper_packet.md`
+`docs/migration/archive/packets/sectionN_paper_packet.md`
