@@ -1,0 +1,266 @@
+% HISTORICAL (resolved 2026-07-10): this counterexample concerns the June 2026
+% updated_cliff.tex gates. The July 1, 2026 universal_new_gates.tex replaces the
+% gates with an orthogonal-axes pair, adopting the second repair suggested below.
+\documentclass[11pt]{article}
+
+\usepackage[margin=1in]{geometry}
+\usepackage{amsmath}
+\usepackage{amssymb}
+
+\newcommand{\Tr}{\operatorname{Tr}}
+\newcommand{\ii}{i}
+\newcommand{\Rz}{R_z}
+\newcommand{\Gone}{G_1}
+\newcommand{\Gtwo}{G_2}
+\newcommand{\pauli}{\sigma}
+
+\begin{document}
+
+\section*{A counterexample to the three-factor $G_1,G_2$ Euler step}
+
+Let
+\[
+  \Gone = e^{-\ii\pi/4}THTH,
+  \qquad
+  \Gtwo = e^{-\ii\pi/4}HTHT.
+\]
+The claim under consideration is that every determinant-one one-qubit unitary
+is, up to global phase, of the form
+\[
+  \Gone^a\Gtwo^b\Gone^c
+\]
+for some real numbers $a,b,c$.  The following exact calculation shows that this
+claim is false for these particular gates.
+
+Write a determinant-one one-qubit unitary in the form
+\[
+  X=tI+\ii\,w\cdot\pauli,
+  \qquad
+  t\in\mathbb{R},\quad w\in\mathbb{R}^3,\quad t^2+\|w\|^2=1.
+\]
+Also write
+\[
+  \Gone=\cos(\alpha)I+\ii\sin(\alpha)n_1\cdot\pauli,
+  \qquad
+  \Gtwo=\cos(\alpha)I+\ii\sin(\alpha)n_2\cdot\pauli,
+\]
+where $n_1,n_2$ are unit vectors.  The two gates have the same trace, so the
+same $\alpha$ can be used, up to sign choices for the axes.  These sign choices
+do not affect the argument below, since only squares occur.
+
+Direct matrix calculation gives
+\[
+  \Tr(\Gone)=\Tr(\Gtwo)=1+\frac{1}{\sqrt2}.
+\]
+Thus
+\[
+  \cos(\alpha)
+  =
+  \frac12+\frac{1}{2\sqrt2}
+  =:c,
+  \qquad
+  \sin^2(\alpha)=1-c^2=\frac{5-2\sqrt2}{8}.
+\]
+From the exact matrix for $\Gone$,
+\[
+  (\Gone)_{00}
+  =
+  \frac{(1-\ii)(1+\sqrt2+\ii)}{4}
+  =
+  c-\frac{\ii}{2\sqrt2}.
+\]
+Since the $(0,0)$ entry of
+$\cos(\alpha)I+\ii\sin(\alpha)n_1\cdot\pauli$ is
+$\cos(\alpha)+\ii\sin(\alpha)(n_1)_z$, we get
+\[
+  \sin^2(\alpha)(n_1)_z^2=\frac18,
+  \qquad
+  (n_1)_z^2=\frac{1}{5-2\sqrt2}.
+\]
+
+Let
+\[
+  k=\langle n_1,n_2\rangle .
+\]
+Another direct matrix calculation gives
+\[
+  \Gone\Gtwo
+  =
+  \frac12
+  \begin{pmatrix}
+    1-\ii & -\ii\sqrt2 \\
+    -\ii\sqrt2 & 1+\ii
+  \end{pmatrix},
+\]
+so $\Tr(\Gone\Gtwo)=1$.  On the other hand,
+\[
+  \frac12\Tr(\Gone\Gtwo)
+  =
+  \cos^2(\alpha)-\sin^2(\alpha)k.
+\]
+Therefore
+\[
+  \frac12=c^2-\sin^2(\alpha)k,
+  \qquad
+  k=\frac{2\sqrt2-1}{5-2\sqrt2}.
+\]
+Now
+\[
+\begin{aligned}
+  k^2-(n_1)_z^2
+  &=
+  \frac{(2\sqrt2-1)^2}{(5-2\sqrt2)^2}
+  -
+  \frac{1}{5-2\sqrt2}                                      \\
+  &=
+  \frac{(2\sqrt2-1)^2-(5-2\sqrt2)}{(5-2\sqrt2)^2}             \\
+  &=
+  \frac{4-2\sqrt2}{(5-2\sqrt2)^2}
+  >0.
+\end{aligned}
+\]
+Hence
+\[
+  (n_1)_z^2<k^2.
+\]
+
+Next, every three-factor product about these two axes satisfies a necessary
+constraint.  Let
+\[
+  R_n(x)=\cos(x)I+\ii\sin(x)n\cdot\pauli
+\]
+and suppose
+\[
+  R_{n_1}(a)R_{n_2}(b)R_{n_1}(c)=tI+\ii w\cdot\pauli.
+\]
+Diagonalize $n_1\cdot\pauli$.  In that basis, the $(+1,+1)$ entry is
+\[
+  t+\ii\langle w,n_1\rangle
+  =
+  e^{\ii(a+c)}\bigl(\cos(b)+\ii k\sin(b)\bigr).
+\]
+Taking squared absolute values gives
+\[
+  t^2+\langle w,n_1\rangle^2
+  =
+  \cos^2(b)+k^2\sin^2(b)
+  \geq k^2.
+\]
+
+Now take the exact target
+\[
+  \Rz(\pi)
+  =
+  \begin{pmatrix}
+    -\ii & 0\\
+    0 & \ii
+  \end{pmatrix}
+  =
+  -\ii Z.
+\]
+In the notation above, this has $t=0$ and $w=-e_z$.  Therefore
+\[
+  t^2+\langle w,n_1\rangle^2=(n_1)_z^2<k^2,
+\]
+which violates the necessary constraint.  So there are no real numbers
+$a,b,c$ such that
+\[
+  \Rz(\pi)=\Gone^a\Gtwo^b\Gone^c.
+\]
+The same conclusion holds up to global phase.  Both sides have determinant
+one, so a possible global phase must square to one and is therefore $\pm1$.
+Multiplying by $-1$ changes $(t,w)$ to $(-t,-w)$, and the quantity
+$t^2+\langle w,n_1\rangle^2$ is unchanged.
+
+Thus the exact gate $\Rz(\pi)$ is a counterexample to the claimed global
+three-factor decomposition for these $G_1,G_2$ axes.
+
+\section*{A corrected half-angle repair}
+
+The global three-factor statement is false, but the proof can be repaired for
+the gates that are actually needed, namely the $z$-rotations.  The replacement
+statement is local: sufficiently small $z$-rotations have the desired
+three-factor form.
+
+The criterion above says that a target
+\[
+  X=tI+\ii w\cdot\pauli
+\]
+can have the form
+\[
+  R_{n_1}(a)R_{n_2}(b)R_{n_1}(c)
+\]
+only if
+\[
+  t^2+\langle w,n_1\rangle^2\geq k^2.
+\]
+Conversely, this same inequality is sufficient.  To see this, diagonalize
+$n_1\cdot\pauli$.  In that basis, the top-left entry of
+$R_{n_1}(a)R_{n_2}(b)R_{n_1}(c)$ is
+\[
+  e^{\ii(a+c)}(\cos(b)+\ii k\sin(b)).
+\]
+Thus the squared norm of the top-left entry ranges from $k^2$ to $1$ as $b$
+varies.  Once $b$ is chosen to match this norm, the two remaining phases are
+matched by choosing $a+c$ and $a-c$.  This gives the needed $a$ and $c$.
+
+Now consider a $z$-rotation
+\[
+  \Rz(\varphi)=\cos(\varphi/2)I-\ii\sin(\varphi/2)Z.
+\]
+For this gate,
+\[
+  t^2+\langle w,n_1\rangle^2
+  =
+  \cos^2(\varphi/2)+(n_1)_z^2\sin^2(\varphi/2).
+\]
+If $|\varphi|\leq \pi/2$, then
+\[
+  \sin^2(\varphi/2)\leq \frac12,
+\]
+and therefore
+\[
+  \cos^2(\varphi/2)+(n_1)_z^2\sin^2(\varphi/2)
+  \geq
+  \frac{1+(n_1)_z^2}{2}.
+\]
+For the specific $G_1,G_2$ axes computed above,
+\[
+  \frac{1+(n_1)_z^2}{2}-k^2
+  =
+  \frac{50-31\sqrt2}{289}
+  >0.
+\]
+Hence every $z$-rotation with $|\varphi|\leq\pi/2$ has a three-factor form
+\[
+  \Rz(\varphi)\sim \Gone^a\Gtwo^b\Gone^c
+\]
+for suitable real numbers $a,b,c$.
+
+Finally, let $\theta$ be arbitrary.  After reducing $\theta$ modulo $2\pi$ up
+to global phase, assume $|\theta|\leq\pi$.  Put $\varphi=\theta/2$.  Then
+$|\varphi|\leq\pi/2$, so the preceding paragraph gives
+\[
+  \Rz(\varphi)\sim \Gone^a\Gtwo^b\Gone^c.
+\]
+Since
+\[
+  \Rz(\theta)=\Rz(\varphi)^2,
+\]
+we obtain the corrected real-power decomposition
+\[
+  \Rz(\theta)
+  \sim
+  (\Gone^a\Gtwo^b\Gone^c)(\Gone^a\Gtwo^b\Gone^c).
+\]
+Thus the false three-factor statement can be replaced, for the $R_z$ family,
+by a six-factor statement obtained from two half-rotations.  The rest of the
+approximation argument can then proceed as before: approximate each real power
+of $G_1$ and $G_2$ by an integer power, and use the product-distance lemma to
+add the errors.
+
+An alternative repair is to use an orthogonal-axis version of the
+Boykin/Nielsen--Chuang argument.  With orthogonal axes, the three-factor Euler
+decomposition is globally valid, so the counterexample above does not apply.
+
+\end{document}

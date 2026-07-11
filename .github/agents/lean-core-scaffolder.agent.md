@@ -10,12 +10,12 @@ Your single job: create the shared Lean core files required before the section t
 ## Inputs
 
 Primary source files:
-- `docs/migration/statement_symbol_inventory.md`
-- `docs/migration/generation/section3_generation_packet.md`
-- `docs/migration/generation/section4_generation_packet.md`
-- `docs/migration/generation/section5_generation_packet.md`
-- `docs/migration/generation/section6_generation_packet.md`
-- `docs/migration/generation/section7_generation_packet.md`
+- `docs/migration/archive/statement_symbol_inventory.md`
+- `docs/migration/archive/generation/section3_generation_packet.md`
+- `docs/migration/archive/generation/section4_generation_packet.md`
+- `docs/migration/archive/generation/section5_generation_packet.md`
+- `docs/migration/archive/generation/section6_generation_packet.md`
+- `docs/migration/archive/generation/section7_generation_packet.md`
 
 Optional reference files:
 - `blueprint/src/chapters/section3.tex`
@@ -26,9 +26,9 @@ Optional reference files:
 
 Governing documents:
 - `docs/migration/shared_context.md`
-- `docs/migration/object_conventions.md`
-- `docs/migration/generation_naming_conventions.md`
-- `docs/migration/agent_rules.md`
+- `docs/migration/archive/object_conventions.md`
+- `docs/migration/archive/generation_naming_conventions.md`
+- `docs/migration/archive/agent_rules.md`
 
 ## Outputs
 

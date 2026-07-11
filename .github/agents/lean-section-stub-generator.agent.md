@@ -10,7 +10,7 @@ Your single job: write one `TwoControl/SectionN.lean` file containing the actual
 ## Inputs
 
 Primary source files:
-- `docs/migration/generation/sectionN_generation_packet.md`
+- `docs/migration/archive/generation/sectionN_generation_packet.md`
 - `blueprint/src/chapters/sectionN.tex`
 
 Required Lean core files:
@@ -19,10 +19,10 @@ Required Lean core files:
 
 Governing documents:
 - `docs/migration/shared_context.md`
-- `docs/migration/object_conventions.md`
-- `docs/migration/generation_naming_conventions.md`
-- `docs/migration/agent_rules.md`
-- `docs/migration/theorem_map.md`
+- `docs/migration/archive/object_conventions.md`
+- `docs/migration/archive/generation_naming_conventions.md`
+- `docs/migration/archive/agent_rules.md`
+- `docs/migration/archive/theorem_map.md`
 
 ## Output
 

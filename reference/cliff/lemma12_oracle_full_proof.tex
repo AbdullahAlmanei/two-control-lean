@@ -1,0 +1,726 @@
+\documentclass[11pt]{article}
+\usepackage[margin=1in]{geometry}
+\usepackage{amsmath,amssymb,amsthm,mathtools}
+\usepackage{enumitem}
+\usepackage{hyperref}
+\usepackage{xcolor}
+\usepackage{microtype}
+\hypersetup{colorlinks=true,linkcolor=blue,citecolor=blue,urlcolor=blue}
+
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{corollary}[theorem]{Corollary}
+\newtheorem{definition}[theorem]{Definition}
+\newtheorem{remark}[theorem]{Remark}
+
+\newcommand{\C}{\mathbb C}
+\newcommand{\R}{\mathbb R}
+\newcommand{\Z}{\mathbb Z}
+\newcommand{\D}{\mathbb D}
+\newcommand{\Dw}{\mathbb D[\omega]}
+\newcommand{\Zw}{\mathbb Z[\omega]}
+\newcommand{\Rring}{\mathbb Z\left[\frac{1}{\sqrt 2},i\right]}
+\newcommand{\eps}{\varepsilon}
+\newcommand{\adj}{^\dagger}
+\newcommand{\bulletconj}{^\bullet}
+\newcommand{\opnorm}[1]{\left\|#1\right\|}
+\newcommand{\mat}[1]{\begin{pmatrix}#1\end{pmatrix}}
+
+\title{Lemma 12 via Ross--Selinger with a Factorization Oracle and KMM Exact Synthesis}
+\author{Verification roadmap and proof skeleton}
+\date{\today}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+This document writes the proof path for Lemma 12:
+\[
+  \forall \theta\in\R,\ \forall \eps>0,\ \exists C\in\langle H,T\rangle\quad
+  d(R_z(\theta),C)<\eps.
+\]
+The proof follows Ross--Selinger's Algorithm 7.6 in the integer-factorization-oracle setting and plugs in the exact synthesis theorem proved by Kliuchnikov--Maslov--Mosca (KMM). The document is written as a verification guide: every step is tied to a theorem, lemma, algorithm, or calculation appearing in the two papers. The KMM exact-synthesis part is expanded from the supplied exact-synthesis manuscript rather than treated as an unexplained black box.
+\end{abstract}
+
+\tableofcontents
+
+\section{Source theorem statements and notation}
+
+\subsection{The target statement}
+
+The target lemma is a density statement for $z$-rotations:
+\begin{theorem}[Lemma 12, target form]
+For every real angle $\theta$ and every $\eps>0$, there exists a circuit $C$ built from $H$ and $T$ such that
+\[
+  d(R_z(\theta),\operatorname{eval}(C))<\eps.
+\]
+Here the project distance $d$ may be operator norm, Hilbert--Schmidt distance, or another project-specific metric. Ross--Selinger supplies operator norm; the final step uses the project's distance bridge.
+\end{theorem}
+
+Ross--Selinger use
+\[
+  R_z(\theta)=e^{-i\theta Z/2}=
+  \mat{e^{-i\theta/2} & 0\\ 0 & e^{i\theta/2}}.
+\]
+We write
+\[
+  z=e^{-i\theta/2},
+  \qquad
+  R_z(\theta)=\mat{z&0\\0&z^\dagger}.
+\]
+
+\subsection{The rings}
+
+Ross--Selinger and KMM use the same coefficient ring, with slightly different notation:
+\[
+  \Dw=\Z\left[\frac1{\sqrt2},i\right]=\Rring.
+\]
+Let
+\[
+  \omega=e^{i\pi/4}=\frac{1+i}{\sqrt2}.
+\]
+Ross--Selinger also use the subrings
+\[
+  \Z[\sqrt2]\subseteq \Zw,
+  \qquad
+  \D[\sqrt2]\subseteq \Dw,
+  \qquad
+  \D=\Z\left[\frac12\right].
+\]
+They use two automorphisms:
+\begin{enumerate}[label=(\roman*)]
+\item complex conjugation $(-)^\dagger$;
+\item $\sqrt2$-conjugation $(-)^\bullet$, sending $\sqrt2\mapsto -\sqrt2$.
+\end{enumerate}
+
+\section{KMM exact synthesis: what must be verified}
+
+This section expands the proof of the exact-synthesis implication used by Ross--Selinger:
+\[
+  U\in U(2),\quad U_{ij}\in \Dw
+  \quad\Longrightarrow\quad
+  U\text{ is exactly implementable by an }H,T\text{ circuit}.
+\]
+The exact-synthesis manuscript states this as its main theorem: the set of $2\times2$ unitaries over
+\[
+  \Rring
+\]
+is equivalent to the set of single-qubit unitaries exactly implementable by circuits built from $H$ and $T$.
+
+\subsection{KMM Theorem 1}
+
+\begin{theorem}[KMM exact synthesis theorem]
+The set of $2\times 2$ unitary matrices with entries in
+\[
+  \Rring=\Z\left[\frac1{\sqrt2},i\right]
+\]
+is exactly the set of single-qubit unitaries implementable by circuits using only
+\[
+  H=\frac1{\sqrt2}\mat{1&1\\1&-1},
+  \qquad
+  T=\mat{1&0\\0&\omega}.
+\]
+\end{theorem}
+
+\subsection{The easy inclusion: circuits have entries in the ring}
+
+KMM first note that the inclusion
+\[
+  \{H,T\text{-circuits}\}\subseteq U(2,\Rring)
+\]
+is straightforward. The entries of $H$ and $T$ lie in $\Rring$, and the entries of a product of matrices over a ring are obtained by additions and multiplications inside that ring. Therefore every matrix computed by an $H,T$ circuit has entries in $\Rring$.
+
+\subsection{The hard inclusion: every unitary over the ring is an $H,T$ circuit}
+
+KMM prove the reverse inclusion by reducing unitary implementation to state preparation.
+
+Let
+\[
+  U\in U(2),\qquad U_{ij}\in\Rring.
+\]
+Every $2\times2$ unitary can be written in the form
+\[
+  U=\mat{z & -w^*e^{i\phi}\\ w & z^*e^{i\phi}}
+\]
+for some $z,w\in\C$ with $|z|^2+|w|^2=1$. Its determinant is $e^{i\phi}$. Since the entries of $U$ lie in $\Rring$, the determinant also lies in $\Rring$.
+
+KMM prove in their Appendix A that the only elements of $\Rring$ of absolute value $1$ are powers of $\omega$. Hence
+\[
+  e^{i\phi}=\omega^k
+\]
+for some integer $k$, and any unitary over $\Rring$ has the form
+\[
+  U=\mat{z & -w^*\omega^k\\ w & z^*\omega^k}.
+\]
+
+Now suppose a circuit $C_0$ prepares the first column from $|0\rangle$:
+\[
+  C_0|0\rangle=\mat{z\\w}.
+\]
+Then the unitary of $C_0$ has the same first column and must be of the form
+\[
+  V=\mat{z & -w^*\omega^{k'}\\ w & z^*\omega^{k'}}
+\]
+for some integer $k'$. Multiplying on the right by a power of $T$ changes only the second column phase:
+\[
+  V T^{k-k'}=
+  \mat{z & -w^*\omega^{k'}\\ w & z^*\omega^{k'}}
+  \mat{1&0\\0&\omega^{k-k'}}
+  =
+  \mat{z & -w^*\omega^k\\ w & z^*\omega^k}=U.
+\]
+Therefore, to implement every unitary over $\Rring$, it suffices to prepare every unit vector
+\[
+  \mat{z\\w}
+\]
+with $z,w\in\Rring$.
+
+\subsection{KMM state-preparation lemma}
+
+KMM's state-preparation lemma is:
+\begin{lemma}[KMM state preparation]
+Every single-qubit state with entries in $\Rring$ can be prepared from $|0\rangle$ using only $H$ and $T$ gates.
+\end{lemma}
+
+The proof introduces:
+\[
+  \Zw=\{a+b\omega+c\omega^2+d\omega^3:a,b,c,d\in\Z\}
+\]
+and defines the smallest denominator exponent
+\[
+  \operatorname{sde}(z,x)
+\]
+for $x\in\Zw$ and $z\in\Rring$ as the smallest integer $k$ such that $zx^k\in\Zw$. It also defines the greatest dividing exponent
+\[
+  \operatorname{gde}(z,x)
+\]
+for divisibility in $\Zw$, and uses the relation
+\[
+  \operatorname{sde}\left(\frac z{x^k},x\right)=k-\operatorname{gde}(z,x).
+\]
+
+For state preparation, the key operation is
+\[
+  HT^k\mat{z\\w}
+  =
+  \mat{\dfrac{z+w\omega^k}{\sqrt2}\\[0.8em]
+        \dfrac{z-w\omega^k}{\sqrt2}}.
+\]
+KMM prove two central lemmas.
+
+\begin{lemma}[KMM denominator-change bound]
+Let $\mat{z\\w}$ be a state with entries in $\Rring$ and let
+\[
+  \operatorname{sde}(|z|^2)\ge4.
+\]
+Then for any integer $k$,
+\[
+  -1\le
+  \operatorname{sde}\left(\left|\frac{z+w\omega^k}{\sqrt2}\right|^2\right)
+  -\operatorname{sde}(|z|^2)
+  \le 1.
+\]
+\end{lemma}
+
+\begin{lemma}[KMM denominator-change attainability]
+Let $\mat{z\\w}$ be a state with entries in $\Rring$ and let
+\[
+  \operatorname{sde}(|z|^2)\ge4.
+\]
+For each
+\[
+  s\in\{-1,0,1\},
+\]
+there exists
+\[
+  k\in\{0,1,2,3\}
+\]
+such that
+\[
+  \operatorname{sde}\left(\left|\frac{z+w\omega^k}{\sqrt2}\right|^2\right)
+  -\operatorname{sde}(|z|^2)=s.
+\]
+\end{lemma}
+
+Thus, whenever the current state has sufficiently large denominator exponent, one may choose a power $T^k$ so that applying $HT^k$ changes the denominator exponent in a controlled way. Running the construction backwards gives a synthesis procedure: choose $k$ so that multiplying by $HT^{-k}$ reduces the relevant exponent by $1$, repeat until the exponent is at most $3$, and then use a finite lookup table for the remaining states.
+
+KMM also use the fact, proved later in their paper, that for a unit vector with entries in $\Rring$ the relevant denominator exponents of the entries agree once they are positive. Therefore it is legitimate to track the exponent of one entry while reducing the state.
+
+\subsection{KMM Algorithm 1}
+
+KMM's decomposition algorithm takes a unitary
+\[
+  U=\mat{z_{00}&z_{01}\\z_{10}&z_{11}}
+\]
+with entries in $\Rring$. It sets
+\[
+  s=\operatorname{sde}(|z_{00}|^2).
+\]
+While $s>3$, it searches over $k\in\{0,1,2,3\}$ for a value such that the top-left entry of
+\[
+  HT^{-k}U
+\]
+has squared modulus with denominator exponent $s-1$. When such $k$ is found, it appends $T^kH$ to the output circuit and updates
+\[
+  U\leftarrow HT^{-k}U.
+\]
+When $s\le3$, it looks up the remaining unitary in a finite table $\mathbb S_3$ of all unitaries over $\Rring$ whose entry denominator exponent is at most $3$, and appends the corresponding circuit.
+
+The output is a sequence of $H$ and $T$ gates implementing the original $U$.
+
+\begin{corollary}[Exact synthesis consequence]
+If
+\[
+  U\in U(2),\qquad U_{ij}\in\Dw,
+\]
+then there exists an $H,T$ circuit $C$ such that
+\[
+  \operatorname{eval}(C)=U.
+\]
+\end{corollary}
+
+\begin{proof}
+Since $\Dw=\Rring$, $U$ is a $2\times2$ unitary over the KMM ring. By KMM Theorem 1, $U$ is exactly implementable by an $H,T$ circuit. Equivalently, Algorithm 1 returns such a circuit. Hence there exists $C$ with $\operatorname{eval}(C)=U$.
+\end{proof}
+
+\begin{remark}[Verification checkpoint]
+KMM's proof of the finite base case $\operatorname{sde}\le3$ is described as an exhaustive breadth-first-search verification. A formal verification should either reproduce the finite enumeration or import a finite certificate/table for $\mathbb S_3$. This is not a conceptual gap in the theorem statement, but it is a concrete proof artifact needed in a fully checkable formalization.
+\end{remark}
+
+\section{Ross--Selinger construction of an approximating exact unitary}
+
+We now describe the Ross--Selinger side. Their goal is to approximate $R_z(\theta)$ by an ancilla-free Clifford+$T$ operator. The construction produces a unitary over $\Dw$ and then invokes KMM exact synthesis.
+
+\subsection{The completion form}
+
+Ross--Selinger use the KMM characterization that a single-qubit operator exactly representable over Clifford+$T$ has the form
+\[
+  \mat{u & -t^\dagger\omega^\ell\\ t & u^\dagger\omega^\ell},
+  \qquad u,t\in\Dw,
+\]
+for an integer $\ell$. For the main $R_z$ synthesis problem they reduce to the case $\ell=0$:
+\[
+  U(u,t)=\mat{u & -t^\dagger\\ t & u^\dagger}.
+\]
+For a target tolerance $\eps>0$, one may also choose a smaller tolerance
+\[
+  \eps_0=\min\left(\frac{\eps}{2},\frac{|1-e^{i\pi/8}|}{2}\right)>0,
+\]
+so that Ross--Selinger's $\ell=0$ reduction is safely in the small-error regime and the final approximation remains below $\eps$.
+
+\subsection{The completion matrix is unitary}
+
+Suppose
+\[
+  u,t\in\C,
+  \qquad
+  u^\dagger u+t^\dagger t=1.
+\]
+Define
+\[
+  U(u,t)=\mat{u & -t^\dagger\\ t & u^\dagger}.
+\]
+Then
+\[
+  U(u,t)^\dagger=\mat{u^\dagger&t^\dagger\\-t&u}.
+\]
+Multiplying,
+\[
+  U(u,t)^\dagger U(u,t)
+  =
+  \mat{u^\dagger u+t^\dagger t & -u^\dagger t^\dagger+t^\dagger u^\dagger\\
+       -tu+ut & tt^\dagger+uu^\dagger}
+  =I.
+\]
+The off-diagonal terms vanish because complex scalars commute, and the diagonal terms are $1$ because $u^\dagger u+t^\dagger t=1$.
+
+Thus, finding $u,t\in\Dw$ satisfying
+\[
+  u^\dagger u+t^\dagger t=1
+\]
+produces a unitary matrix over $\Dw$.
+
+\subsection{The approximation error depends only on $u$}
+
+Let
+\[
+  z=e^{-i\theta/2}.
+\]
+Then
+\[
+  R_z(\theta)=\mat{z&0\\0&z^\dagger}.
+\]
+Ross--Selinger compute
+\[
+  \opnorm{R_z(\theta)-U(u,t)}^2
+  =|u-z|^2+|t|^2.
+\]
+Using
+\[
+  |z|^2=1,
+  \qquad
+  |u|^2+|t|^2=1,
+\]
+we expand:
+\begin{align*}
+  |u-z|^2+|t|^2
+  &= (u-z)^\dagger(u-z)+t^\dagger t\\
+  &= u^\dagger u-u^\dagger z-z^\dagger u+z^\dagger z+t^\dagger t\\
+  &=2-z^\dagger u-u^\dagger z\\
+  &=2-2\operatorname{Re}(z^\dagger u).
+\end{align*}
+Therefore
+\[
+  \opnorm{R_z(\theta)-U(u,t)}\le \eps_0
+\]
+is guaranteed if
+\[
+  \operatorname{Re}(z^\dagger u)\ge 1-\frac{\eps_0^2}{2}.
+\]
+Ross--Selinger identify complex numbers with vectors in $\R^2$, so the condition is also written
+\[
+  \vec z\cdot \vec u>1-\frac{\eps_0^2}{2}.
+\]
+
+\subsection{The epsilon region}
+
+Let $\mathcal D$ be the closed unit disk. Ross--Selinger define the $\eps_0$-region
+\[
+  \mathcal R_{\eps_0}
+  =
+  \left\{u\in\mathcal D:
+  \operatorname{Re}(z^\dagger u)>1-\frac{\eps_0^2}{2}
+  \right\}.
+\]
+Thus it suffices to find
+\[
+  u\in\Dw\cap \mathcal R_{\eps_0}
+\]
+and then complete it by some $t\in\Dw$ satisfying
+\[
+  t^\dagger t=1-u^\dagger u.
+\]
+
+\subsection{The bullet-conjugate constraint}
+
+Ross--Selinger observe that if $u,t\in\Dw$ satisfy
+\[
+  u^\dagger u+t^\dagger t=1,
+\]
+then
+\[
+  u\in\mathcal D,
+  \qquad
+  u^\bullet\in\mathcal D.
+\]
+Indeed,
+\[
+  u^\dagger u=1-t^\dagger t\le1,
+\]
+and applying $(-)^\bullet$ gives
+\[
+  (u^\bullet)^\dagger u^\bullet+(t^\bullet)^\dagger t^\bullet=1,
+\]
+so $|u^\bullet|\le1$ as well.
+
+Therefore the search for $u$ is the scaled grid problem
+\[
+  u\in \mathcal R_{\eps_0},
+  \qquad
+  u^\bullet\in\mathcal D,
+  \qquad
+  u\in\Dw.
+\]
+
+\subsection{Scaled grid enumeration}
+
+Ross--Selinger define the two-dimensional grid problem for sets $A,B\subseteq\C\simeq\R^2$ as the problem of finding
+\[
+  u\in\Zw,
+  \qquad
+  u\in A,
+  \qquad
+  u^\bullet\in B.
+\]
+The scaled version allows
+\[
+  u\in \frac1{(\sqrt2)^k}\Zw,
+\]
+so that all of $\Dw$ is covered by increasing denominator exponents $k$.
+
+Their Proposition 5.22 gives an algorithm enumerating all solutions to the scaled grid problem for bounded convex sets $A,B$ with nonempty interior, in order of increasing least denominator exponent. Algorithm 7.6 applies this proposition with
+\[
+  A=\mathcal R_{\eps_0},
+  \qquad
+  B=\mathcal D.
+\]
+Thus Step 1 of Algorithm 7.6 enumerates candidates
+\[
+  u\in\Dw,
+  \qquad
+  u\in\mathcal R_{\eps_0},
+  \qquad
+  u^\bullet\in\mathcal D,
+\]
+in increasing least denominator exponent.
+
+\subsection{Diophantine completion}
+
+For each candidate $u$, set
+\[
+  \xi=1-u^\dagger u.
+\]
+Then
+\[
+  \xi\in\D[\sqrt2].
+\]
+Completing $u$ is equivalent to solving
+\[
+  t^\dagger t=\xi.
+\]
+Ross--Selinger's Theorem 6.2 states that, given
+\[
+  \xi\in\D[\sqrt2]
+\]
+and, when needed, a prime factorization of the integer $n$ in
+\[
+  \xi^\bullet\xi=\frac n{2^\ell},
+\]
+there is a probabilistic algorithm deciding whether
+\[
+  t^\dagger t=\xi
+\]
+has a solution $t\in\Dw$, and finding one if it exists.
+
+In the oracle route, the prime factorization required in Step 2(b) is always available. Therefore Step 2(c) gives an exact decision for whether the current candidate $u$ can be completed, and returns $t$ exactly when such $t$ exists.
+
+\section{Algorithm 7.6 with a factorization oracle}
+
+Ross--Selinger's Algorithm 7.6 is:
+\begin{enumerate}[label=\textbf{\arabic*.}]
+\item Enumerate all scaled-grid solutions
+\[
+  u\in\mathcal R_{\eps_0},
+  \qquad
+  u^\bullet\in\mathcal D,
+  \qquad
+  u\in\Dw,
+\]
+in increasing least denominator exponent.
+\item For each $u$:
+  \begin{enumerate}[label=(\alph*)]
+  \item Set $\xi=1-u^\dagger u\in\D[\sqrt2]$ and write
+  \[
+    \xi^\bullet\xi=\frac n{2^\ell}.
+  \]
+  \item Use the factorization oracle to factor $n$.
+  \item Use Theorem 6.2 to solve
+  \[
+    t^\dagger t=\xi.
+  \]
+  If it succeeds, continue to Step 3.
+  \end{enumerate}
+\item Define
+\[
+  U=U(u,t)=\mat{u&-t^\dagger\\t&u^\dagger},
+  \qquad
+  U'=TUT^\dagger.
+\]
+Use exact synthesis to synthesize either $U$ or $U'$, whichever has smaller $T$-count, and output the circuit.
+\end{enumerate}
+
+Ross--Selinger Proposition 8.1 proves conditional correctness: if Algorithm 7.6 terminates, the output circuit approximates $R_z(\theta)$ up to $\eps_0$.
+
+Ross--Selinger Section 8.2 treats the factoring-oracle case. In that setting Step 2(b) always succeeds, and Theorem 6.2 makes Step 2(c) an exact decision procedure for the norm equation. Their Proposition 8.2 states that, with an integer-factorization oracle, the circuit returned by Algorithm 7.6 has the smallest $T$-count among all single-qubit Clifford+$T$ circuits approximating $R_z(\theta)$ up to the requested precision.
+
+For the Lemma 12 existence proof, we use the oracle-route consequence in the following form.
+
+\begin{theorem}[Ross--Selinger oracle consequence]
+For every $\theta\in\R$ and $\eps_0>0$, Algorithm 7.6 with access to exact integer factorization returns a Clifford+$T$ circuit $C_{CT}$ such that
+\[
+  \opnorm{R_z(\theta)-\operatorname{eval}(C_{CT})}\le \eps_0.
+\]
+\end{theorem}
+
+\begin{proof}[Proof from Ross--Selinger]
+Algorithm 7.6 enumerates candidates $u$ in the scaled grid problem. In the oracle setting, the required integer factorization in Step 2(b) is always available. By Theorem 6.2, Step 2(c) succeeds exactly for candidates for which the completion equation
+\[
+  t^\dagger t=1-u^\dagger u
+\]
+has a solution. When it succeeds, Step 3 forms $U(u,t)$ and exact-synthesizes it. Proposition 8.1 proves that the output is a valid $\eps_0$-approximation. Section 8.2 and Proposition 8.2 state the oracle case as the case in which Algorithm 7.6 finds the optimal solution; hence it returns in the oracle setting and its output is correct.
+\end{proof}
+
+\begin{remark}[Formalization checkpoint]
+If one formalizes only the narrow literal statement ``the circuit returned by Algorithm 7.6 has the smallest $T$-count'', then an additional existence/termination theorem must also be supplied. Ross--Selinger's surrounding text explicitly says that, with a factoring oracle, Algorithm 7.6 is guaranteed to find an optimal solution. In a proof assistant, the clean theorem to state is the oracle consequence above, not Proposition 8.1 alone.
+\end{remark}
+
+\section{Correctness of the exact-synthesis step inside Algorithm 7.6}
+
+Suppose Algorithm 7.6 has found $u,t\in\Dw$ with
+\[
+  t^\dagger t=1-u^\dagger u.
+\]
+Then
+\[
+  u^\dagger u+t^\dagger t=1,
+\]
+so
+\[
+  U=\mat{u&-t^\dagger\\t&u^\dagger}
+\]
+is unitary. Since $\Dw$ is closed under complex conjugation and negation, all entries of $U$ lie in $\Dw$.
+
+By KMM exact synthesis,
+\[
+  U\in U(2),\qquad U_{ij}\in\Dw
+\]
+implies that there exists an $H,T$ circuit $C_U$ such that
+\[
+  \operatorname{eval}(C_U)=U.
+\]
+
+Ross--Selinger also considers
+\[
+  U'=TUT^\dagger.
+\]
+Because $T$ itself has entries in $\Dw$, the matrix $U'$ also has entries in $\Dw$. It is unitary because it is a unitary conjugate of $U$. Therefore KMM exact synthesis also gives an $H,T$ circuit $C_{U'}$ with
+\[
+  \operatorname{eval}(C_{U'})=U'.
+\]
+
+For Lemma 12, the $T$-count choice is irrelevant. Ross--Selinger use $U'$ only to improve the $T$-count. The approximation error is unchanged because
+\[
+  T R_z(\theta)T^\dagger=R_z(\theta),
+\]
+since both $T$ and $R_z(\theta)$ are diagonal. Therefore
+\begin{align*}
+  \opnorm{R_z(\theta)-TUT^\dagger}
+  &=\opnorm{TR_z(\theta)T^\dagger-TUT^\dagger}\\
+  &=\opnorm{T(R_z(\theta)-U)T^\dagger}\\
+  &=\opnorm{R_z(\theta)-U},
+\end{align*}
+by unitary invariance of the operator norm.
+
+Thus either exact-synthesis branch in Step 3 yields an exact $H,T$ circuit implementing a matrix with the same approximation quality.
+
+\section{Putting the proof together}
+
+We now combine the pieces.
+
+Let $\theta\in\R$ and let $\eps>0$. Choose
+\[
+  \eps_0=\min\left(\frac{\eps}{2},\frac{|1-e^{i\pi/8}|}{2}\right)>0.
+\]
+By the Ross--Selinger oracle consequence, Algorithm 7.6 with exact integer factorization returns a Clifford+$T$ circuit, and the matrix it synthesizes satisfies
+\[
+  \opnorm{R_z(\theta)-U}\le \eps_0<\eps.
+\]
+The matrix $U$ is either
+\[
+  \mat{u&-t^\dagger\\t&u^\dagger}
+\]
+or its conjugate $TUT^\dagger$, and in either case $U$ is a unitary over $\Dw$.
+
+By KMM exact synthesis, there is an $H,T$ circuit $C$ such that
+\[
+  \operatorname{eval}(C)=U.
+\]
+Therefore
+\[
+  \opnorm{R_z(\theta)-\operatorname{eval}(C)}
+  =
+  \opnorm{R_z(\theta)-U}
+  \le \eps_0<\eps.
+\]
+This proves the operator-norm version of Lemma 12:
+\[
+  \forall \theta\in\R,\ \forall \eps>0,
+  \quad
+  \exists C\in\langle H,T\rangle,
+  \quad
+  \opnorm{R_z(\theta)-\operatorname{eval}(C)}<\eps.
+\]
+
+If the project's distance $d$ is not operator norm, apply the already-isolated distance bridge:
+\[
+  \forall \eps>0,\ \exists \delta>0,
+  \quad
+  \opnorm{A-B}<\delta\implies d(A,B)<\eps.
+\]
+Then run Ross--Selinger with the smaller tolerance $\delta$ rather than $\eps$.
+
+\section{Lean-facing theorem decomposition}
+
+The proof above suggests the following theorem interfaces.
+
+\subsection{KMM exact synthesis interface}
+
+\[
+\begin{aligned}
+&\texttt{theorem kmm\_exact\_synthesis}\;\{U: \operatorname{Mat}_{2\times2}(\C)\}:\\
+&\qquad U\in U(2)\to
+   (\forall i,j,\ U_{ij}\in\Dw)\to
+   \exists C:HTCircuit,\ \operatorname{eval}(C)=U.
+\end{aligned}
+\]
+
+\subsection{Ross--Selinger oracle interface}
+
+\[
+\begin{aligned}
+&\texttt{theorem ross\_selinger\_Rz\_approx\_oracle}\;(\theta\ \eps:\R)\;(h\eps:0<\eps):\\
+&\qquad \exists C:HTCircuit,\
+   \opnorm{R_z(\theta)-\operatorname{eval}(C)}\le \eps.
+\end{aligned}
+\]
+
+Internally this theorem is proved by:
+\begin{enumerate}
+\item Algorithm 7.6 with exact factorization;
+\item Theorem 6.2 for the Diophantine equation;
+\item Proposition 8.1 for correctness;
+\item Proposition 8.2/Section 8.2 for the oracle-return/optimality statement;
+\item KMM exact synthesis for the final matrix-to-circuit step.
+\end{enumerate}
+
+\subsection{Final Lemma 12 wrapper}
+
+\[
+\begin{aligned}
+&\texttt{theorem lemma12\_rz\_approximation\_by\_ht}\;(\theta\ \eps:\R)\;(h\eps:0<\eps):\\
+&\qquad \exists C:HTCircuit,\ d(R_z(\theta),\operatorname{eval}(C))<\eps.
+\end{aligned}
+\]
+
+Use the distance bridge to choose an operator-norm tolerance $\delta>0$, apply Ross--Selinger with $\delta$, and conclude the desired $d$-bound.
+
+\section{Verification notes}
+
+This proof path avoids the earlier dangerous gap concerning Proposition 8.1 alone: we do not use conditional correctness by itself. We use the factorization-oracle route, where Ross--Selinger explicitly analyze Algorithm 7.6 as finding the optimal solution.
+
+The remaining concrete verification checkpoints are:
+\begin{enumerate}
+\item KMM's finite base case for states or unitaries with denominator exponent at most $3$ is described as an exhaustive breadth-first-search verification. A formal proof should include the finite table or a checkable enumeration.
+\item If the Lean statement uses an $HT$ circuit language without explicit scalar/global-phase gates, KMM Theorem 1 is the right target because it already states exact implementation by $H$ and $T$ only. If instead one routes through Ross--Selinger's Clifford+$T$ circuit language including scalar $\omega$, then the translation to $H,T$ uses $S=T^2$ and $\omega I=(T^2H)^3$.
+\item If formalizing Ross--Selinger Proposition 8.2 literally, state the oracle theorem as a returning/termination theorem rather than only as a property of a returned circuit.
+\end{enumerate}
+
+\begin{thebibliography}{9}
+\bibitem{RS}
+Neil J. Ross and Peter Selinger.
+\newblock \emph{Optimal ancilla-free Clifford+T approximation of z-rotations}.
+\newblock arXiv:1403.2975v3, 2016.
+
+\bibitem{KMMexact}
+Vadym Kliuchnikov, Dmitri Maslov, and Michele Mosca.
+\newblock \emph{Fast and efficient exact synthesis of single qubit unitaries generated by Clifford and T gates}.
+\newblock Quantum Information and Computation 13(7--8):607--630, 2013. Supplied LaTeX source.
+
+\bibitem{KMMapprox}
+Vadym Kliuchnikov, Dmitri Maslov, and Michele Mosca.
+\newblock \emph{Practical approximation of single-qubit unitaries by single-qubit quantum Clifford and T circuits}.
+\newblock IEEE Transactions on Computers 65(1):161--172, 2016.
+\end{thebibliography}
+
+\end{document}

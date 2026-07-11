@@ -1,4 +1,5 @@
 import TwoControl.BlockHelpers
+import Mathlib.Analysis.InnerProductSpace.PiL2
 import Mathlib.Analysis.InnerProductSpace.JointEigenspace
 import Mathlib.Analysis.Matrix.Hermitian
 import Mathlib.Analysis.CStarAlgebra.Spectrum
@@ -185,6 +186,376 @@ lemma conjTranspose_mem_unitaryGroup {n : ℕ} {U : Square n}
     U† ∈ Matrix.unitaryGroup (Fin n) ℂ := by
   simpa [Matrix.conjTranspose, star_eq_conjTranspose] using
     (Matrix.map_star_mem_unitaryGroup_iff).2 ((Matrix.transpose_mem_unitaryGroup_iff).2 hU)
+
+/-- A square complex matrix with pairwise orthogonal columns and prescribed nonnegative
+column norms factors as a unitary times a real diagonal matrix. -/
+theorem exists_unitary_mul_realDiagonal_of_orthogonal_cols
+    {n : Type*} [Fintype n] [DecidableEq n]
+    (M : Matrix n n ℂ) (σ : n → ℝ)
+    (hσ_nonneg : ∀ i, 0 ≤ σ i)
+    (horth : ∀ ⦃i j : n⦄, i ≠ j →
+      inner ℂ (WithLp.toLp 2 (M *ᵥ Pi.single i 1))
+        (WithLp.toLp 2 (M *ᵥ Pi.single j 1)) = 0)
+    (hnorm : ∀ i, ‖WithLp.toLp 2 (M *ᵥ Pi.single i 1)‖ = σ i) :
+    ∃ P : Matrix n n ℂ, P ∈ Matrix.unitaryGroup n ℂ ∧
+      M = P * Matrix.diagonal (fun i => (σ i : ℂ)) := by
+  let s : Set n := {i | σ i ≠ 0}
+  let v : n → EuclideanSpace ℂ n :=
+    fun i => ((σ i : ℂ)⁻¹) • WithLp.toLp 2 (M *ᵥ Pi.single i 1)
+  have hv : Orthonormal ℂ (s.restrict v) := by
+    refine ⟨?_, ?_⟩
+    · intro i
+      have hiσ_ne : σ i ≠ 0 := i.property
+      have hvnorm : ‖v i‖ = 1 := by
+        calc
+          ‖v i‖ = ‖((σ i : ℂ)⁻¹)‖ * ‖WithLp.toLp 2 (M *ᵥ Pi.single i 1)‖ := by
+            simp [v, norm_smul]
+          _ = (σ i)⁻¹ * σ i := by
+            rw [norm_inv, Complex.norm_real, Real.norm_eq_abs,
+              abs_of_nonneg (hσ_nonneg i), hnorm i]
+          _ = 1 := by
+            field_simp [hiσ_ne]
+      exact hvnorm
+    · intro i j hij
+      have hij' : i.1 ≠ j.1 := by
+        intro h
+        apply hij
+        exact Subtype.ext h
+      calc
+        inner ℂ (s.restrict v i) (s.restrict v j)
+            = ((σ i.1 : ℂ)⁻¹) *
+                inner ℂ (WithLp.toLp 2 (M *ᵥ Pi.single i.1 1))
+                  (WithLp.toLp 2 (M *ᵥ Pi.single j.1 1)) *
+                ((σ j.1 : ℂ)⁻¹) := by
+                  simp [Set.restrict_apply, v, inner_smul_left, inner_smul_right,
+                    mul_assoc, mul_left_comm, mul_comm]
+        _ = 0 := by rw [horth hij']; simp
+  have hcard : Module.finrank ℂ (EuclideanSpace ℂ n) = Fintype.card n := by
+    exact finrank_euclideanSpace
+  obtain ⟨b, hb⟩ :=
+    hv.exists_orthonormalBasis_extension_of_card_eq (v := v) hcard
+  let std : OrthonormalBasis n ℂ (EuclideanSpace ℂ n) := EuclideanSpace.basisFun n ℂ
+  let P : Matrix n n ℂ := std.toBasis.toMatrix b.toBasis
+  have hP : P ∈ Matrix.unitaryGroup n ℂ := by
+    simpa [P] using std.toMatrix_orthonormalBasis_mem_unitary b
+  have hPcol (i : n) : P *ᵥ Pi.single i 1 = ⇑(b i) := by
+    rw [Matrix.mulVec_single_one]
+    ext j
+    simp [P, std, Module.Basis.toMatrix_apply]
+  have hcol (i : n) : M *ᵥ Pi.single i 1 = (σ i : ℂ) • ⇑(b i) := by
+    apply (WithLp.toLp_injective (p := 2))
+    by_cases hi : i ∈ s
+    · have hiσ_ne : σ i ≠ 0 := by
+        simpa [s] using hi
+      have hiσc_ne : (σ i : ℂ) ≠ 0 := by
+        exact_mod_cast hiσ_ne
+      calc
+        WithLp.toLp 2 (M *ᵥ Pi.single i 1)
+            = (σ i : ℂ) • (((σ i : ℂ)⁻¹) • WithLp.toLp 2 (M *ᵥ Pi.single i 1)) := by
+                simp [smul_smul, hiσc_ne]
+        _ = (σ i : ℂ) • v i := by
+              rfl
+        _ = (σ i : ℂ) • b i := by
+              rw [hb i hi]
+    · have hiσ_zero : σ i = 0 := by
+        simpa [s] using hi
+      have hzero : WithLp.toLp 2 (M *ᵥ Pi.single i 1) = 0 := by
+        apply norm_eq_zero.mp
+        simpa [hiσ_zero] using hnorm i
+      calc
+        WithLp.toLp 2 (M *ᵥ Pi.single i 1) = 0 := hzero
+        _ = (σ i : ℂ) • b i := by simp [hiσ_zero]
+  refine ⟨P, hP, ?_⟩
+  ext r c
+  have hcolEq : M *ᵥ Pi.single c (1 : ℂ) =
+      (P * Matrix.diagonal (fun i => (σ i : ℂ))) *ᵥ Pi.single c (1 : ℂ) := by
+    have hs : ((σ c : ℂ) • (Pi.single c (1 : ℂ) : n → ℂ)) =
+        (Pi.single c ((σ c : ℂ) * 1) : n → ℂ) := by
+      ext i
+      by_cases hi : i = c
+      · subst hi
+        simp [Pi.smul_apply]
+      · simp [Pi.smul_apply, hi]
+    calc
+      M *ᵥ Pi.single c (1 : ℂ) = (σ c : ℂ) • ⇑(b c) := hcol c
+      _ = (σ c : ℂ) • (P *ᵥ Pi.single c (1 : ℂ)) := by rw [hPcol c]
+      _ = P *ᵥ (Matrix.diagonal (fun i => (σ i : ℂ)) *ᵥ Pi.single c (1 : ℂ)) := by
+        rw [Matrix.diagonal_mulVec_single, ← Matrix.mulVec_smul]
+        rw [hs]
+      _ = (P * Matrix.diagonal (fun i => (σ i : ℂ))) *ᵥ Pi.single c (1 : ℂ) := by
+        rw [← Matrix.mulVec_mulVec]
+  simpa [Matrix.mulVec, dotProduct, Pi.single_apply] using congrFun hcolEq r
+
+/-- If the Gram matrix of a square complex matrix is already a real diagonal matrix, then the
+matrix factors as a unitary times the diagonal of the square roots of those entries. -/
+theorem exists_unitary_mul_realDiagonal_of_gram_eq_diagonal
+    {n : Type*} [Fintype n] [DecidableEq n]
+    (M : Matrix n n ℂ) (diagVals : n → ℝ)
+    (hDiagVals_nonneg : ∀ i, 0 ≤ diagVals i)
+    (hGram : M† * M = Matrix.diagonal (fun i => (diagVals i : ℂ))) :
+    ∃ P : Matrix n n ℂ, P ∈ Matrix.unitaryGroup n ℂ ∧
+      M = P * Matrix.diagonal (fun i => ((Real.sqrt (diagVals i)) : ℂ)) := by
+  have horth : ∀ ⦃i j : n⦄, i ≠ j →
+      inner ℂ (WithLp.toLp 2 (M *ᵥ Pi.single i 1))
+        (WithLp.toLp 2 (M *ᵥ Pi.single j 1)) = 0 := by
+    intro i j hij
+    calc
+      inner ℂ (WithLp.toLp 2 (M *ᵥ Pi.single i 1))
+          (WithLp.toLp 2 (M *ᵥ Pi.single j 1)) = (M† * M) i j := by
+            simpa [Matrix.mulVec_single_one] using inner_matrix_col_col M M i j
+      _ = (Matrix.diagonal (fun i => (diagVals i : ℂ))) i j := by rw [hGram]
+      _ = 0 := by simp [Matrix.diagonal, hij]
+  have hnorm : ∀ i, ‖WithLp.toLp 2 (M *ᵥ Pi.single i 1)‖ = Real.sqrt (diagVals i) := by
+    intro i
+    have hdiag : inner ℂ (WithLp.toLp 2 (M *ᵥ Pi.single i 1))
+        (WithLp.toLp 2 (M *ᵥ Pi.single i 1)) = (diagVals i : ℂ) := by
+      calc
+        inner ℂ (WithLp.toLp 2 (M *ᵥ Pi.single i 1))
+            (WithLp.toLp 2 (M *ᵥ Pi.single i 1)) = (M† * M) i i := by
+              simpa [Matrix.mulVec_single_one] using inner_matrix_col_col M M i i
+        _ = (Matrix.diagonal (fun j => (diagVals j : ℂ))) i i := by rw [hGram]
+        _ = (diagVals i : ℂ) := by simp
+    have hsq_complex : (((‖WithLp.toLp 2 (M *ᵥ Pi.single i 1)‖ ^ 2 : ℝ)) : ℂ) = (diagVals i : ℂ) := by
+      simpa [inner_self_eq_norm_sq_to_K] using hdiag
+    have hsq : ‖WithLp.toLp 2 (M *ᵥ Pi.single i 1)‖ ^ 2 = diagVals i := by
+      exact_mod_cast hsq_complex
+    have hnorm_nonneg : 0 ≤ ‖WithLp.toLp 2 (M *ᵥ Pi.single i 1)‖ := norm_nonneg _
+    have hsqrt_nonneg : 0 ≤ Real.sqrt (diagVals i) := Real.sqrt_nonneg _
+    have hsqrt_sq : (Real.sqrt (diagVals i)) ^ 2 = diagVals i := Real.sq_sqrt (hDiagVals_nonneg i)
+    nlinarith
+  exact exists_unitary_mul_realDiagonal_of_orthogonal_cols M (fun i => Real.sqrt (diagVals i))
+    (fun i => Real.sqrt_nonneg _) horth hnorm
+
+lemma conjTranspose_diagonal {n : ℕ} (d : Fin n → ℂ) :
+    (Matrix.diagonal d)† = Matrix.diagonal (star d) := by
+  ext i j
+  by_cases hij : i = j
+  · subst j
+    simp
+  · simp [hij]
+    have hji : j ≠ i := by
+      intro h
+      exact hij h.symm
+    simp [Matrix.diagonal_apply_ne, hij, hji]
+
+lemma diagonal_unitary {n : ℕ} (d : Fin n → ℂ)
+    (hd : ∀ i, ‖d i‖ = 1) :
+    Matrix.diagonal d ∈ Matrix.unitaryGroup (Fin n) ℂ := by
+  apply Matrix.mem_unitaryGroup_iff'.2
+  calc
+    (Matrix.diagonal d)† * Matrix.diagonal d
+        = Matrix.diagonal (fun i => (starRingEnd ℂ) (d i) * d i) := by
+            calc
+              (Matrix.diagonal d)† * Matrix.diagonal d
+                  = Matrix.diagonal (star d) * Matrix.diagonal d := by
+                      rw [conjTranspose_diagonal]
+              _ = Matrix.diagonal (fun i => (starRingEnd ℂ) (d i) * d i) := by
+                  simpa using (Matrix.diagonal_mul_diagonal (d₁ := star d) (d₂ := d))
+    _ = 1 := by
+          ext i j
+          by_cases hij : i = j
+          · subst j
+            simp [Complex.conj_mul', hd i]
+          · simp [hij]
+
+lemma diagonal_norms_of_mem_unitaryGroup {n : ℕ} {d : Fin n → ℂ}
+    (h : Matrix.diagonal d ∈ Matrix.unitaryGroup (Fin n) ℂ) :
+    ∀ i, ‖d i‖ = 1 := by
+  intro i
+  have hdiag : Matrix.diagonal (fun i => (starRingEnd ℂ) (d i) * d i) = (1 : Square n) := by
+    calc
+      Matrix.diagonal (fun i => (starRingEnd ℂ) (d i) * d i)
+          = Matrix.diagonal (star d) * Matrix.diagonal d := by
+            simpa using (Matrix.diagonal_mul_diagonal (d₁ := star d) (d₂ := d)).symm
+      _ = (Matrix.diagonal d)† * Matrix.diagonal d := by
+            rw [conjTranspose_diagonal]
+      _ = 1 := Matrix.mem_unitaryGroup_iff'.mp h
+  have hii : (starRingEnd ℂ) (d i) * d i = 1 := by
+    simpa using congrFun (congrFun hdiag i) i
+  have hNormSq : Complex.normSq (d i) = 1 := by
+    apply Complex.ofReal_injective
+    simpa [Complex.normSq_eq_conj_mul_self] using hii
+  have hSq : ‖d i‖ ^ 2 = 1 := by
+    simpa [Complex.normSq_eq_norm_sq] using hNormSq
+  have hnonneg : 0 ≤ ‖d i‖ := norm_nonneg _
+  have hsq : ‖d i‖ ^ 2 = 1 ^ 2 := by simpa using hSq
+  rcases sq_eq_sq_iff_eq_or_eq_neg.mp hsq with hEq | hEq
+  · exact hEq
+  · exfalso
+    have : (0 : ℝ) ≤ -1 := by simpa [hEq] using hnonneg
+    linarith
+
+set_option maxHeartbeats 10000000 in
+lemma unitary_diagonal_exists {N : ℕ} (P : Square N)
+    (hP : P ∈ Matrix.unitaryGroup (Fin N) ℂ) :
+    ∃ d : Fin N → ℂ, ∃ U : Square N,
+      (∀ i, ‖d i‖ = 1) ∧
+      U ∈ Matrix.unitaryGroup (Fin N) ℂ ∧
+      P = U * Matrix.diagonal d * U† := by
+  let std : OrthonormalBasis (Fin N) ℂ (EuclideanSpace ℂ (Fin N)) :=
+    EuclideanSpace.basisFun (Fin N) ℂ
+  let ReP : Square N := (((realPart P : selfAdjoint (Square N)) : Square N))
+  let ImP : Square N := (((imaginaryPart P : selfAdjoint (Square N)) : Square N))
+  let A : EuclideanSpace ℂ (Fin N) →ₗ[ℂ] EuclideanSpace ℂ (Fin N) :=
+    Matrix.toLinAlgEquiv std.toBasis ReP
+  let B : EuclideanSpace ℂ (Fin N) →ₗ[ℂ] EuclideanSpace ℂ (Fin N) :=
+    Matrix.toLinAlgEquiv std.toBasis ImP
+  have hReHerm : ReP.IsHermitian := by
+    dsimp [ReP]
+    exact (show IsSelfAdjoint ((((realPart P : selfAdjoint (Square N)) : Square N))) from
+      (realPart P : selfAdjoint (Square N)).property).isHermitian
+  have hImHerm : ImP.IsHermitian := by
+    dsimp [ImP]
+    exact (show IsSelfAdjoint ((((imaginaryPart P : selfAdjoint (Square N)) : Square N))) from
+      (imaginaryPart P : selfAdjoint (Square N)).property).isHermitian
+  have hA : A.IsSymmetric := by
+    change (Matrix.toLin std.toBasis std.toBasis ReP).IsSymmetric
+    exact (Matrix.isSymmetric_toLin_iff std).2 hReHerm
+  have hB : B.IsSymmetric := by
+    change (Matrix.toLin std.toBasis std.toBasis ImP).IsSymmetric
+    exact (Matrix.isSymmetric_toLin_iff std).2 hImHerm
+  have hPnormal : IsStarNormal P := by
+    rw [isStarNormal_iff]
+    have hleft : P * star P = 1 := by
+      simpa [Matrix.mem_unitaryGroup_iff] using hP
+    have hright : star P * P = 1 := by
+      simpa [Matrix.mem_unitaryGroup_iff'] using hP
+    exact hright.trans hleft.symm
+  have hCommMat : Commute ReP ImP := by
+    dsimp [ReP, ImP]
+    exact isStarNormal_iff_commute_realPart_imaginaryPart.mp hPnormal
+  have hComm : Commute A B := by
+    apply (LinearMap.toMatrixAlgEquiv std.toBasis).injective
+    simpa [A, B] using hCommMat.eq
+  let F : ℂ × ℂ → Submodule ℂ (EuclideanSpace ℂ (Fin N)) :=
+    fun i => eigenspace A i.2 ⊓ eigenspace B i.1
+  let K : Type :=
+    {i : ℂ × ℂ // F i ≠ ⊥}
+  let key : K → Eigenvalues B × Eigenvalues A := fun i =>
+    ⟨⟨i.1.1, by
+        intro hbot
+        exact i.2 (by simp [F, hbot])⟩,
+      ⟨i.1.2, by
+        intro hbot
+        exact i.2 (by simp [F, hbot])⟩⟩
+  have hkey_inj : Function.Injective key := by
+    intro i j hij
+    apply Subtype.ext
+    exact Prod.ext
+      (by exact congrArg Subtype.val (congrArg Prod.fst hij))
+      (by exact congrArg Subtype.val (congrArg Prod.snd hij))
+  letI : Finite K := Finite.of_injective key hkey_inj
+  letI : Fintype K := Fintype.ofFinite K
+  have hTopAll :
+      (⨆ i : ℂ × ℂ, F i) = ⊤ := by
+    rw [iSup_prod]
+    have htop :=
+      LinearMap.IsSymmetric.iSup_iSup_eigenspace_inf_eigenspace_eq_top_of_commute hA hB hComm
+    rw [iSup_comm] at htop
+    simpa [F] using htop
+  have hTop :
+      (⨆ i : K, F i.1) = ⊤ := by
+    rw [iSup_ne_bot_subtype]
+    exact hTopAll
+  have hOrth :
+      OrthogonalFamily ℂ (fun i : K => F i.1) fun i => (F i.1).subtypeₗᵢ := by
+    simpa [F] using
+      (LinearMap.IsSymmetric.orthogonalFamily_eigenspace_inf_eigenspace hA hB).comp
+        Subtype.val_injective
+  have hInternal :
+      DirectSum.IsInternal (fun i : K => F i.1) := by
+    refine hOrth.isInternal_iff.mpr ?_
+    rw [hTop, Submodule.top_orthogonal_eq_bot]
+  have hdim : Module.finrank ℂ (EuclideanSpace ℂ (Fin N)) = N := by
+    simpa using
+      (finrank_euclideanSpace : Module.finrank ℂ (EuclideanSpace ℂ (Fin N)) =
+        Fintype.card (Fin N))
+  let basis : OrthonormalBasis (Fin N) ℂ (EuclideanSpace ℂ (Fin N)) :=
+    hInternal.subordinateOrthonormalBasis hdim hOrth
+  let κ : Fin N → K :=
+    fun i => hInternal.subordinateOrthonormalBasisIndex hdim i hOrth
+  let χ : Fin N → ℂ × ℂ := fun i => (κ i).1
+  have hb_sub (i : Fin N) : basis i ∈ eigenspace A (χ i).2 ⊓ eigenspace B (χ i).1 := by
+    simpa [basis, κ, χ, F] using
+      hInternal.subordinateOrthonormalBasis_subordinate (hn := hdim) i hOrth
+  have hbA (i : Fin N) : A (basis i) = (χ i).2 • basis i := by
+    exact Module.End.mem_eigenspace_iff.mp (Submodule.mem_inf.mp (hb_sub i)).1
+  have hbB (i : Fin N) : B (basis i) = (χ i).1 • basis i := by
+    exact Module.End.mem_eigenspace_iff.mp (Submodule.mem_inf.mp (hb_sub i)).2
+  let d : Fin N → ℂ := fun i => (χ i).2 + Complex.I * (χ i).1
+  have hP_lin : Matrix.toLinAlgEquiv std.toBasis P = A + Complex.I • B := by
+    dsimp [A, B]
+    simpa [ReP, ImP] using
+      congrArg (Matrix.toLinAlgEquiv std.toBasis)
+        (realPart_add_I_smul_imaginaryPart P).symm
+  have hP_apply_basis : ∀ i : Fin N, Matrix.toLinAlgEquiv std.toBasis P (basis i) = d i • basis i := by
+    intro i
+    have htmp := congrArg (fun f => f (basis i)) hP_lin
+    simpa [d, hbA i, hbB i, add_smul, smul_smul] using htmp
+  have hP_apply_basis' : ∀ i : Fin N, P.toEuclideanLin (basis i) = d i • basis i := by
+    intro i
+    change Matrix.toLinAlgEquiv (EuclideanSpace.basisFun (Fin N) ℂ).toBasis P (basis i) =
+      d i • basis i
+    simpa [std] using hP_apply_basis i
+  let U : Square N := std.toBasis.toMatrix basis
+  have hU : U ∈ Matrix.unitaryGroup (Fin N) ℂ := by
+    simpa [U] using std.toMatrix_orthonormalBasis_mem_unitary basis
+  have hU_apply (i : Fin N) : U *ᵥ Pi.single i 1 = ⇑(basis i) := by
+    rw [Matrix.mulVec_single_one]
+    ext j
+    simp [U, std, Module.Basis.toMatrix_apply]
+  have hstarU_apply (i : Fin N) : (star U) *ᵥ ⇑(basis i) = Pi.single i 1 := by
+    have hU' : star U * U = 1 := by
+      simpa [Matrix.mem_unitaryGroup_iff'] using hU
+    calc
+      (star U) *ᵥ ⇑(basis i) = (star U) *ᵥ (U *ᵥ Pi.single i 1) := by rw [hU_apply i]
+      _ = (star U * U) *ᵥ Pi.single i 1 := by rw [mulVec_mulVec]
+      _ = (1 : Square N) *ᵥ Pi.single i 1 := by rw [hU']
+      _ = Pi.single i 1 := by
+        rw [Matrix.mulVec_single_one]
+        ext j
+        simp [Matrix.one_apply, Pi.single_apply]
+  have hP_apply (i : Fin N) : P *ᵥ ⇑(basis i) = d i • ⇑(basis i) := by
+    simpa [Matrix.toEuclideanLin, Matrix.ofLp_toLpLin] using
+      congrArg WithLp.ofLp (hP_apply_basis' i)
+  have hdiag_col (i : Fin N) :
+      (star U * P * U) *ᵥ Pi.single i 1 = (Matrix.diagonal d) *ᵥ Pi.single i 1 := by
+    calc
+      (star U * P * U) *ᵥ Pi.single i 1 = (star U) *ᵥ (P *ᵥ (U *ᵥ Pi.single i 1)) := by
+        rw [mulVec_mulVec, mulVec_mulVec]
+      _ = (star U) *ᵥ (P *ᵥ ⇑(basis i)) := by rw [hU_apply i]
+      _ = (star U) *ᵥ (d i • ⇑(basis i)) := by rw [hP_apply i]
+      _ = d i • ((star U) *ᵥ ⇑(basis i)) := by rw [Matrix.mulVec_smul]
+      _ = d i • (Pi.single i (1 : ℂ) : Fin N → ℂ) := by
+        exact congrArg (fun v : Fin N → ℂ => d i • v) (hstarU_apply i)
+      _ = (Matrix.diagonal d) *ᵥ Pi.single i 1 := by
+        rw [Matrix.diagonal_mulVec_single]
+        ext j
+        by_cases hji : j = i
+        · subst hji
+          simp [Pi.smul_apply, Pi.single_apply]
+        · simp [Pi.smul_apply, Pi.single_apply, hji]
+  have hdiag : star U * P * U = Matrix.diagonal d := by
+    ext r c
+    have hcolEq : ((star U * P * U) *ᵥ Pi.single c 1) r =
+        ((Matrix.diagonal d) *ᵥ Pi.single c 1) r := by
+      exact congrFun (hdiag_col c) r
+    simpa [Matrix.mulVec, dotProduct, Pi.single_apply] using hcolEq
+  have hP_diag : P = U * Matrix.diagonal d * U† := by
+    have hUU : U * U† = 1 := by
+      simpa [star_eq_conjTranspose, Matrix.mem_unitaryGroup_iff] using hU
+    have hdiag' : U† * P * U = Matrix.diagonal d := by
+      simpa [star_eq_conjTranspose] using hdiag
+    calc
+      P = (U * U†) * P * (U * U†) := by simp [hUU]
+      _ = U * (U† * P * U) * U† := by simp [mul_assoc]
+      _ = U * Matrix.diagonal d * U† := by rw [hdiag']
+  have hdiag_unitary : Matrix.diagonal d ∈ Matrix.unitaryGroup (Fin N) ℂ := by
+    have hconj : U† * P * U = Matrix.diagonal d := by
+      simpa [star_eq_conjTranspose] using hdiag
+    simpa [hconj] using unitary_conj_mem_unitaryGroup hP hU
+  have hnorms := diagonal_norms_of_mem_unitaryGroup hdiag_unitary
+  exact ⟨d, U, hnorms, hU, hP_diag⟩
 
 private lemma diag2_norms_of_mem_unitaryGroup {a b : ℂ}
     (h : diag2 a b ∈ Matrix.unitaryGroup (Fin 2) ℂ) :

@@ -10,13 +10,13 @@ Your single job: merge one paper-extractor packet and one Rocq-mapper packet int
 ## Inputs
 
 You receive exactly two files for a given section N:
-- `docs/migration/packets/sectionN_paper_packet.md`
-- `docs/migration/packets/sectionN_rocq_packet.md`
+- `docs/migration/archive/packets/sectionN_paper_packet.md`
+- `docs/migration/archive/packets/sectionN_rocq_packet.md`
 
 ## Output
 
 You write exactly one file:
-- `docs/migration/packets/sectionN_reconciled_packet.md`
+- `docs/migration/archive/packets/sectionN_reconciled_packet.md`
 
 ## Governing documents
 
@@ -24,8 +24,8 @@ Before starting, read these files and follow them strictly:
 - `docs/migration/shared_context.md` — project philosophy
 - `docs/migration/naming_conventions.md` — blueprint labels and Lean names
 - `docs/migration/output_schema.md` — required fields per object
-- `docs/migration/agent_rules.md` — hard rules and role boundaries
-- `docs/migration/section_assignments.md` — expected objects per section
+- `docs/migration/archive/agent_rules.md` — hard rules and role boundaries
+- `docs/migration/archive/section_assignments.md` — expected objects per section
 
 ## Merge procedure
 
@@ -45,7 +45,7 @@ Before starting, read these files and follow them strictly:
 
 - DO NOT invent dependencies not stated in either source packet.
 - DO NOT invent proofs or proof sketches.
-- DO NOT edit files outside `docs/migration/packets/`.
+- DO NOT edit files outside `docs/migration/archive/packets/`.
 - DO NOT rename paper objects or change paper numbering.
 - DO NOT add objects that appear in neither input packet.
 - DO NOT silently drop ambiguities — always surface them.

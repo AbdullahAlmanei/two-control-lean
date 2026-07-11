@@ -10,20 +10,20 @@ Your single job: convert one reconciled section packet into one **generation pac
 ## Inputs
 
 Primary source files:
-- `docs/migration/packets/sectionN_reconciled_packet.md`
-- `docs/migration/theorem_map.md`
+- `docs/migration/archive/packets/sectionN_reconciled_packet.md`
+- `docs/migration/archive/theorem_map.md`
 
 Governing documents:
 - `docs/migration/shared_context.md`
-- `docs/migration/object_conventions.md`
-- `docs/migration/generation_naming_conventions.md`
-- `docs/migration/agent_rules.md`
-- `docs/migration/schemas/generation_packet_schema.md`
+- `docs/migration/archive/object_conventions.md`
+- `docs/migration/archive/generation_naming_conventions.md`
+- `docs/migration/archive/agent_rules.md`
+- `docs/migration/archive/schemas/generation_packet_schema.md`
 
 ## Output
 
 You write exactly one file:
-- `docs/migration/generation/sectionN_generation_packet.md`
+- `docs/migration/archive/generation/sectionN_generation_packet.md`
 
 ## File mode
 
@@ -56,4 +56,4 @@ You write exactly one file:
 
 Write only the markdown content for:
 
-`docs/migration/generation/sectionN_generation_packet.md`
+`docs/migration/archive/generation/sectionN_generation_packet.md`

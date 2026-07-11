@@ -3,7 +3,22 @@ version = "0.1.0"
 defaultTargets = ["TwoControl"]
 
 [[lean_lib]]
+name = "DyadicCyclotomic"
+
+[[lean_lib]]
+name = "MatrixCompletion"
+
+[[lean_lib]]
 name = "TwoControl"
+
+# Paused Ross-Selinger circuit-synthesis engine (see RossSelinger.lean /
+# KMM.lean). Not in defaultTargets, so it is not built by `lake build` or CI;
+# build explicitly with `lake build RossSelinger` when work resumes.
+[[lean_lib]]
+name = "RossSelinger"
+
+[[lean_lib]]
+name = "KMM"
 
 
 [[require]]
