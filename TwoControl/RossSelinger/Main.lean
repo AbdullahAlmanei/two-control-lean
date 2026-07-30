@@ -16,9 +16,9 @@ import TwoControl.RossSelinger.Optimality
 /-!
 Entry point for the conditional Ross-Selinger compiler leg.
 
-This leg is **independent of Lemma 12's universality proof**: Lemma 12 is now
-proved through `Lemma12/Universal/BoykinDensity.lean` and does not import any
-file under `RossSelinger/`.
+This leg is **independent of Lemma 12's universality proof**: Lemma 12 is
+proved through the `G₁/G₂` track under `Clifford/Lemma12/G1G2/` and does not
+import any file under `RossSelinger/`.
 
 The near-term targets here are:
 

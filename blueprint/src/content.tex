@@ -5,10 +5,25 @@
 % If you want to split the blueprint content into several files then
 % the current file can be a simple sequence of \input. Otherwise It
 % can start with a \section or \chapter for instance.
+
+% Start here: project scope, what is proved, and how to read the status marks.
+\input{chapters/overview}
+
+% Part I --- the two-control paper.
 \input{chapters/section3}
 \input{chapters/section4}
 \input{chapters/section5}
 \input{chapters/section6}
 \input{chapters/section7}
-\input{chapters/clifford_lemma11}
+
+% Part II --- Clifford+T universality (universal_new_gates.tex).
+\input{chapters/clifford_circuits}
+\input{chapters/clifford_exact}
+\input{chapters/clifford_lemma12}
 \input{chapters/clifford_universal}
+
+% Part III --- parallel and quantitative tracks.
+\input{chapters/clifford_lemma11}
+\input{chapters/clifford_bounds}
+\input{chapters/kmm}
+\input{chapters/ross_selinger}

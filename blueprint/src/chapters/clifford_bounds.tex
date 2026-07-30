@@ -1,0 +1,332 @@
+\section{Quantitative circuit-length bounds (in progress)}
+\label{sec:bounds}
+
+Theorem~\ref{thm:clifford_t_universal} is purely qualitative: it produces a
+circuit but says nothing about its length.  This section develops closed-form
+length bounds.  It is the one part of the Clifford+T development that is not
+finished, and the split is clean:
+
+\begin{itemize}
+  \item the \emph{exact} stage is fully proved --- the skeleton produced by the
+    easy-gate route has length $O(4^n)$ with an explicit constant
+    (Lemma~\ref{lem:cliffordrz_bound_4n});
+  \item the \emph{approximation} stage is scaffolded --- every statement is
+    written in Lean and the algebra is factored, but the proofs are pending
+    (Lemma~\ref{lem:log_exists} onwards).  The one substantive gap is
+    Lemma~\ref{lem:lemma12_constants}; the rest is bookkeeping.
+\end{itemize}
+
+Every item below says which of the two it is.  The bounds track is stated
+against the easy-gate layer of Section~\ref{sec:easy_gate_layer} rather than
+the paper route of Section~\ref{sec:exact}, which is why that layer is kept.
+
+Note also that the specific gate counts claimed by the source paper
+($14\cdot 4^{n-1} - 9\cdot 2^{n-1}$) are out of scope by design; the bounds
+here are independent and deliberately coarser.
+
+\subsection{Length-annotated synthesis}
+
+\begin{definition}
+  \label{def:synth_len}
+  \lean{TwoControl.Clifford.Universal.SynthesizesWithLength}
+  \leanok
+  $\operatorname{SynthesizesWithLength} \mathcal{G}\, U\, b$ strengthens
+  Definition~\ref{def:synthesizes} by requiring the circuit to have at most $b$
+  factors; $\operatorname{SynthesizesUpToGlobalPhaseWithLength}$ is the
+  global-phase variant.  Both are monotone in $b$, closed under concatenation
+  with addition of bounds, and hold with $b = 1$ for a single allowed gate.
+\end{definition}
+
+\subsection{The exact stage: proved}
+
+\begin{definition}
+  \label{def:crz_bound}
+  \lean{TwoControl.Clifford.Universal.controlledRzBound}
+  \leanok
+  $\operatorname{crzBound}(0) = 1$ and
+  $\operatorname{crzBound}(m{+}1) = 2\,\operatorname{crzBound}(m) + 2$, the
+  length recursion induced by Lemma~\ref{lem:mottonen}.  The controlled-$R_y$
+  bound adds the four Clifford conjugators of
+  Lemma~\ref{lem:cry_via_crz}.
+\end{definition}
+
+\begin{lemma}
+  \label{lem:crz_bound_closed}
+  \lean{TwoControl.Clifford.Universal.controlledRzBound_closed_form}
+  \leanok
+  $\operatorname{crzBound}(m) = 3\cdot 2^{m} - 2$; in particular
+  $\operatorname{crzBound}(m) \le 3\cdot 2^m$.
+\end{lemma}
+
+\begin{proof}
+  \leanok
+  \uses{def:crz_bound}
+  Induction on $m$.
+\end{proof}
+
+\begin{definition}
+  \label{def:easy_bound}
+  \lean{TwoControl.Clifford.Universal.easyBound}
+  \leanok
+  $\operatorname{easyBound}(0) = 1$ and
+  \[
+    \operatorname{easyBound}(n{+}1)
+      = 4\,\operatorname{easyBound}(n)
+        + 2\,\operatorname{crzBound}(n)
+        + \operatorname{cryBound}(n),
+  \]
+  the length recursion of the easy-gate decomposition: four recursive calls on
+  $n$ qubits, two demultiplexing families, and one middle family.
+\end{definition}
+
+\begin{lemma}
+  \label{lem:easy_bound_4n}
+  \lean{TwoControl.Clifford.Universal.easyBound_le_five_mul_four_pow}
+  \leanok
+  $\operatorname{easyBound}(n) \le 5\cdot 4^{n}$.
+\end{lemma}
+
+\begin{proof}
+  \leanok
+  \uses{def:easy_bound, lem:crz_bound_closed}
+  Induction on $n$, using Lemma~\ref{lem:crz_bound_closed} to dominate the two
+  rotation-family terms by $O(2^n)$, which is absorbed by the $4^n$ growth.
+\end{proof}
+
+\begin{lemma}
+  \label{lem:lemma1_bounded}
+  \lean{TwoControl.Clifford.Universal.lemma1_decomposition_to_easy_gate_set_bounded}
+  \leanok
+  For $n \ge 2$, every $n$-qubit unitary is exactly an easy-gate circuit of
+  length at most $\operatorname{easyBound}(n)$.
+\end{lemma}
+
+\begin{proof}
+  \leanok
+  \uses{lem:lemma1_easy, def:easy_bound, def:synth_len}
+  The proof of Lemma~\ref{lem:lemma1_easy} carried out with length bookkeeping;
+  each construction step contributes the term named in
+  Definition~\ref{def:easy_bound}.
+\end{proof}
+
+\begin{lemma}
+  \label{lem:lemma11_bounded}
+  \lean{TwoControl.Clifford.Universal.lemma11_two_qubit_synthesis_bounded}
+  \leanok
+  The exact two-qubit synthesis of Lemma~\ref{lem:lemma11} can be taken with at
+  most $128$ factors.
+\end{lemma}
+
+\begin{proof}
+  \leanok
+  \uses{lem:lemma11}
+  Count the factors produced by the proof of Lemma~\ref{lem:lemma11}: two
+  demultiplexed side factors, one conditional rotation, and the one-qubit
+  syntheses, each of bounded length.  The constant is not optimized.
+\end{proof}
+
+\begin{definition}
+  \label{def:crz_total_bound}
+  \lean{TwoControl.Clifford.Universal.cliffordRzBound}
+  \leanok
+  $\operatorname{cliffordRzBound}(n)
+     = \operatorname{easyFactorBound} \cdot \operatorname{easyBound}(n)$,
+  where $\operatorname{easyFactorBound} = \max(128, 6)$ bounds the cost of
+  replacing one easy-gate factor: $128$ for an arbitrary two-qubit gate via
+  Lemma~\ref{lem:lemma11_bounded}, and $6$ for the $S^\dagger = T^6$ case.
+\end{definition}
+
+\begin{lemma}
+  \label{lem:cliffordrz_bounded}
+  \lean{TwoControl.Clifford.Universal.clifford_rz_synthesis_bounded_of_two_le}
+  \leanok
+  For $n \ge 2$, every $n$-qubit unitary is synthesized up to global phase by a
+  circuit over $\{C(X),H,T,R_z(\theta)\}$ of length at most
+  $\operatorname{cliffordRzBound}(n)$.
+\end{lemma}
+
+\begin{proof}
+  \leanok
+  \uses{lem:lemma1_bounded, lem:easy_factor, def:crz_total_bound}
+  The proof of Theorem~\ref{thm:clifford_rz_from_lemma1} with lengths tracked:
+  Lemma~\ref{lem:lemma1_bounded} bounds the number of easy-gate factors and
+  each is expanded by at most $\operatorname{easyFactorBound}$ gates.
+\end{proof}
+
+\begin{lemma}
+  \label{lem:cliffordrz_bound_4n}
+  \lean{TwoControl.Clifford.Universal.cliffordRzBound_le_const_mul_four_pow}
+  \leanok
+  $\operatorname{cliffordRzBound}(n)
+    \le (5\cdot \operatorname{easyFactorBound})\cdot 4^{n}$.
+\end{lemma}
+
+\begin{proof}
+  \leanok
+  \uses{def:crz_total_bound, lem:easy_bound_4n}
+  Immediate from Lemma~\ref{lem:easy_bound_4n}.
+\end{proof}
+
+\subsection{The approximation stage: statements only}
+
+The remaining goal is a closed-form bound of the shape
+\[
+  \text{length} \;\le\; C \cdot 4^{n} \cdot
+    \big(n + \log_2(1/\epsilon) + 1\big),
+\]
+combining the $O(4^n)$ exact skeleton with a \emph{logarithmic} per-gate cost
+for approximating one $R_z$ by $\{H,T\}$.  Every statement below is written in
+Lean; each proof says whether its \texttt{sorry} is local or inherited from an
+earlier node.
+
+\begin{lemma}
+  \label{lem:log_exists}
+  \lean{TwoControl.Clifford.Lemma12.exists_nat_pow_two_inv_bound}
+  \leanok
+  For every $\epsilon > 0$ there is $k \in \mathbb{N}$ with
+  $1/\epsilon \le 2^{k}$.
+\end{lemma}
+
+\begin{proof}
+  \emph{Proof pending} (\texttt{sorry}).  A routine consequence of the
+  Archimedean property of $\mathbb{R}$ together with $2^k \ge k+1$; it is
+  scaffolding rather than mathematics, but it is what makes the next definition
+  well founded.
+\end{proof}
+
+\begin{definition}
+  \label{def:log_precision}
+  \lean{TwoControl.Clifford.Lemma12.logPrecision}
+  \leanok
+  $\operatorname{logPrecision}(\epsilon)$ is the least $k \in \mathbb{N}$ with
+  $1/\epsilon \le 2^{k}$ (and $0$ for nonpositive $\epsilon$), a
+  \texttt{Nat}-valued stand-in for $\lceil \log_2(1/\epsilon)\rceil$.  It is
+  defined by \texttt{Nat.find} applied to Lemma~\ref{lem:log_exists}, so it
+  currently inherits that lemma's \texttt{sorry}.
+\end{definition}
+
+\begin{lemma}
+  \label{lem:log_precision_spec}
+  \lean{TwoControl.Clifford.Lemma12.logPrecision_spec}
+  \leanok
+  $1/\epsilon \le 2^{\operatorname{logPrecision}(\epsilon)}$.
+\end{lemma}
+
+\begin{proof}
+  \uses{def:log_precision, lem:log_exists}
+  This is \texttt{Nat.find\_spec}, so the Lean proof is complete but inherits
+  the \texttt{sorry} of Lemma~\ref{lem:log_exists}.  The companion minimality
+  statement $\operatorname{logPrecision}(\epsilon) \le k$ for every $k$ with
+  $1/\epsilon \le 2^k$ is stated in Lean and still pending.
+\end{proof}
+
+\begin{lemma}
+  \label{lem:log_overhead}
+  \lean{TwoControl.Clifford.Lemma12.exists_logPrecision_mul_four_pow_overhead}
+  \leanok
+  For every constant $C$ there is an overhead $h$ such that for all $n$ and all
+  $\epsilon > 0$,
+  \[
+    \operatorname{logPrecision}\!\Big(\frac{\epsilon}{C\cdot 4^{n} + 1}\Big)
+      \;\le\; \operatorname{logPrecision}(\epsilon) + 2n + h .
+  \]
+\end{lemma}
+
+\begin{proof}
+  \uses{lem:log_precision_spec}
+  \emph{Proof pending} (\texttt{sorry}).  This is the bookkeeping lemma that
+  keeps the error budget's logarithm additive: dividing $\epsilon$ by
+  $C\cdot4^n$ costs $\log_2 C + 2n$ extra bits of precision.
+\end{proof}
+
+\begin{lemma}[The quantitative heart of the bounds track]
+  \label{lem:lemma12_constants}
+  \lean{TwoControl.Clifford.Lemma12.exists_rz_approximation_by_ht_log_length_constants}
+  \leanok
+  There exist global constants $s > 0$ and $c$ --- independent of the angle and
+  of the precision --- such that for every $\theta$ and every $\epsilon > 0$
+  some $\{H,T\}$ circuit of length at most
+  $s\,(\operatorname{logPrecision}(\epsilon)+1) + c$ is within $\epsilon$ of
+  $R_z(\theta)$.
+\end{lemma}
+
+\begin{proof}
+  \uses{thm:lemma12, def:log_precision}
+  \emph{Proof pending} (\texttt{sorry}).  This is the substantive open step of
+  the whole bounds track, and Theorem~\ref{thm:lemma12} does not give it:
+  the density argument behind Lemma~\ref{lem:dense} produces an integer power
+  $k$ with no control on $\lvert k\rvert$, so it yields no length bound at all.
+  An earlier compactness-based scaffold was removed for the same reason --- it
+  gave a finite bound for each fixed $\epsilon$ but no closed form in
+  $\epsilon$.
+
+  The intended route is Ross--Selinger together with KMM: solve the one-qubit
+  $R_z$ approximation problem with logarithmic $T$-count
+  (Section~\ref{sec:ross_selinger}), synthesize the resulting exact one-qubit
+  circuit over $\mathbb{D}[\omega]$ (Theorem~\ref{thm:kmm_exact}), and translate
+  it into the $\{H,T\}$ alphabet with linear overhead.
+\end{proof}
+
+\begin{lemma}
+  \label{lem:lemma12_log}
+  \lean{TwoControl.Clifford.Lemma12.lemma12_rz_approximation_by_ht_log_bounded}
+  \leanok
+  Naming the constants of Lemma~\ref{lem:lemma12_constants} $s$ and $c$: for
+  every $\theta$ and $\epsilon > 0$ there is an $\{H,T\}$ circuit within
+  $\epsilon$ of $R_z(\theta)$ of length at most
+  $s\,(\operatorname{logPrecision}(\epsilon)+1)+c$.
+\end{lemma}
+
+\begin{proof}
+  \uses{lem:lemma12_constants}
+  The statement is a direct consequence of
+  Lemma~\ref{lem:lemma12_constants} --- the constants are extracted with
+  \texttt{Classical.choose} and the conclusion is its specification --- so the
+  Lean proof is complete but inherits that lemma's \texttt{sorry}.
+\end{proof}
+
+\begin{lemma}
+  \label{lem:rz_embedded_log}
+  \lean{TwoControl.Clifford.Universal.embedded_rz_approximation_by_clifford_t_log_bounded}
+  \leanok
+  The embedded form of Lemma~\ref{lem:lemma12_log}: an embedded $R_z$ gate has
+  a Clifford+T approximation whose length obeys the same logarithmic bound.
+\end{lemma}
+
+\begin{proof}
+  \uses{lem:lemma12_log, lem:rz_embedded_approx}
+  \emph{Proof pending} (\texttt{sorry}).  Lifting preserves length, so this
+  follows from Lemma~\ref{lem:lemma12_log} once that is available; the length
+  lemmas for the lifting maps are already proved.
+\end{proof}
+
+\begin{definition}
+  \label{def:clifford_t_log_bound}
+  \lean{TwoControl.Clifford.Universal.cliffordTLogBound}
+  \leanok
+  $\operatorname{cliffordTLogBound}(n,\epsilon)
+     = C\cdot 4^{n}\cdot(n + \operatorname{logPrecision}(\epsilon) + 1)$
+  for a deliberately coarse global constant $C$ built from the exact-stage
+  constant and the constants of Lemma~\ref{lem:lemma12_log}.
+\end{definition}
+
+\begin{theorem}
+  \label{thm:clifford_t_log_bounded}
+  \lean{TwoControl.Clifford.Universal.clifford_t_is_universal_log_bounded}
+  \leanok
+  For every $n$, every $2^n\times 2^n$ unitary $U$, and every $\epsilon > 0$
+  there is a Clifford+T circuit $C$ with $d(U,C) < \epsilon$ and
+  $\lvert C\rvert \le \operatorname{cliffordTLogBound}(n,\epsilon)$.
+\end{theorem}
+
+\begin{proof}
+  \uses{lem:cliffordrz_bounded, lem:rz_embedded_log, lem:log_overhead,
+        def:clifford_t_log_bound, thm:clifford_t_universal}
+  \emph{Proof pending} (\texttt{sorry}).  The intended assembly is: take the
+  bounded exact skeleton of Lemma~\ref{lem:cliffordrz_bounded}, replace each of
+  its at most $O(4^n)$ factors using Lemma~\ref{lem:rz_embedded_log} with a
+  uniform per-factor budget, and absorb the resulting precision loss with
+  Lemma~\ref{lem:log_overhead}.  The $n \le 1$ cases are separate wrappers,
+  also pending.  The qualitative statement is already available without any of
+  this as Theorem~\ref{thm:clifford_t_universal}.
+\end{proof}

@@ -1,0 +1,298 @@
+\section{Exact synthesis into the paper gate set}
+\label{sec:exact}
+
+This section is the first half of the universality proof: every $n$-qubit
+unitary, $n \ge 1$, is \emph{exactly} a circuit over
+$\{C(X), H, S, S^\dagger, R_z(\theta)\}$ up to global phase.  It follows
+\texttt{universal\_new\_gates.tex}, Lemma
+\texttt{clifford-plus-rx-is-universal}: an induction on the number of qubits
+whose base case is one qubit.  Every node in this section is proved.
+
+Throughout, $m$ control wires and one target wire carry two families of
+\emph{uniformly controlled} rotations.  Writing $r$ for the control register
+value, $\operatorname{controlledRzFamily} m\, \alpha$ applies
+$R_z(\alpha_r)$ to the target, and $\operatorname{controlledRyFamily} m\, \theta$
+applies $R_y(\theta_r)$; and $\operatorname{firstQubitBlockDiag} m\, U_0\, U_1$
+is the gate applying $U_0$ or $U_1$ to the lower $m$ wires according to the top
+wire.
+
+\subsection{The recursion step}
+
+\begin{lemma}[Cosine--sine decomposition, Paige--Wei]
+  \label{lem:cs_step}
+  \lean{TwoControl.Clifford.Universal.general_cosine_sine_step_exists}
+  \leanok
+  Let $n \ge 1$ and let $U$ be a $2^n \times 2^n$ unitary.  Then there are
+  unitaries $P, R, Q$ with $U = P R Q$, where $P$ and $Q$ are block diagonal on
+  the first qubit and $R$ is a uniformly controlled $R_y$ family:
+  \[
+    P = \begin{pmatrix} P_0 & 0 \\ 0 & P_1\end{pmatrix},\qquad
+    Q = \begin{pmatrix} Q_0 & 0 \\ 0 & Q_1\end{pmatrix},\qquad
+    R = \begin{pmatrix} C & -S \\ S & C \end{pmatrix},
+  \]
+  with $C$ and $S$ the diagonal matrices of $\cos(\theta_r/2)$ and
+  $\sin(\theta_r/2)$.
+\end{lemma}
+
+\begin{proof}
+  \leanok
+  Split $U$ into $2 \times 2$ blocks of size $2^{n-1}$.  Unitarity makes the
+  four blocks simultaneously reducible: diagonalizing $A^\dagger A$ produces a
+  common cosine/sine pair, and the corresponding unitary factors assemble into
+  the block-diagonal outer terms.  The construction is carried out directly on
+  blocks rather than imported, so the general case is available for every
+  $n \ge 1$; the two-qubit instance is also recorded separately as
+  Lemma~\ref{lem:cs_step_2q} and is what the $n = 2$ layer of the recursion
+  uses.
+\end{proof}
+
+\begin{lemma}
+  \label{lem:cs_step_2q}
+  \lean{TwoControl.Clifford.Universal.two_qubit_cosine_sine_step}
+  \leanok
+  The two-qubit instance of Lemma~\ref{lem:cs_step}, stated with an explicit
+  witness structure.
+\end{lemma}
+
+\begin{proof}
+  \leanok
+  \uses{lem:cs_exists_2q}
+  This is the cosine--sine decomposition of Lemma~\ref{lem:cs_exists_2q},
+  repackaged in the $n$-qubit witness shape.
+\end{proof}
+
+\begin{lemma}[$R_y$ via $R_z$]
+  \label{lem:ry_via_rz}
+  \lean{TwoControl.Clifford.lemma3_ry_via_rz}
+  \leanok
+  For every real $\theta$,
+  \[
+    R_y(\theta) = S^\dagger\, H\, R_z(-\theta)\, H\, S.
+  \]
+\end{lemma}
+
+\begin{proof}
+  \leanok
+  Expand both sides as $2 \times 2$ matrices.  The identities $HZH = X$ and
+  $S^\dagger X S = -Y$ reduce the right-hand side to the defining matrix of
+  $R_y(\theta)$.
+\end{proof}
+
+\begin{lemma}
+  \label{lem:cry_via_crz}
+  \lean{TwoControl.Clifford.Universal.controlled_ry_family_via_controlled_rz}
+  \leanok
+  A uniformly controlled $R_y$ family is a uniformly controlled $R_z$ family
+  conjugated by local Clifford gates on the target wire:
+  \[
+    \operatorname{controlledRyFamily} m\, \theta
+      = (S^\dagger \otimes I)(H \otimes I)\,
+        \operatorname{controlledRzFamily} m\, (-\theta)\,
+        (H \otimes I)(S \otimes I).
+  \]
+\end{lemma}
+
+\begin{proof}
+  \leanok
+  \uses{lem:ry_via_rz}
+  Apply Lemma~\ref{lem:ry_via_rz} entrywise in the control index: both sides
+  are block matrices whose blocks are diagonal, and the corresponding diagonal
+  entries agree by the one-qubit identity.
+\end{proof}
+
+\begin{lemma}[Demultiplexing, Shende--Bullock--Markov]
+  \label{lem:demux}
+  \lean{TwoControl.Clifford.Universal.general_demultiplexing_step}
+  \leanok
+  Let $m \ge 1$ and let $U_0, U_1$ be $2^m \times 2^m$ unitaries.  Then there
+  are unitaries $P, Q$ on $m$ qubits and angles $\alpha$ with
+  \[
+    \operatorname{firstQubitBlockDiag} m\, U_0\, U_1
+      = (I \otimes Q)\,
+        \operatorname{controlledRzFamily} m\, \alpha\,
+        (I \otimes P).
+  \]
+\end{lemma}
+
+\begin{proof}
+  \leanok
+  Diagonalize $W = U_1 U_0^\dagger = Q\,\operatorname{diag}(z)\,Q^\dagger$ and
+  set $\alpha_i = \arg z_i$.  Taking $D_{0}, D_1$ to be the diagonal matrices
+  of $e^{\mp i\alpha_i/2}$ and $P = D_0^\dagger Q^\dagger U_0$ gives the stated
+  factorization; the middle factor is by construction a uniformly controlled
+  $R_z$ family.
+\end{proof}
+
+\begin{lemma}[Controlled-$R_z$ recursion, M\"ott\"onen et al.]
+  \label{lem:mottonen}
+  \lean{TwoControl.Clifford.Universal.controlled_rz_reduction_step}
+  \leanok
+  A uniformly controlled $R_z$ family with $m+1$ controls splits into two
+  families with $m$ controls and two $C(X)$ gates: there exist $\beta, \gamma$
+  and an embedded $C(X)$ with
+  \[
+    \operatorname{controlledRzFamily}(m{+}1)\,\alpha
+      = C(X)\cdot \operatorname{controlledRzFamily} m\, \beta
+        \cdot C(X)\cdot \operatorname{controlledRzFamily} m\, \gamma
+  \]
+  after lifting the smaller families onto the appropriate wires.
+\end{lemma}
+
+\begin{proof}
+  \leanok
+  Take $\beta_r$ and $\gamma_r$ to be the half-difference and half-sum of
+  $\alpha$ at the two extensions of the control index $r$.  Both sides are
+  block diagonal over $r$, and on each block the identity is the standard
+  two-$C(X)$ realization of a controlled $R_z$ pair.
+\end{proof}
+
+\begin{lemma}
+  \label{lem:crz_family_synth}
+  \lean{TwoControl.Clifford.Universal.synthesizes_controlled_rz_family_cliffordRz}
+  \leanok
+  Every uniformly controlled $R_z$ family is \emph{exactly} a circuit over the
+  paper gate set.
+\end{lemma}
+
+\begin{proof}
+  \leanok
+  \uses{lem:mottonen, def:gate_cliffordrz, def:circuit_over}
+  Induct on the number of controls using Lemma~\ref{lem:mottonen}.  The base
+  case is a single $R_z(\theta)$ on one wire, which is a paper gate; each
+  recursion step contributes two embedded $C(X)$ gates.
+\end{proof}
+
+\begin{lemma}
+  \label{lem:cry_family_synth}
+  \lean{TwoControl.Clifford.Universal.synthesizes_controlled_ry_family_cliffordRz}
+  \leanok
+  Every uniformly controlled $R_y$ family is exactly a circuit over the paper
+  gate set.
+\end{lemma}
+
+\begin{proof}
+  \leanok
+  \uses{lem:cry_via_crz, lem:crz_family_synth}
+  Rewrite with Lemma~\ref{lem:cry_via_crz} and apply
+  Lemma~\ref{lem:crz_family_synth}; the four conjugating factors $S^\dagger$,
+  $H$, $H$, $S$ are themselves paper gates.
+\end{proof}
+
+\subsection{The one-qubit base case}
+
+\begin{lemma}[$ZYZ$ decomposition]
+  \label{lem:oneq_euler}
+  \lean{TwoControl.Clifford.one_qubit_euler_rz_ry_rz_up_to_global_phase}
+  \leanok
+  For every one-qubit unitary $U$ there are real $\alpha, \beta, \gamma$ and a
+  scalar $z$ with $\lvert z\rvert = 1$ such that
+  $U = z\,R_z(\alpha)\,R_y(\beta)\,R_z(\gamma)$.
+\end{lemma}
+
+\begin{proof}
+  \leanok
+  This is the Nielsen--Chuang $ZYZ$ decomposition.  Normalize $U$ to determinant
+  one by extracting a scalar, and read off the three Euler angles from the
+  entries of the resulting special unitary.
+\end{proof}
+
+\begin{lemma}[Paper base case]
+  \label{lem:oneq_base}
+  \lean{TwoControl.Clifford.one_qubit_exact_clifford_rz}
+  \leanok
+  For every one-qubit unitary $U$ there are real $\alpha, \beta, \gamma$ with
+  \[
+    U \;\sim\; R_z(\alpha)\, S^\dagger H\, R_z(-\beta)\, H S\, R_z(\gamma),
+  \]
+  a circuit over the paper gate set of length seven.
+\end{lemma}
+
+\begin{proof}
+  \leanok
+  \uses{lem:oneq_euler, lem:ry_via_rz, def:global_phase}
+  Apply Lemma~\ref{lem:oneq_euler} and replace the middle $R_y(\beta)$ using
+  Lemma~\ref{lem:ry_via_rz}.  The leftover scalar is exactly the global phase.
+\end{proof}
+
+\subsection{The induction}
+
+\begin{theorem}[Exact synthesis over $\{C(X),H,S,S^\dagger,R_z\}$]
+  \label{thm:clifford_rz_universal}
+  \lean{TwoControl.Clifford.Universal.clifford_rz_universal}
+  \leanok
+  For every $n \ge 1$ and every $2^n \times 2^n$ unitary $U$, some circuit over
+  the paper gate set has matrix globally phase equivalent to $U$.
+\end{theorem}
+
+\begin{proof}
+  \leanok
+  \uses{lem:oneq_base, lem:cs_step, lem:demux, lem:crz_family_synth,
+        lem:cry_family_synth, def:synthesizes_phase}
+  Strong induction on $n$.  For $n = 1$ this is Lemma~\ref{lem:oneq_base}.
+
+  For $n = m+1$ with $m \ge 1$, apply Lemma~\ref{lem:cs_step} to write
+  $U = PRQ$ with $P, Q$ block diagonal on the first qubit and $R$ a uniformly
+  controlled $R_y$ family.  The middle factor is handled by
+  Lemma~\ref{lem:cry_family_synth}.  For each outer factor, unitarity of the
+  block-diagonal matrix gives unitarity of its two blocks; apply
+  Lemma~\ref{lem:demux} to turn the factor into two $m$-qubit gates
+  surrounding a uniformly controlled $R_z$ family, synthesize the $m$-qubit
+  gates by the induction hypothesis, and the middle family by
+  Lemma~\ref{lem:crz_family_synth}.  Concatenating the three circuits and
+  multiplying the accumulated scalars gives a single global phase.
+
+  Wire plumbing inside the recursion moves gates between the top and lower
+  registers; the required $\operatorname{SWAP}$ gates are expanded as
+  $\operatorname{SWAP} = C(X)\,(H\otimes H)\,C(X)\,(H\otimes H)\,C(X)$, which
+  stays inside the paper gate set.
+\end{proof}
+
+\subsection{Rewriting the Clifford phases as powers of T}
+
+\begin{proposition}
+  \label{prop:embedded_s}
+  \lean{TwoControl.Clifford.Universal.embedded_phaseS_is_clifford_t}
+  \leanok
+  Every embedded $S$ gate is synthesized exactly by an embedded Clifford+T
+  circuit.
+\end{proposition}
+
+\begin{proof}
+  \leanok
+  \uses{def:gate_cliffordt, def:embedded_one}
+  Use the exact identity $S = T^2$ and lift the two-letter one-qubit circuit to
+  the selected wire.
+\end{proof}
+
+\begin{proposition}
+  \label{prop:embedded_sdag}
+  \lean{TwoControl.Clifford.Universal.embedded_phaseSdagger_is_clifford_t}
+  \leanok
+  Every embedded $S^\dagger$ gate is synthesized exactly by an embedded
+  Clifford+T circuit.
+\end{proposition}
+
+\begin{proof}
+  \leanok
+  \uses{def:gate_cliffordt, def:embedded_one}
+  Use $S^\dagger = T^6$ and lift as before.
+\end{proof}
+
+\begin{theorem}
+  \label{thm:clifford_rz_to_t_rz}
+  \lean{TwoControl.Clifford.Universal.clifford_rz_to_clifford_t_rz}
+  \leanok
+  If $U$ is synthesized up to global phase over the paper gate set, then it is
+  synthesized up to global phase over the intermediate gate set
+  $\{C(X), H, T, R_z(\theta)\}$.
+\end{theorem}
+
+\begin{proof}
+  \leanok
+  \uses{prop:embedded_s, prop:embedded_sdag, def:gate_cliffordtrz,
+        thm:clifford_rz_universal}
+  Replace each factor of the circuit: $C(X)$, $H$, and $R_z(\theta)$ are
+  already in the target set, and the two Clifford phases are expanded by
+  Propositions~\ref{prop:embedded_s} and~\ref{prop:embedded_sdag}.  Since each
+  replacement is exact, the global phase is unchanged.
+\end{proof}

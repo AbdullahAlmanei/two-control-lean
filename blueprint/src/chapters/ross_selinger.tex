@@ -1,0 +1,225 @@
+\section{The Ross--Selinger approximation compiler (conditional)}
+\label{sec:ross_selinger}
+
+Ross and Selinger give an algorithm that, given an angle $\theta$ and a
+precision $\epsilon$, produces a Clifford+T circuit $\epsilon$-approximating
+$R_z(\theta)$ with $T$-count $2\log_2(1/\epsilon) + O(\log\log(1/\epsilon))$,
+and which is $T$-count optimal relative to a Diophantine factoring oracle.
+Formalizing it would supply the logarithmic bound that
+Lemma~\ref{lem:lemma12_constants} is missing.
+
+This track is the least complete part of the project, and the shape of what is
+and is not proved matters:
+
+\begin{itemize}
+  \item The \emph{search architecture} is complete and proved: candidate
+    generation, the epsilon region, the Diophantine interface, the completion
+    to a unitary, and the reduction of correctness to two named inputs.
+  \item Both headline theorems --- soundness
+    (Theorem~\ref{thm:rs_sound}) and relative optimality
+    (Theorem~\ref{thm:rs_optimal}) --- are stated and their proofs are
+    assembled, but they inherit \texttt{sorry} from exactly two open
+    mathematical inputs: Lemma~\ref{lem:selinger75} and
+    Lemma~\ref{lem:ma_bound}.
+  \item Termination is \emph{not} claimed.  Both theorems are conditional in
+    the paper's own sense: they say what holds \emph{if} the fuelled search
+    returns a circuit.  No factorization, prime-distribution, or termination
+    assumption enters.
+\end{itemize}
+
+\subsection{Setup}
+
+\begin{definition}
+  \label{def:rs_approx}
+  \lean{TwoControl.RossSelinger.IsRzApproxCircuit}
+  \leanok
+  $C$ \emph{$\epsilon$-approximates} $R_z(\theta)$ when
+  $\lVert R_z(\theta) - \operatorname{eval}(C)\rVert \le \epsilon$ in operator
+  norm.  Note this track uses the operator norm, not the Hilbert--Schmidt
+  distance of Section~\ref{sec:circuits}.
+\end{definition}
+
+\begin{definition}
+  \label{def:candidate}
+  \lean{TwoControl.RossSelinger.RSCandidate}
+  \leanok
+  A \emph{candidate} at level $k$ is a $u \in \mathbb{D}[\omega]$ that lies in
+  the Ross--Selinger epsilon region for $(\theta,\epsilon)$, whose
+  $\sqrt2$-conjugate lies in the closed unit disk, and whose \emph{least}
+  denominator exponent is exactly $k$.  Ordering candidates by least
+  denominator exponent, rather than by a chosen presentation, is what makes the
+  optimality argument possible.
+\end{definition}
+
+\begin{lemma}[Candidates exist]
+  \label{lem:grid_exists}
+  \lean{TwoControl.RossSelinger.grid_candidate_exists}
+  \leanok
+  For every $\theta$ and every $\epsilon > 0$ there is $u \in \mathbb{D}[\omega]$
+  in the epsilon region for $(\theta,\epsilon)$ whose $\sqrt2$-conjugate lies in
+  the closed unit disk.
+\end{lemma}
+
+\begin{proof}
+  \leanok
+  \uses{def:candidate, def:dyadic}
+  This is the Ross--Selinger grid lemma: the epsilon region is a rectangle of
+  area bounded below in terms of $\epsilon$, and the two-dimensional grid
+  $\mathbb{D}[\omega]$ with its conjugate constraint has a point in any such
+  region.  The large-$\epsilon$ and small-$\epsilon$ regimes are handled
+  separately.
+\end{proof}
+
+\begin{lemma}[Executable enumeration]
+  \label{lem:grid_bounded}
+  \lean{TwoControl.RossSelinger.boundedGridCandidatesAtLevel_sound}
+  \leanok
+  Scanning an explicit integer coordinate box at a fixed denominator level
+  yields only genuine candidates, and every admissible coordinate in the box is
+  actually emitted.
+\end{lemma}
+
+\begin{proof}
+  \leanok
+  \uses{def:candidate}
+  Soundness is a direct check on each emitted coordinate.  The completeness
+  clause is bounded: it is stated relative to the box, so it does not yet give
+  full fixed-level completeness.  Closing that gap is a matter of supplying box
+  bounds large enough to contain every admissible coordinate.
+\end{proof}
+
+\begin{lemma}[Diophantine interface]
+  \label{lem:norm_eq}
+  \lean{TwoControl.RossSelinger.normEquation_of_solves_completionXi}
+  \leanok
+  Write $\xi(u) = 1 - \bar u u$.  If $t \in \mathbb{D}[\omega]$ satisfies
+  $\bar t t = \xi(u)$, then $(u,t)$ satisfies the norm equation of the unitary
+  completion $\operatorname{completionMatrix}(u,t)$.
+\end{lemma}
+
+\begin{proof}
+  \leanok
+  \uses{def:candidate, thm:kmm_completion}
+  Direct computation with the norm form.  The role of this lemma is to isolate
+  the number-theoretic step --- solving $\bar t t = \xi(u)$ over
+  $\mathbb{D}[\omega]$, which is where factorization is needed --- from
+  everything else.  Two companion facts complete the interface, both proved: a
+  concrete $\mathbb{Z}[\omega]$ solution of the norm equation lifts to a
+  solution over $\mathbb{D}[\omega]$, and with exact factorization available the
+  solvability predicate is decided, which is how the oracle contract is
+  modelled.
+\end{proof}
+
+\begin{lemma}[A completed candidate approximates]
+  \label{lem:completed_approx}
+  \lean{TwoControl.RossSelinger.CompletedCandidate.synthesize_approximates}
+  \leanok
+  If a candidate for $(\theta,\epsilon)$ is completed by a norm-equation
+  solution, the resulting circuit $\epsilon$-approximates $R_z(\theta)$.
+\end{lemma}
+
+\begin{proof}
+  \leanok
+  \uses{lem:norm_eq, def:rs_approx, def:candidate}
+  Membership in the epsilon region bounds the operator distance between
+  $R_z(\theta)$ and the completion matrix; the norm equation guarantees the
+  completion is unitary, and the candidate's circuit evaluates to it.
+\end{proof}
+
+\subsection{The two open inputs}
+
+\begin{lemma}[Selinger Lemma 7.5, the $2k-2$ classification]
+  \label{lem:selinger75}
+  \lean{TwoControl.RossSelinger.selinger_lemma_7_5}
+  \leanok
+  For a completion matrix with top-left entry $u$ of least denominator exponent
+  $k$, one of the two branches $U$ or $TUT^\dagger$ has $T$-count at most
+  $\operatorname{rossLevelTCount}(k)$, which is $0$ for $k = 0$ and $2k-2$
+  otherwise.
+\end{lemma}
+
+\begin{proof}
+  \uses{lem:ma_bound, thm:kmm_completion}
+  \emph{Proof pending} (\texttt{sorry}).  All the plumbing around it is proved:
+  a completion has the same least $\omega$-denominator exponent as its entry,
+  the $TUT^\dagger$ branch is converted into the adjusted completion
+  $\omega t$ with its norm equation, and either branch is packaged for the
+  search layer.  What remains is the finite Ma/KMM residue classification that
+  selects the branch, which is meant to come from
+  Lemma~\ref{lem:ma_bound}.
+\end{proof}
+
+\begin{lemma}[Matsumoto--Amano normal form, Figure 2 witness]
+  \label{lem:ma_bound}
+  \lean{TwoControl.RossSelinger.ma_normal_form_figure2_synthesis_bound}
+  \leanok
+  Let $U$ be a one-qubit unitary with entries in $\mathbb{D}[\omega]$, least
+  $\omega$-denominator exponent $k$, and residue $R$ at level $k$ matching a
+  node of the Figure 2 automaton valid at level $k$.  Then $U$ is exactly a
+  Clifford+T circuit of $T$-count at most $2k - \operatorname{tOffset}(\text{node})$.
+\end{lemma}
+
+\begin{proof}
+  \uses{thm:kmm_exact, def:sde}
+  \emph{Proof pending} (\texttt{sorry}).  The Matsumoto--Amano syllable
+  semantics, the Figure 2 automaton, the residue bookkeeping, and the extraction
+  of the synthesis statement from a witness are all formalized; the pending step
+  is the construction of the witness itself, i.e.\ that the automaton path
+  selected by the residue really does reduce $U$ one syllable at a time while
+  decreasing the denominator exponent.  Note the syllable words act as
+  \emph{reduction prefixes}: from a circuit for $N^\dagger U$ one obtains a
+  circuit for $U$ by prefixing $N$.
+\end{proof}
+
+\subsection{The conditional theorems}
+
+\begin{theorem}[Conditional soundness]
+  \label{thm:rs_sound}
+  \lean{TwoControl.RossSelinger.rossSelingerSearch_sound_if_returns}
+  \leanok
+  If the fuelled Ross--Selinger search returns a circuit $C$ on input
+  $(\theta,\epsilon)$, then $C$ $\epsilon$-approximates $R_z(\theta)$.
+\end{theorem}
+
+\begin{proof}
+  \uses{lem:completed_approx, lem:grid_bounded, lem:norm_eq, lem:selinger75}
+  \emph{Proof pending} (\texttt{sorry}), inherited from
+  Lemma~\ref{lem:selinger75}.  The argument itself is complete: a returned
+  circuit comes from a completed candidate, candidate batches carry the
+  epsilon-region certificate by Lemma~\ref{lem:grid_bounded}, the solver law
+  turns the returned $t$ into a norm-equation certificate, and
+  Lemma~\ref{lem:completed_approx} concludes.  Nothing about when the search
+  returns is claimed.
+\end{proof}
+
+\begin{definition}
+  \label{def:rs_optimal}
+  \lean{TwoControl.RossSelinger.IsOptimalRzApproxByTCount}
+  \leanok
+  $C$ is \emph{$T$-count optimal} for $(\theta,\epsilon)$ when it
+  $\epsilon$-approximates $R_z(\theta)$ and no circuit with that property has a
+  smaller $T$-count.
+\end{definition}
+
+\begin{theorem}[Conditional relative optimality]
+  \label{thm:rs_optimal}
+  \lean{TwoControl.RossSelinger.rossSelingerOracle_optimal_if_returns}
+  \leanok
+  Given a factoring oracle and the competitor bridge, if the oracle variant of
+  the search returns a circuit $C$, then $C$ is $T$-count optimal for
+  $(\theta,\epsilon)$.
+\end{theorem}
+
+\begin{proof}
+  \uses{thm:rs_sound, def:rs_optimal, lem:selinger75, lem:ma_bound}
+  \emph{Proof pending} (\texttt{sorry}), inherited from
+  Lemma~\ref{lem:selinger75}.  The competitor side is factored along the
+  paper's argument, with the paper-side inputs collected into an explicit
+  hypothesis bundle: any competing circuit is put into completion-matrix normal
+  form, the resulting scaled-grid candidate is exposed by the enumerator at its
+  least denominator exponent, and the denominator-exponent theorem gives that
+  competitor's $T$-count lower bound.  The search-order argument --- that once a
+  candidate returns at level $k$, the oracle cannot have skipped a completable
+  candidate at a lower level --- is proved.  Combining it with the returned
+  branch bound of Lemma~\ref{lem:selinger75} gives optimality.
+\end{proof}

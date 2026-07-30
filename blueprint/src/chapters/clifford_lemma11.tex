@@ -1,149 +1,278 @@
-\section{Clifford Lemma 11}
+\section{The easy-gate layer: exact two-qubit synthesis (parallel track)}
+\label{sec:easy_gate_layer}
 
-This chapter isolates the paper-only dependency cone used for a first
-formal blueprint of Lemma 11 from the Clifford paper.
-The recursive $n$-qubit argument of Lemma 1 is intentionally excluded:
-the goal here is only the $2$-qubit synthesis theorem.
+This section documents the route the project formalized first, following an
+earlier draft of the paper: decompose an $n$-qubit unitary into arbitrary
+two-qubit gates plus one-qubit Cliffords, and then eliminate the arbitrary
+two-qubit gates by an exact two-qubit synthesis theorem (``Lemma 11'').
+
+Every node here is proved, but the reader should know where it sits:
+Theorem~\ref{thm:clifford_t_universal} does \emph{not} depend on any of it.
+The check is mechanical: replacing the Lean proof of Lemma~\ref{lem:lemma11} by
+\texttt{sorry} and rebuilding leaves the main theorem \texttt{sorry}-free,
+whereas Theorem~\ref{thm:clifford_rz_from_lemma1} below becomes
+\texttt{sorry}-dependent.  The layer is kept, and kept compiling, because the
+quantitative bounds of Section~\ref{sec:bounds} are stated against it.
+
+\subsection{The two-qubit cosine--sine decomposition}
 
 \begin{lemma}
-  \label{lem:cliff_2_2q}
+  \label{lem:cs_square_block}
+  \lean{TwoControl.CosineSine.squareBlockCSD_exists}
+  \leanok
+  Every $4\times 4$ unitary $V$ factors as
+  \[
+    V = \operatorname{blockDiag}(P_0,P_1)\cdot
+        \operatorname{csCore}(c_0,c_1,s_0,s_1)\cdot
+        \operatorname{blockDiag}(Q_0,Q_1)
+  \]
+  with $P_i, Q_i$ one-qubit unitaries and nonnegative reals satisfying
+  $c_i^2 + s_i^2 = 1$, where $\operatorname{csCore}$ is the block matrix
+  $\begin{pmatrix} C & -S \\ S & C\end{pmatrix}$ built from the diagonal
+  matrices $C = \operatorname{diag}(c_0,c_1)$, $S = \operatorname{diag}(s_0,s_1)$.
+\end{lemma}
+
+\begin{proof}
+  \leanok
+  Split $V$ into $2\times2$ blocks $A,B,C,D$.  Unitarity gives
+  $A^\dagger A + C^\dagger C = I$, so diagonalizing $A^\dagger A$ produces a
+  common orthonormal basis in which $A$ and $C$ become the diagonal cosine and
+  sine matrices, and the remaining blocks follow from the column relations.
+\end{proof}
+
+\begin{lemma}
+  \label{lem:cs_block_core}
+  \lean{TwoControl.CosineSine.csBlockCore_eq_conditionalRy}
+  \leanok
+  If $c_i = \cos(\theta_i/2)$ and $s_i = \sin(\theta_i/2)$ then
+  $\operatorname{csCore}(c_0,c_1,s_0,s_1)$ is the conditional rotation
+  $R_y(\theta_0)\oplus R_y(\theta_1)$ acting on the first qubit conditioned on
+  the second.
+\end{lemma}
+
+\begin{proof}
+  \leanok
+  Compare blocks; the identity is the definition of $R_y$ on each diagonal
+  entry.
+\end{proof}
+
+\begin{lemma}[Cosine--sine decomposition, two qubits]
+  \label{lem:cs_exists_2q}
   \lean{TwoControl.CosineSine.cosinesine_exists}
   \leanok
-  For every $2$-qubit unitary $V$, there exist one-qubit unitaries
-  $P_0$, $P_1$, $Q_0$, $Q_1$ and real angles $\theta_0$, $\theta_1$
-  such that
+  For every two-qubit unitary $V$ there are one-qubit unitaries
+  $P_0,P_1,Q_0,Q_1$ and angles $\theta_0,\theta_1$ with
   \[
-    V = (\lvert 0 \rangle \langle 0 \rvert \otimes P_0
-         + \lvert 1 \rangle \langle 1 \rvert \otimes P_1)
-      \cdot (R_y(\theta_0) \otimes \lvert 0 \rangle \langle 0 \rvert
-         + R_y(\theta_1) \otimes \lvert 1 \rangle \langle 1 \rvert)
-      \cdot (\lvert 0 \rangle \langle 0 \rvert \otimes Q_0
-         + \lvert 1 \rangle \langle 1 \rvert \otimes Q_1).
+    V = \operatorname{blockDiag}(P_0,P_1)\cdot
+        \operatorname{condRy}(\theta_0,\theta_1)\cdot
+        \operatorname{blockDiag}(Q_0,Q_1).
   \]
 \end{lemma}
 
 \begin{proof}
   \leanok
-  This is the existing theorem
-  $\texttt{TwoControl.CosineSine.cosinesine\_exists}$,
-  reused as the $2$-qubit specialization of the cosine-sine decomposition.
+  \uses{lem:cs_square_block, lem:cs_block_core}
+  Apply Lemma~\ref{lem:cs_square_block}, convert each nonnegative pair
+  $(c_i,s_i)$ on the unit circle into an angle $\theta_i$, and rewrite the core
+  with Lemma~\ref{lem:cs_block_core}.
 \end{proof}
 
+\subsection{Exact two-qubit synthesis}
+
 \begin{lemma}
-  \label{lem:cliff_3}
-  \lean{TwoControl.Clifford.lemma3_ry_via_rz}
+  \label{lem:oneq_diag}
+  \lean{TwoControl.Clifford.one_qubit_diagonalization}
   \leanok
-  For every real angle $\alpha$,
-  \[
-    R_y(\alpha) = S^{\dagger} H R_z(-\alpha) H S.
-  \]
+  Every one-qubit unitary $U$ can be written $U = V \operatorname{diag}(u_0,u_1) V^\dagger$
+  with $V$ unitary and $\lvert u_0\rvert = \lvert u_1\rvert = 1$.
 \end{lemma}
 
 \begin{proof}
   \leanok
-  Expand both sides as $2 \times 2$ matrices.
-  The equalities $H Z H = X$ and $S^{\dagger} X S = -Y$
-  reduce the right-hand side to the defining matrix of $R_y(\alpha)$.
+  The spectral theorem for $2\times2$ unitaries, already available in the
+  project's helper layer.
 \end{proof}
 
 \begin{lemma}
-  \label{lem:cliff_4_2q}
+  \label{lem:demux_2q}
   \lean{TwoControl.Clifford.lemma4_demultiplex_two_qubit}
   \leanok
-  Suppose $U_0$ and $U_1$ are one-qubit unitaries.
-  Then there exist one-qubit unitaries $P$ and $Q$ and real angles
-  $\alpha_0$, $\alpha_1$ such that
+  For one-qubit unitaries $V_0, V_1$ there are one-qubit unitaries $P, Q$ and
+  angles $\alpha_0,\alpha_1$ with
   \[
-    \lvert 0 \rangle \langle 0 \rvert \otimes U_0
-      + \lvert 1 \rangle \langle 1 \rvert \otimes U_1
-    = (I \otimes Q)
-      \cdot (R_z(\alpha_0) \otimes \lvert 0 \rangle \langle 0 \rvert
-          + R_z(\alpha_1) \otimes \lvert 1 \rangle \langle 1 \rvert)
-      \cdot (I \otimes P).
+    \operatorname{blockDiag}(V_0,V_1)
+      = (I\otimes Q)\cdot \operatorname{condRz}(\alpha_0,\alpha_1)
+        \cdot (I\otimes P).
   \]
 \end{lemma}
 
 \begin{proof}
   \leanok
-  \uses{lem:cliff_2_2q, lem:cliff_3}
-  Apply Lemma~\ref{lem:cliff_2_2q} to the block-diagonal gate
-  $\lvert 0 \rangle \langle 0 \rvert \otimes U_0
-    + \lvert 1 \rangle \langle 1 \rvert \otimes U_1$.
-  Because the gate is already block-diagonal, the cosine-sine witnesses can
-  be chosen so that the off-diagonal part is absorbed into local one-qubit
-  factors on the second qubit.
-  Lemma~\ref{lem:cliff_3} then converts the middle conditional-$R_y$ pair
-  into a conditional-$R_z$ pair.
+  \uses{lem:oneq_diag}
+  Diagonalize $V_1V_0^\dagger$ and split the resulting phases symmetrically;
+  this is the two-qubit case of the demultiplexing identity.
 \end{proof}
 
 \begin{proposition}
-  \label{prop:cliff_controlled_rz}
+  \label{prop:crz_pair}
   \lean{TwoControl.Clifford.controlled_rz_pair_uses_standard_gates}
   \leanok
-  For every real angles $\alpha_0$, $\alpha_1$, the two-qubit gate
-  \[
-    R_z(\alpha_0) \otimes \lvert 0 \rangle \langle 0 \rvert
-      + R_z(\alpha_1) \otimes \lvert 1 \rangle \langle 1 \rvert
-  \]
-  can be synthesized by a circuit built from
+  For all $\alpha_0,\alpha_1$, the conditional rotation
+  $\operatorname{condRz}(\alpha_0,\alpha_1)$ is \emph{exactly} a circuit over
   $\{C(X), H, T, R_z(\theta)\}$.
 \end{proposition}
 
 \begin{proof}
   \leanok
-  Split the pair $(\alpha_0, \alpha_1)$ into its average part and its
-  half-difference.
-  The common phase is implemented by local $R_z$ gates, while the relative
-  phase is implemented by the standard two-$C(X)$ realization of a controlled
-  diagonal $R_z$ gate.
-  Since the gate set already contains $R_z(\theta)$, no approximation step is
-  needed.
+  Split $(\alpha_0,\alpha_1)$ into its mean and half-difference.  The mean is a
+  local $R_z$; the half-difference is realized by the standard
+  two-$C(X)$ construction for a controlled $R_z$.  No approximation is needed
+  because $R_z(\theta)$ is in the gate set.
 \end{proof}
 
 \begin{proposition}
-  \label{prop:cliff_1q_exact}
+  \label{prop:oneq_htrz}
   \lean{TwoControl.Clifford.one_qubit_exact_h_t_rz}
   \leanok
-  Every one-qubit unitary can be synthesized, up to global phase, by a circuit
-  built from $\{H, T, R_z(\theta)\}$.
+  Every one-qubit unitary is, up to global phase, exactly a circuit over
+  $\{H, T, R_z(\theta)\}$.
 \end{proposition}
 
 \begin{proof}
   \leanok
-  Prepare the first column by an $R_z R_y$ circuit, diagonalize the remaining
-  one-qubit unitary, and rewrite the diagonal factor as a global phase times a
-  final $R_z$ rotation.
-  Lemma~\ref{lem:cliff_3} and the exact identities
-  $S = T^2$ and $S^\dagger = T^6$ express the needed $R_y$ gate using the
-  allowed primitives.
+  \uses{lem:ry_via_rz, lem:oneq_diag, def:global_phase}
+  Prepare the first column with an $R_zR_y$ circuit, diagonalize the remaining
+  unitary by Lemma~\ref{lem:oneq_diag}, and absorb the diagonal factor into a
+  global phase times a final $R_z$.  Lemma~\ref{lem:ry_via_rz} together with
+  $S = T^2$ and $S^\dagger = T^6$ expresses the $R_y$ factor in the allowed
+  primitives.
 \end{proof}
 
-\begin{lemma}
-  \label{lem:cliff_11}
+\begin{lemma}[Lemma 11]
+  \label{lem:lemma11}
   \lean{TwoControl.Clifford.lemma11_two_qubit_synthesis}
   \leanok
-  For every two-qubit unitary $U$, there exists a circuit built from
-  $\{C(X), H, T, R_z(\theta)\}$ whose matrix is globally phase-equivalent to
-  $U$.
+  Every two-qubit unitary is, up to global phase, exactly a circuit over
+  $\{C(X), H, T, R_z(\theta)\}$.
 \end{lemma}
 
 \begin{proof}
   \leanok
-  \uses{lem:cliff_2_2q, lem:cliff_3, lem:cliff_4_2q, prop:cliff_controlled_rz, prop:cliff_1q_exact}
-  Apply Lemma~\ref{lem:cliff_2_2q} to write
-  \[
-    U = P \cdot R \cdot Q,
-  \]
-  where $P$ and $Q$ are block-diagonal two-qubit gates built from one-qubit
-  unitaries and $R$ is a conditional-$R_y$ pair.
-  Use Lemma~\ref{lem:cliff_4_2q} to synthesize the side factors $P$ and $Q$.
-  Use Lemma~\ref{lem:cliff_3} to rewrite the middle conditional-$R_y$ pair in
-  terms of a conditional-$R_z$ pair plus local one-qubit gates.
-  Proposition~\ref{prop:cliff_controlled_rz} synthesizes the resulting
-  conditional-$R_z$ block using $C(X)$ and one-qubit gates from the target set.
-  Proposition~\ref{prop:cliff_1q_exact} synthesizes all remaining local
-  one-qubit factors up to global phase.
-  The accumulated scalar phases compose into a single global phase, so
-  concatenating the resulting circuits gives a synthesis of $U$ over
-  $\{C(X), H, T, R_z(\theta)\}$ up to global phase.
+  \uses{lem:cs_exists_2q, lem:demux_2q, prop:crz_pair, prop:oneq_htrz,
+        lem:ry_via_rz, def:global_phase}
+  Write $U = P R Q$ by Lemma~\ref{lem:cs_exists_2q}, with $P,Q$ block diagonal
+  and $R$ a conditional $R_y$ pair.  Synthesize $P$ and $Q$ with
+  Lemma~\ref{lem:demux_2q} followed by Proposition~\ref{prop:crz_pair} and
+  Proposition~\ref{prop:oneq_htrz}.  Rewrite $R$ using
+  Lemma~\ref{lem:ry_via_rz} into a conditional $R_z$ pair with local Clifford
+  conjugators and apply Proposition~\ref{prop:crz_pair}.  The accumulated
+  scalars compose into a single global phase.
+
+  The theorem is stated up to global phase rather than exactly.  An exact
+  version would additionally require realizing an arbitrary unit scalar as a
+  circuit over the same gate set, which is a separate obligation and is not
+  needed anywhere downstream.
+\end{proof}
+
+\begin{lemma}
+  \label{lem:2q_clifford_rz}
+  \lean{TwoControl.Clifford.Universal.two_qubit_gate_has_clifford_rz_circuit}
+  \leanok
+  Lemma~\ref{lem:lemma11} restated in the vocabulary of
+  Section~\ref{sec:circuits}, so that the layers below can use the gate-set
+  predicates.
+\end{lemma}
+
+\begin{proof}
+  \leanok
+  \uses{lem:lemma11}
+  Direct restatement.
+\end{proof}
+
+\subsection{Decomposition into easy gates}
+
+\begin{lemma}
+  \label{lem:easy_2q}
+  \lean{TwoControl.Clifford.Universal.two_qubit_unitary_is_easy_gate}
+  \leanok
+  Every two-qubit unitary is a one-gate circuit over $\operatorname{EasyGate} 2$.
+\end{lemma}
+
+\begin{proof}
+  \leanok
+  \uses{def:gate_easy, def:embedded_two}
+  The identity placement embeds the gate into itself, and the
+  arbitrary-two-qubit clause of $\operatorname{EasyGate}$ accepts it.
+\end{proof}
+
+\begin{lemma}[Old Lemma 1]
+  \label{lem:lemma1_easy}
+  \lean{TwoControl.Clifford.Universal.lemma1_decomposition_to_easy_gate_set}
+  \leanok
+  For $n \ge 2$, every $n$-qubit unitary is \emph{exactly} a circuit over
+  $\operatorname{EasyGate} n$: arbitrary two-qubit gates together with embedded
+  $H$, $S$, $S^\dagger$, $R_z(\theta)$.
+\end{lemma}
+
+\begin{proof}
+  \leanok
+  \uses{lem:cs_step, lem:cry_via_crz, lem:demux, lem:mottonen, lem:easy_2q,
+        def:gate_easy}
+  Recursively apply the cosine--sine step (Lemma~\ref{lem:cs_step}), convert
+  each uniformly controlled $R_y$ factor into a uniformly controlled $R_z$
+  factor (Lemma~\ref{lem:cry_via_crz}), demultiplex the block-diagonal side
+  factors (Lemma~\ref{lem:demux}), and reduce controlled $R_z$ families with
+  Lemma~\ref{lem:mottonen} until only one- and two-qubit gates remain.  The
+  recursion stops at two qubits by Lemma~\ref{lem:easy_2q}.
+\end{proof}
+
+\begin{lemma}
+  \label{lem:easy_factor}
+  \lean{TwoControl.Clifford.Universal.easy_gate_factor_to_clifford_rz}
+  \leanok
+  Every single easy gate is synthesized up to global phase over
+  $\{C(X), H, T, R_z(\theta)\}$.
+\end{lemma}
+
+\begin{proof}
+  \leanok
+  \uses{lem:2q_clifford_rz, prop:embedded_s, prop:embedded_sdag,
+        def:gate_cliffordtrz}
+  Five cases.  An arbitrary embedded two-qubit gate uses
+  Lemma~\ref{lem:2q_clifford_rz}; $H$ and $R_z(\theta)$ are already allowed;
+  $S$ and $S^\dagger$ expand as $T^2$ and $T^6$ by
+  Propositions~\ref{prop:embedded_s} and~\ref{prop:embedded_sdag}.
+\end{proof}
+
+\begin{lemma}
+  \label{lem:easy_circuit}
+  \lean{TwoControl.Clifford.Universal.easy_circuit_to_clifford_rz}
+  \leanok
+  Every exact easy-gate circuit can be converted into a circuit over
+  $\{C(X),H,T,R_z(\theta)\}$ synthesizing the same unitary up to global phase.
+\end{lemma}
+
+\begin{proof}
+  \leanok
+  \uses{lem:easy_factor}
+  Replace each factor by Lemma~\ref{lem:easy_factor} and concatenate; the
+  individual phases multiply into one.
+\end{proof}
+
+\begin{theorem}
+  \label{thm:clifford_rz_from_lemma1}
+  \lean{TwoControl.Clifford.Universal.clifford_rz_synthesis_from_lemma1}
+  \leanok
+  For $n \ge 2$, every $n$-qubit unitary is synthesized up to global phase over
+  $\{C(X),H,T,R_z(\theta)\}$.
+\end{theorem}
+
+\begin{proof}
+  \leanok
+  \uses{lem:lemma1_easy, lem:easy_circuit}
+  Compose Lemma~\ref{lem:lemma1_easy} with Lemma~\ref{lem:easy_circuit}.
+
+  Compare Theorem~\ref{thm:clifford_rz_to_t_rz}, which reaches the same
+  conclusion for all $n \ge 1$ through the paper's route without arbitrary
+  two-qubit gates.  That is the version the main theorem uses.
 \end{proof}

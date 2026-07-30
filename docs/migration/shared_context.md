@@ -16,17 +16,23 @@ Any new agent should treat both goals as first-class. The mathematics matters, b
 When different files disagree about project status, use this order.
 
 1. Lean files in `TwoControl/`.
-2. Recent journal entries in `docs/journal/`.
-3. Migration packets and appendix citation packets in `docs/migration/packets/`.
-4. Blueprint files in `blueprint/src/chapters/`.
+2. Blueprint files in `blueprint/src/chapters/` — start with `overview.tex`. These are maintained against the Lean sources: every `\lean{}` reference is checked by `leanblueprint checkdecls`, and `\leanok` on a proof means the declaration's axiom closure was checked to contain no `sorryAx`.
+3. Recent journal entries in `docs/journal/`.
+4. Migration packets and appendix citation packets in `docs/migration/packets/`.
 5. Older status tables in `docs/migration/`.
 
-Reason: some migration docs were written when the pipeline stopped at Blueprint generation. The repo has moved well beyond that stage.
+Reason: some migration docs were written when the pipeline stopped at Blueprint generation, and describe only the Sections 3–7 track. The repo has moved well beyond that stage.
 
 ## Repo Layout
 
 - `TwoControl/`: main Lean formalization, shared helper modules, and section files for the paper.
 - `TwoControl/CosineSine/`: focused appendix-style formalization of the 4-by-4 cosine-sine decomposition and its translation into controlled `R_y` gates.
+- `TwoControl/Clifford/`: gate definitions and the exact two-qubit synthesis layer ("Lemma 11").
+- `TwoControl/Clifford/Universal/`: gate-set predicates, the Hilbert-Schmidt distance layer, the `n`-qubit recursion, the Clifford+T universality theorem, and the quantitative bounds track.
+- `TwoControl/Clifford/Lemma12/`: the `G1/G2` track proving that `{H,T}` approximates every `R_z`.
+- `TwoControl/KMM/`: Kliuchnikov-Maslov-Mosca exact Clifford+T synthesis over `D[omega]`.
+- `TwoControl/RossSelinger/`: the conditional Ross-Selinger optimal approximation compiler.
+- `reference/cliff/`: the Clifford+T universality papers and related sources.
 - `blueprint/`: proof map, dependency graph, and generated web/print blueprint artifacts.
 - `reference/paper/`: source paper and supporting references.
 - `reference/rocq/`: original Rocq formalization that the migration work is based on.
@@ -39,10 +45,10 @@ Reason: some migration docs were written when the pipeline stopped at Blueprint 
 1. The paper: official numbering, public theorem identity, and proof narrative.
 2. The Rocq proof: existing formal proof, helper lemmas, and decomposition strategy.
 3. The packet layer: reconciled migration ledger tying paper objects to Rocq declarations and dependencies.
-4. The Blueprint layer: first public-facing proof map and dependency graph.
+4. The Blueprint layer: the public-facing proof map, dependency graph, and per-node formalization status.
 5. The Lean layer: the actual target formalization now present in this repo.
 
-The early project plan stopped at Blueprint generation. That is no longer the actual scope of the repo.
+The early project plan stopped at Blueprint generation. That is no longer the actual scope of the repo: the blueprint is now written after the Lean proofs and kept in sync with them.
 
 ## Agent Workflow
 

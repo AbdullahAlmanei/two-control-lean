@@ -1,0 +1,158 @@
+\section{Exact Clifford+T synthesis over the dyadic cyclotomic ring}
+\label{sec:kmm}
+
+A one-qubit unitary is exactly implementable by a Clifford+T circuit precisely
+when its entries lie in the ring
+$\mathbb{D}[\omega] = \mathbb{Z}[\tfrac1{\sqrt2}, i]$, where
+$\omega = e^{i\pi/4}$.  This section formalizes the constructive direction,
+following Kliuchnikov, Maslov and Mosca, together with a $T$-count bound.  It
+supplies the exact-synthesis half of the Ross--Selinger compiler of
+Section~\ref{sec:ross_selinger}, and it is the route by which the pending
+logarithmic bound of Lemma~\ref{lem:lemma12_constants} is meant to be proved.
+
+Every node in this section is proved.  Several finite case analyses --- notably
+the low-denominator base tables --- are discharged by \texttt{native\_decide},
+so these results carry the corresponding compiler-trust axiom.
+
+\subsection{Circuits and denominators}
+
+\begin{definition}
+  \label{def:ct_circuit}
+  \lean{TwoControl.RossSelinger.CliffordTCircuit}
+  \leanok
+  A one-qubit Clifford+T circuit is a list over the primitives $H$, $S$, $T$
+  and the scalar $\omega$, with evaluation to $2\times2$ matrices.  Its
+  $T$-count $\operatorname{TCount}$ counts the $T$ letters; it is additive over
+  concatenation.
+\end{definition}
+
+\begin{definition}
+  \label{def:dyadic}
+  \lean{DyadicCyclotomic.InDyadicCyclotomic}
+  \leanok
+  $z \in \mathbb{D}[\omega]$ means $z = x/\sqrt2^{\,k}$ for some
+  $x \in \mathbb{Z}[\omega]$ and $k \in \mathbb{N}$;
+  $\operatorname{MatrixEntriesInDyadicCyclotomic}$ says all four entries of a
+  $2\times2$ matrix are of this form.
+\end{definition}
+
+\begin{definition}
+  \label{def:sde}
+  \lean{TwoControl.KMM.sde}
+  \leanok
+  The \emph{smallest denominator exponent} $\operatorname{sde}(z)$ is the least
+  $k$ with $\sqrt2^{\,k} z \in \mathbb{Z}[\omega]$.  Two derived quantities are
+  used: $\operatorname{omegaSDE}$, the same notion in the explicit
+  $\mathbb{Z}[\omega]$ coordinate basis, and
+  $\operatorname{DenNormSDE}(z) = \operatorname{sde}(\bar z z)$, the exponent of
+  the norm, which is the quantity the KMM recursion decreases.
+\end{definition}
+
+\subsection{The descent}
+
+\begin{lemma}[Denominator descent]
+  \label{lem:kmm_reduce}
+  \lean{TwoControl.KMM.kmm_exists_reducing_k}
+  \leanok
+  Let $(z,w)$ be a normalized state with entries in $\mathbb{D}[\omega]$ and
+  $\operatorname{DenNormSDE}(z) \ge 5$.  Then there is $k \in \{0,1,2,3\}$ such
+  that applying $H T^{k}$ to the state keeps the entries in
+  $\mathbb{D}[\omega]$, keeps it normalized, and strictly decreases
+  $\operatorname{DenNormSDE}$.
+\end{lemma}
+
+\begin{proof}
+  \leanok
+  \uses{def:sde, def:dyadic}
+  This is the arithmetic core of KMM.  Write the numerators in the
+  $\mathbb{Z}[\omega]$ basis and analyze the residues of the norm modulo
+  $\sqrt2$: exactly one of the four choices of $k$ makes the numerator of the
+  transformed norm divisible by a further power of $\sqrt2$.  The residue case
+  analysis is finite and is discharged by computation.
+\end{proof}
+
+\begin{lemma}[State preparation]
+  \label{lem:kmm_state_prep}
+  \lean{TwoControl.KMM.kmm_state_preparation}
+  \leanok
+  Every normalized state $z\lvert 0\rangle + w\lvert 1\rangle$ with
+  $z, w \in \mathbb{D}[\omega]$ is prepared exactly from $\lvert 0\rangle$ by a
+  Clifford+T circuit.  Moreover such a circuit exists with
+  $\operatorname{TCount} \le \operatorname{DenNormSDE}(z) + 64$.
+\end{lemma}
+
+\begin{proof}
+  \leanok
+  \uses{lem:kmm_reduce, def:ct_circuit}
+  Strong induction on $\operatorname{DenNormSDE}(z)$.  For
+  $\operatorname{DenNormSDE}(z) \le 2$ the state is handled by a finite
+  certificate table, and $\operatorname{DenNormSDE}(z) \in \{3,4\}$ by a
+  dedicated two-step descent.  Above that, Lemma~\ref{lem:kmm_reduce} produces a
+  $HT^k$ step that strictly decreases the measure; prepend its inverse to the
+  circuit for the reduced state.  The $T$-count version threads the count
+  through the same recursion: the base table costs at most $64$, and each
+  descent step adds at most one $T$.  The constant is not optimized --- this is
+  the full KMM recursion with accounting, not the sharp Ross--Selinger
+  $2k-2$ bound.
+\end{proof}
+
+\begin{lemma}[Phases are powers of $\omega$]
+  \label{lem:kmm_phase}
+  \lean{TwoControl.KMM.dyadic_unit_phase_is_omega_pow}
+  \leanok
+  If $u \in \mathbb{D}[\omega]$ has $\lvert u\rvert = 1$, then $u = \omega^{m}$
+  for some $m$.
+\end{lemma}
+
+\begin{proof}
+  \leanok
+  \uses{def:dyadic}
+  Such a $u$ is a unit of $\mathbb{Z}[\omega]$ of absolute value one, hence a
+  root of unity in the ring; classifying the solutions of the norm equation in
+  $\omega$-coordinates leaves exactly the eight powers of $\omega$.
+\end{proof}
+
+\subsection{From state preparation to unitaries}
+
+\begin{theorem}[KMM exact synthesis]
+  \label{thm:kmm_exact}
+  \lean{TwoControl.KMM.kmm_exact_synthesis}
+  \leanok
+  Every one-qubit unitary $U$ whose entries lie in $\mathbb{D}[\omega]$ is
+  exactly the matrix of a Clifford+T circuit.  Moreover such a circuit exists
+  with $\operatorname{TCount} \le \operatorname{DenNormSDE}(U_{00}) + 71$.
+\end{theorem}
+
+\begin{proof}
+  \leanok
+  \uses{lem:kmm_state_prep, lem:kmm_phase, def:ct_circuit}
+  Apply Lemma~\ref{lem:kmm_state_prep} to the first column of $U$ to get a
+  circuit $C$ with $\operatorname{eval}(C)\lvert 0\rangle = U\lvert 0\rangle$.
+  Then $\operatorname{eval}(C)^{\dagger} U$ fixes $\lvert 0\rangle$, so it is
+  diagonal with unit entries; by Lemma~\ref{lem:kmm_phase} the remaining entry
+  is a power of $\omega$, which is realized exactly by a short Clifford+T word.
+  Composing gives $U$.  The $T$-count claim adds the constant cost of the phase
+  correction to the state-preparation bound.
+\end{proof}
+
+\begin{theorem}[Synthesis of a completion]
+  \label{thm:kmm_completion}
+  \lean{TwoControl.KMM.exact_synthesis_completion}
+  \leanok
+  If $u, t \in \mathbb{D}[\omega]$ satisfy the norm equation
+  $\lvert u\rvert^2 + \lvert t\rvert^2 = 1$, then the unitary
+  \[
+    \operatorname{completionMatrix}(u,t)
+      = \begin{pmatrix} u & -\bar t \\ t & \bar u\end{pmatrix}
+  \]
+  is exactly a Clifford+T circuit, with a $T$-count bound of the same shape.
+\end{theorem}
+
+\begin{proof}
+  \leanok
+  \uses{thm:kmm_exact}
+  The completion matrix is unitary with entries in $\mathbb{D}[\omega]$, so
+  Theorem~\ref{thm:kmm_exact} applies.  This is the form the Ross--Selinger
+  compiler consumes: its search produces $u$ and the Diophantine solver
+  produces $t$.
+\end{proof}
