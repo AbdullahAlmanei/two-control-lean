@@ -7,9 +7,9 @@ namespace Lemma12
 open Universal
 
 /-!
-Shared `{H,T}` one-qubit circuit type for the Lemma 12 Boykin chain.
+Shared `{H,T}` one-qubit circuit type for the Lemma 12 `G₁/G₂` chain.
 
-`BoykinDensity.lean` constructs concrete `HTCircuit`s and the final Lemma 12
+`G1G2/RzApprox.lean` constructs concrete `HTCircuit`s and the final Lemma 12
 wrapper reads their matrix semantics through `HTCircuit.eval`.
 
 This file stays small: it depends only on the project's

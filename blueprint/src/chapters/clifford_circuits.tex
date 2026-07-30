@@ -1,0 +1,310 @@
+\section{Circuits, gate sets, and the Hilbert--Schmidt distance}
+\label{sec:circuits}
+
+This section fixes the vocabulary shared by the whole Clifford+T development:
+what a circuit is, which gate sets appear, and which distance measures
+approximation.  Everything here is formalized and proved.
+
+\subsection{Circuits and synthesis}
+
+\begin{definition}
+  \label{def:circuit_matrix}
+  \lean{TwoControl.Clifford.Universal.circuitMatrix}
+  \leanok
+  A circuit on $N$-dimensional state space is a list of $N \times N$ matrices,
+  and its matrix is the product taken left to right:
+  \[
+    \operatorname{circuitMatrix}[\,] = I, \qquad
+    \operatorname{circuitMatrix}(g :: gs)
+      = g \cdot \operatorname{circuitMatrix}(gs).
+  \]
+\end{definition}
+
+\begin{definition}
+  \label{def:circuit_over}
+  \lean{TwoControl.Clifford.Universal.CircuitOver}
+  \leanok
+  For a predicate $\mathcal{G}$ on $N \times N$ matrices,
+  $\operatorname{CircuitOver} \mathcal{G}\, gs$ says every factor of $gs$
+  satisfies $\mathcal{G}$.  Concatenation of circuits multiplies their
+  matrices, and a concatenation lies over $\mathcal{G}$ iff both parts do.
+\end{definition}
+
+\begin{definition}
+  \label{def:global_phase}
+  \lean{TwoControl.Clifford.GlobalPhaseEquivalent}
+  \leanok
+  Two matrices are \emph{globally phase equivalent}, written $U \sim V$, when
+  $U = z \cdot V$ for some scalar $z$ with $\lvert z \rvert = 1$.  This
+  relation is reflexive and transitive, is compatible with multiplication, and
+  can be transported through the local tensor factors $A \mapsto A \otimes I$
+  and $A \mapsto I \otimes A$.
+\end{definition}
+
+\begin{definition}
+  \label{def:synthesizes}
+  \lean{TwoControl.Clifford.Universal.Synthesizes}
+  \leanok
+  $\operatorname{Synthesizes} \mathcal{G}\, U$ asserts that some circuit over
+  $\mathcal{G}$ has matrix exactly $U$.
+\end{definition}
+
+\begin{definition}
+  \label{def:synthesizes_phase}
+  \lean{TwoControl.Clifford.Universal.SynthesizesUpToGlobalPhase}
+  \leanok
+  $\operatorname{SynthesizesUpToGlobalPhase} \mathcal{G}\, U$ asserts that
+  some circuit over $\mathcal{G}$ has matrix globally phase equivalent to $U$.
+  This is the shape in which the paper's exact synthesis results hold: the
+  one-qubit base case produces a residual scalar that the allowed gate set
+  cannot itself realize.
+\end{definition}
+
+\subsection{Embedding one- and two-qubit gates into a register}
+
+\begin{definition}
+  \label{def:embedded_one}
+  \lean{TwoControl.Clifford.Universal.IsEmbeddedOneQubitGate}
+  \leanok
+  A \emph{placement} records a choice of wire inside an $n$-qubit register
+  together with the reindexing that identifies
+  $\mathbb{C}^{2^n}$ with $\mathbb{C}^{2^a} \otimes \mathbb{C}^{2}
+  \otimes \mathbb{C}^{2^b}$.  Given a one-qubit gate $g$, the predicate
+  $\operatorname{IsEmbeddedOneQubitGate} n\, g\, E$ says $E$ is $g$ acting on
+  one wire of an $n$-qubit register (possibly as one half of a two-wire
+  placement).
+\end{definition}
+
+\begin{definition}
+  \label{def:embedded_two}
+  \lean{TwoControl.Clifford.Universal.IsEmbeddedTwoQubitGate}
+  \leanok
+  Likewise $\operatorname{IsEmbeddedTwoQubitGate} n\, V\, E$ says $E$ is the
+  two-qubit gate $V$ acting on an ordered pair of distinct wires of an
+  $n$-qubit register.  Embedded gates of either kind are unitary whenever the
+  gate is.
+\end{definition}
+
+\subsection{The gate sets}
+
+\begin{definition}
+  \label{def:gate_cliffordrz}
+  \lean{TwoControl.Clifford.Universal.CliffordRzGate}
+  \leanok
+  The \emph{paper gate set} of \texttt{universal\_new\_gates.tex} is
+  \[
+    \mathcal{G}_{\mathrm{Clifford}+R_z}
+      = \{\, C(X),\; H,\; S,\; S^\dagger,\; R_z(\theta) \,\},
+  \]
+  each embedded on wires of an $n$-qubit register.  This is the target of
+  exact synthesis (Theorem~\ref{thm:clifford_rz_universal}).
+\end{definition}
+
+\begin{definition}
+  \label{def:gate_cliffordtrz}
+  \lean{TwoControl.Clifford.Universal.CliffordTRzGate}
+  \leanok
+  The \emph{intermediate gate set} is
+  $\{\, C(X),\, H,\, T,\, R_z(\theta) \,\}$: the Clifford phases $S, S^\dagger$
+  have been rewritten as powers of $T$, but $R_z(\theta)$ is still exact.
+\end{definition}
+
+\begin{definition}
+  \label{def:gate_cliffordt}
+  \lean{TwoControl.Clifford.Universal.CliffordTGate}
+  \leanok
+  The \emph{final gate set} is $\{\, C(X),\, H,\, T \,\}$, obtained by
+  dropping $R_z(\theta)$.  This is the gate set of the main theorem.
+\end{definition}
+
+\begin{definition}
+  \label{def:gate_easy}
+  \lean{TwoControl.Clifford.Universal.EasyGate}
+  \leanok
+  The \emph{easy gate set} allows an arbitrary embedded two-qubit unitary
+  together with embedded $H$, $S$, $S^\dagger$, and $R_z(\theta)$.  It is a
+  weakening of Definition~\ref{def:gate_cliffordrz}: every paper gate is an
+  easy gate, since $C(X)$ is in particular a unitary two-qubit gate.  It
+  belongs to the older decomposition route of
+  Section~\ref{sec:easy_gate_layer} and is not used by the main theorem.
+\end{definition}
+
+\begin{definition}
+  \label{def:ht_primitive}
+  \lean{TwoControl.Clifford.Universal.OneQubitHTPrimitive}
+  \leanok
+  A two-constructor type naming the one-qubit primitives $H$ and $T$, with an
+  evaluation map to $2 \times 2$ matrices and a circuit-matrix function
+  $\operatorname{oneQubitHTCircuitMatrix}$.  A parallel type
+  $\operatorname{TwoQubitCliffordTPrimitive}$ packages local two-qubit
+  Clifford+T words.  Both come with lifting maps that turn a local circuit into
+  an $n$-qubit circuit over $\operatorname{CliffordTGate}$, together with the
+  lemma that lifting commutes with taking the circuit matrix.  These are what
+  let the one-qubit output of Lemma 12 be spliced into an $n$-qubit circuit.
+\end{definition}
+
+\subsection{The Hilbert--Schmidt distance}
+
+\begin{definition}
+  \label{def:hs_distance}
+  \lean{TwoControl.Clifford.Universal.hsDistance}
+  \leanok
+  For $N \times N$ matrices $U, V$,
+  \[
+    d(U,V) \;=\; \sqrt{\,1 - \frac{\lvert \operatorname{Tr}(U^\dagger V)
+      \rvert^2}{N^2}\,}.
+  \]
+  This is the distance in which the paper states approximation, and in which
+  the main theorem is proved.
+\end{definition}
+
+The lemmas that follow are the paper's distance toolkit.  All are proved.
+
+\begin{lemma}
+  \label{lem:hs_self}
+  \lean{TwoControl.Clifford.Universal.hsDistance_self}
+  \leanok
+  For unitary $U$, $d(U,U) = 0$.
+\end{lemma}
+
+\begin{proof}
+  \leanok
+  \uses{def:hs_distance}
+  $\operatorname{Tr}(U^\dagger U) = \operatorname{Tr}(I_N) = N$, so the
+  radicand is $1 - N^2/N^2 = 0$.
+\end{proof}
+
+\begin{lemma}
+  \label{lem:hs_phase}
+  \lean{TwoControl.Clifford.Universal.hsDistance_eq_zero_of_globalPhaseEquivalent}
+  \leanok
+  If $U$ and $V$ are unitary and $U \sim V$, then $d(U,V) = 0$.
+\end{lemma}
+
+\begin{proof}
+  \leanok
+  \uses{def:hs_distance, def:global_phase, lem:hs_self}
+  Write $U = z V$ with $\lvert z \rvert = 1$.  Then
+  $\operatorname{Tr}(U^\dagger V) = \bar{z}\operatorname{Tr}(V^\dagger V)
+   = \bar{z} N$, whose modulus is $N$.
+\end{proof}
+
+\begin{lemma}
+  \label{lem:hs_trace_ineq}
+  \lean{TwoControl.Clifford.Universal.trace_inequality}
+  \leanok
+  For $N \times N$ unitaries $U, V$,
+  \[
+    \sqrt{1 - \frac{\lvert\operatorname{Tr}(UV)\rvert^2}{N^2}}
+      \;\le\;
+    \sqrt{1 - \frac{\lvert\operatorname{Tr}(U)\rvert^2}{N^2}}
+      +
+    \sqrt{1 - \frac{\lvert\operatorname{Tr}(V)\rvert^2}{N^2}}.
+  \]
+\end{lemma}
+
+\begin{proof}
+  \leanok
+  This is the inequality the paper cites from Wang and Zhang (1994).  It is
+  proved here rather than assumed: normalising the three matrices to unit
+  vectors in the Hilbert--Schmidt inner product turns the claim into the
+  statement that $x \mapsto \sqrt{1 - \lvert\langle x, y\rangle\rvert^2}$
+  satisfies a triangle inequality on the unit sphere, which is discharged by
+  an inner-product-space computation.
+\end{proof}
+
+\begin{lemma}
+  \label{lem:hs_mul}
+  \lean{TwoControl.Clifford.Universal.hsDistance_mul_le}
+  \leanok
+  For unitaries $U_1, U_2, V_1, V_2$,
+  \[
+    d(U_1 U_2, V_1 V_2) \le d(U_1, V_1) + d(U_2, V_2).
+  \]
+\end{lemma}
+
+\begin{proof}
+  \leanok
+  \uses{lem:hs_trace_ineq, lem:hs_rearrange}
+  Rewrite $\operatorname{Tr}\!\big((U_1U_2)^\dagger V_1 V_2\big)$ cyclically as
+  $\operatorname{Tr}\!\big((V_1^\dagger U_1)(V_2 U_2^\dagger)\big)$ using
+  Lemma~\ref{lem:hs_rearrange}, then apply
+  Lemma~\ref{lem:hs_trace_ineq} to the two factors.
+\end{proof}
+
+\begin{lemma}
+  \label{lem:hs_circuit_sum}
+  \lean{TwoControl.Clifford.Universal.hsDistance_circuitMatrix_le_sum}
+  \leanok
+  If two circuits have equal length and unitary factors $U_i$ and $V_i$, then
+  \[
+    d\big(\operatorname{circuitMatrix}(U_\bullet),
+          \operatorname{circuitMatrix}(V_\bullet)\big)
+      \;\le\; \sum_i d(U_i, V_i).
+  \]
+\end{lemma}
+
+\begin{proof}
+  \leanok
+  \uses{lem:hs_mul, def:circuit_matrix}
+  Induct on the length, applying Lemma~\ref{lem:hs_mul} at each
+  multiplication.
+\end{proof}
+
+\begin{lemma}
+  \label{lem:hs_rearrange}
+  \lean{TwoControl.Clifford.Universal.hsDistance_product_rearrange}
+  \leanok
+  $d(U_1 U_2, V_1 V_2) = d(V_1^\dagger U_1, V_2 U_2^\dagger)$.
+\end{lemma}
+
+\begin{proof}
+  \leanok
+  \uses{def:hs_distance}
+  Both sides have the same trace argument after cyclic rearrangement, and the
+  definition of $d$ depends only on that trace.
+\end{proof}
+
+\begin{lemma}
+  \label{lem:hs_identity}
+  \lean{TwoControl.Clifford.Universal.hsDistance_one_mul_mul}
+  \leanok
+  $d(I, V_1 V_2) = d(V_1^\dagger, V_2)$, and symmetrically
+  $d(U_1 U_2, I) = d(U_1, U_2^\dagger)$.
+\end{lemma}
+
+\begin{proof}
+  \leanok
+  \uses{lem:hs_rearrange}
+  Specialize Lemma~\ref{lem:hs_rearrange}.
+\end{proof}
+
+\begin{lemma}
+  \label{lem:hs_dagger}
+  \lean{TwoControl.Clifford.Universal.hsDistance_conjTranspose_symm}
+  \leanok
+  $d(U,V) = d(V^\dagger, U^\dagger)$.
+\end{lemma}
+
+\begin{proof}
+  \leanok
+  \uses{def:hs_distance}
+  $\operatorname{Tr}\!\big((V^\dagger)^\dagger U^\dagger\big)
+    = \operatorname{Tr}\!\big((U^\dagger V)^\dagger\big)$, and conjugation does
+  not change the modulus of a trace.
+\end{proof}
+
+\begin{lemma}
+  \label{lem:hs_triangle_one}
+  \lean{TwoControl.Clifford.Universal.hsDistance_le_hsDistance_one_add}
+  \leanok
+  For unitaries $U, V$: $d(U,V) \le d(U,I) + d(I,V)$.
+\end{lemma}
+
+\begin{proof}
+  \leanok
+  \uses{lem:hs_trace_ineq, lem:hs_identity}
+  This is the paper's shape of the trace inequality; it follows from
+  Lemma~\ref{lem:hs_trace_ineq} after rewriting both distances against the
+  identity using Lemma~\ref{lem:hs_identity}.
+\end{proof}

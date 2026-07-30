@@ -22,7 +22,7 @@ Hilbert-Schmidt distance `hsDistance`.
 This file is **part of the conditional Ross-Selinger compiler leg**.  It is
 useful when promoting a circuit produced by Ross-Selinger from an `opDist`
 bound to an `hsDistance` bound (for example when comparing the RS output
-against the Boykin/HT density baseline).  It is not used to prove Lemma 12.
+against the `G₁/G₂` HT density baseline).  It is not used to prove Lemma 12.
 -/
 
 /-- The paper's `R_z` matrix, spelled out explicitly for the Lemma 12 branch. -/

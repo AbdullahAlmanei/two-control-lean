@@ -1,5 +1,15 @@
 # Plan For A Clifford+T Upper-Bound Theorem
 
+> **Status note.** This is a planning document, kept for its analysis of the
+> bound structure. Two things have changed since it was written: the Lemma 12
+> proof is no longer the Boykin-density track (it is now the `G₁/G₂` track of
+> `reference/cliff/universal_new_gates.tex`, under `Clifford/Lemma12/G1G2/`),
+> and the compactness-based quantitative scaffold has been removed because it
+> gave no closed form in `ε`. The conclusion below is unchanged and still
+> current: a `O(log(1/ε))` rate needs a Ross-Selinger style compiler theorem,
+> not a density argument. See `blueprint/src/chapters/clifford_bounds.tex` for
+> the current per-node status.
+
 This document lays out a reasonable path for proving an upper bound for the
 length of the circuits produced by the Clifford+T universality development.
 

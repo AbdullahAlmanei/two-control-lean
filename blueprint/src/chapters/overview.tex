@@ -1,0 +1,117 @@
+\section{Overview and formalization status}
+
+This blueprint documents a Lean~4 formalization that spans two results.  The
+project began as a translation of
+\emph{Optimal implementation of quantum gates with two controls}
+(the ``two-control paper''), and has since grown a second, larger track: a
+complete formalization of \emph{Clifford+T is universal}, following
+\texttt{reference/cliff/universal\_new\_gates.tex} (1 July 2026).
+
+\subsection{What is proved}
+
+The status below was measured by \texttt{lake build} together with a
+\texttt{\#print axioms} audit of every public declaration in the library.
+
+\begin{description}
+  \item[Two-control paper, Sections 3--7.] Complete and \texttt{sorry}-free.
+    Culminates in Theorem~\ref{thm:s7_4} and Corollary~\ref{cor:s7_5}:
+    a doubly-controlled one-qubit gate $CC(U)$ is a product of at most four
+    ``two-control'' factors exactly when the eigenvalues of $U$ coincide or
+    $\det U = 1$.
+  \item[Clifford+T universality.] Complete and \texttt{sorry}-free.
+    Culminates in Theorem~\ref{thm:clifford_t_universal}: for every
+    $n$-qubit unitary $U$ and every $\epsilon > 0$ there is a Clifford+T
+    circuit within Hilbert--Schmidt distance $\epsilon$ of $U$.  The axiom
+    closure of the Lean theorem is exactly
+    \texttt{[propext, Classical.choice, Quot.sound]}.
+  \item[Quantitative circuit-length bounds.] In progress
+    (Section~\ref{sec:bounds}).  The exact stage is proved; the logarithmic
+    approximation stage is stated in Lean with proofs pending.  This is the
+    only place where \texttt{sorry} appears, and every such node is marked as
+    pending below.
+\end{description}
+
+The repository also contains a paused Ross--Selinger and
+Kliuchnikov--Maslov--Mosca circuit-synthesis engine
+(\texttt{RossSelinger.lean}, \texttt{RossSelinger/}, \texttt{KMM.lean},
+\texttt{KMM/}).  Those sources are deliberately not registered as libraries in
+\texttt{lakefile.toml}, so they are not built and are not covered by this
+blueprint.  Section~\ref{sec:bounds} says where they would fit once resumed.
+
+\subsection{Two routes to exact synthesis, and which one is load-bearing}
+
+An earlier iteration of this project proved Clifford+T universality through
+the ``easy gate'' route of an older draft of the paper: first decompose an
+$n$-qubit unitary into arbitrary two-qubit gates plus one-qubit Cliffords
+(Lemma~\ref{lem:lemma1_easy}), then eliminate the arbitrary two-qubit gates
+using an exact two-qubit synthesis theorem (Lemma~\ref{lem:lemma11}, ``Lemma
+11'').
+
+The current proof does \emph{not} use that route.  Following
+\texttt{universal\_new\_gates.tex}, exact synthesis is a single induction
+on the number of qubits with a \emph{one-qubit} base case, targeting the paper
+gate set $\{C(X), H, S, S^\dagger, R_z(\theta)\}$
+(Theorem~\ref{thm:clifford_rz_universal}).  Arbitrary two-qubit gates never
+appear, so Lemma 11 is off the critical path.  This was checked
+mechanically rather than asserted: replacing the Lean proof of
+Lemma~\ref{lem:lemma11} by \texttt{sorry} and rebuilding leaves
+Theorem~\ref{thm:clifford_t_universal} \texttt{sorry}-free, while the old
+route (Theorem~\ref{thm:clifford_rz_from_lemma1}) does pick the
+\texttt{sorry} up.  The same test rules out the arbitrary-two-qubit branch of
+$\operatorname{EasyGate}$, whose only path into the main theorem would be
+through Lemma~\ref{lem:lemma11}.
+
+The older route is retained -- and still fully proved -- because the
+quantitative bounds track is built on it.  It is documented in
+Section~\ref{sec:easy_gate_layer} and clearly labelled as a parallel,
+non-load-bearing development rather than deleted, so that the gate-count
+work has a stable foundation.
+
+\subsection{An erratum in the source paper}
+
+The June 2026 draft (\texttt{reference/cliff/updated\_cliff.tex}) proved the
+$R_z$-approximation lemma (``Lemma 12'') using the generators
+$G_1 = e^{-i\pi/4}THTH$ and $G_2 = e^{-i\pi/4}HTHT$ and a three-factor
+Euler decomposition $G_1^{a}G_2^{b}G_1^{c}$.  That step is false for those
+generators: their rotation axes are not orthogonal, and $R_z(\pi)$ is an
+explicit counterexample.  This was found during formalization and is recorded
+in \texttt{docs/migration/clifford/g1g2\_euler\_counterexample\_math.tex} and
+\texttt{docs/migration/clifford/G1G2\_HALF\_ANGLE\_REPAIR\_PROOF.md}.
+
+The July 2026 paper resolves it by changing the generators to
+$G_1 = e^{-3i\pi/8}THTHT$ and $G_2 = (HT^4)G_1(HT^4)^\dagger$, whose axes
+\emph{are} orthogonal, which makes the three-factor Euler step valid.  The
+formalization in Section~\ref{sec:lemma12} follows the July generators;
+Lemma~\ref{lem:g_axes} is the orthogonality fact that the repair turns on.
+
+\subsection{How to read this blueprint}
+
+Each numbered item carries formalization metadata that the dependency graph
+renders as colour:
+
+\begin{description}
+  \item[Statement checked.] The item names a Lean declaration and the
+    statement is formalized; the declaration name links to the API
+    documentation.
+  \item[Proof checked.] The proof is complete and its axiom closure contains
+    no \texttt{sorryAx}, verified by \texttt{\#print axioms}.  In the
+    dependency graph these nodes are filled.
+  \item[Proof pending.] The statement exists in Lean but the proof is
+    \texttt{sorry} or depends on one.  Such items say so explicitly in the
+    text.  There are 14 \texttt{sorry} sites in the library, all in the bounds
+    track: \texttt{Clifford/Lemma12/\{LogPrecision,Bounded\}.lean} and
+    \texttt{Clifford/Universal/\{RzApproximationBounds,MainTheoremBounds\}.lean}.
+    They make 26 public declarations \texttt{sorry}-dependent, all in those
+    same two namespaces.
+\end{description}
+
+Two caveats on the trusted base.  First, several proofs in Sections 3--7 and in
+the shared helper layer discharge finite case checks with
+\texttt{native\_decide}, which adds a compiler-trust axiom
+(\texttt{Lean.ofReduceBool}) to those results.  Nothing in the Clifford+T
+development uses it: the universality theorem and its entire dependency cone
+are free of it.  Second, gate-count claims of the form
+$14 \cdot 4^{n-1} - 9 \cdot 2^{n-1}$ from the source paper are deliberately out
+of scope; the qualitative content of every paper lemma is formalized, and the
+bounds track (Section~\ref{sec:bounds}) develops independent, coarser
+closed-form bounds instead.

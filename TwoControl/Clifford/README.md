@@ -1,12 +1,24 @@
 # Clifford+T universality
 
-This directory formalizes a quantitative, Boykin-style density bound for
-Clifford+T universality (project 2 in the [root README](../../README.md)),
-building on the "two controls" vocabulary in `TwoControl/`. For the
-paper-level theorem statements and their formal dependency graph, see the
-Blueprint (`blueprint/`, chapters `clifford_lemma11.tex` and
-`clifford_universal.tex`); this file is a code-level map for reading and
-extending the Lean source.
+This directory formalizes Clifford+T universality (project 2 in the
+[root README](../../README.md)), building on the "two controls" vocabulary in
+`TwoControl/`. The headline result is
+`Universal.MainTheorem.clifford_t_is_universal`: every `n`-qubit unitary is
+approximable to arbitrary Hilbert-Schmidt precision by a Clifford+T circuit.
+It is `sorry`-free, and its axiom closure is exactly
+`[propext, Classical.choice, Quot.sound]`.
+
+The proof follows `reference/cliff/universal_new_gates.tex` (July 2026). The
+`R_z`-approximation half (Lemma 12) uses that paper's `G₁ = e^{-3iπ/8}THTHT`
+and `G₂ = (HT⁴)G₁(HT⁴)†`, whose rotation axes are orthogonal. An earlier
+Boykin-style density track was deleted when this route landed; nothing here
+depends on it.
+
+For the paper-level theorem statements and their formal dependency graph, see
+the Blueprint (`blueprint/`): `overview.tex` for scope and per-node status,
+then `clifford_circuits.tex`, `clifford_exact.tex`, `clifford_lemma12.tex`,
+`clifford_universal.tex`, `clifford_lemma11.tex`, and `clifford_bounds.tex`.
+This file is a code-level map for reading and extending the Lean source.
 
 ## Two tracks
 

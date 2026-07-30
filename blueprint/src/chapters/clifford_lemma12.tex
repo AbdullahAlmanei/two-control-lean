@@ -1,0 +1,468 @@
+\section{Lemma 12: approximating z-rotations with H and T}
+\label{sec:lemma12}
+
+This section is the second half of the universality proof and the
+mathematically deepest part of the formalization.  The goal is the paper's
+Lemma \texttt{approximation-of-rz}: for every angle $\theta$ and every
+$\epsilon > 0$ there is a one-qubit circuit over $\{H,T\}$ within $\epsilon$ of
+$R_z(\theta)$.
+
+The strategy is the one from \texttt{universal\_new\_gates.tex}.  Two
+particular $\{H,T\}$ words generate rotations by a common \emph{irrational}
+angle about two \emph{orthogonal} axes.  Orthogonality makes a three-factor
+Euler decomposition valid, so $R_z(\theta)$ is exactly a product of three
+rotations about those two axes; density of the integer powers of an irrational
+rotation then approximates each factor.
+
+Every node in this section is proved.  As explained in the overview, the
+choice of generators is exactly what the July 2026 revision of the paper
+changed: for the earlier generators the axes are not orthogonal and the
+three-factor step is false.
+
+\subsection{Axis rotations}
+
+\begin{definition}
+  \label{def:axis_rotation}
+  \lean{TwoControl.Clifford.Lemma12.axisRotation}
+  \leanok
+  For a unit vector $n \in \mathbb{R}^3$ and $\varphi \in \mathbb{R}$, set
+  $\vec{n}\cdot\vec{\sigma} = n_x\sigma_x + n_y\sigma_y + n_z\sigma_z$ and
+  \[
+    R(n,\varphi) \;=\; \exp\!\big(i\varphi\, \vec{n}\cdot\vec{\sigma}\big).
+  \]
+\end{definition}
+
+\begin{lemma}
+  \label{lem:pauli_sq}
+  \lean{TwoControl.Clifford.Lemma12.pauliVec_sq_eq_one}
+  \leanok
+  For a unit vector $n$, $(\vec{n}\cdot\vec{\sigma})^2 = I$.
+\end{lemma}
+
+\begin{proof}
+  \leanok
+  Expand the square.  The diagonal terms contribute
+  $(n_x^2+n_y^2+n_z^2)I = I$ and the cross terms cancel in pairs because
+  distinct Pauli matrices anticommute.
+\end{proof}
+
+\begin{lemma}
+  \label{lem:axis_closed_form}
+  \lean{TwoControl.Clifford.Lemma12.axisRotation_closed_form}
+  \leanok
+  For a unit vector $n$,
+  \[
+    R(n,\varphi) = \cos\varphi \cdot I + i\sin\varphi \cdot
+      (\vec{n}\cdot\vec{\sigma}),
+  \]
+  and $R(n,\varphi)$ is unitary.
+\end{lemma}
+
+\begin{proof}
+  \leanok
+  \uses{def:axis_rotation, lem:pauli_sq}
+  By Lemma~\ref{lem:pauli_sq} the exponent squares to a scalar, so the
+  exponential series splits into even and odd parts giving $\cos$ and
+  $i\sin$.
+\end{proof}
+
+\begin{lemma}
+  \label{lem:rz_axis}
+  \lean{TwoControl.Clifford.Lemma12.rz_eq_axisRotation_standardZ}
+  \leanok
+  $R_z(\theta) = R(e_z, -\theta/2)$, where $e_z$ is the standard $z$ axis.
+\end{lemma}
+
+\begin{proof}
+  \leanok
+  \uses{lem:axis_closed_form}
+  Both sides are diagonal; compare entries using
+  Lemma~\ref{lem:axis_closed_form}.
+\end{proof}
+
+\begin{lemma}
+  \label{lem:trace_axis}
+  \lean{TwoControl.Clifford.Lemma12.trace_axisRotation}
+  \leanok
+  For a unit vector $n$, $\operatorname{Tr} R(n,\varphi) = 2\cos\varphi$.  More
+  generally, for unit vectors $n_1, n_2$,
+  \[
+    \operatorname{Tr}\big(R(n_1,\varphi_1)R(n_2,\varphi_2)\big)
+      = 2\big(\cos\varphi_1\cos\varphi_2
+        - \sin\varphi_1\sin\varphi_2\,\langle n_1, n_2\rangle\big).
+  \]
+\end{lemma}
+
+\begin{proof}
+  \leanok
+  \uses{lem:axis_closed_form}
+  The Pauli matrices are traceless, so only the scalar part of
+  Lemma~\ref{lem:axis_closed_form} survives in the first claim.  For the
+  product, expand both factors and use
+  $\operatorname{Tr}\big((\vec{n_1}\cdot\vec\sigma)(\vec{n_2}\cdot\vec\sigma)\big)
+   = 2\langle n_1,n_2\rangle$.
+\end{proof}
+
+\begin{lemma}[Every special unitary is an axis rotation]
+  \label{lem:su2_axis}
+  \lean{TwoControl.Clifford.Lemma12.G1G2.su2_eq_axisRotation}
+  \leanok
+  If $U$ is a one-qubit unitary with $\det U = 1$, then there are a unit vector
+  $n$ and an angle $\alpha \in [0,\pi]$ with $U = R(n,\alpha)$.
+\end{lemma}
+
+\begin{proof}
+  \leanok
+  \uses{lem:axis_closed_form}
+  This is Nielsen--Chuang Exercise 4.8.  Determinant one forces $U$ to have the
+  form $aI + i(b\sigma_x + c\sigma_y + d\sigma_z)$ with $a$ real and
+  $a^2 + b^2 + c^2 + d^2 = 1$; take $\alpha = \arccos a$ and $n$ the
+  normalization of $(b,c,d)$, matching Lemma~\ref{lem:axis_closed_form}.
+\end{proof}
+
+\subsection{The two generators}
+
+\begin{definition}
+  \label{def:g1}
+  \lean{TwoControl.Clifford.Lemma12.G1G2.g1}
+  \leanok
+  $G_1 = e^{-3i\pi/8}\, THTHT$.
+\end{definition}
+
+\begin{definition}
+  \label{def:g2}
+  \lean{TwoControl.Clifford.Lemma12.G1G2.g2}
+  \leanok
+  $G_2 = (HT^4)\, G_1\, (HT^4)^\dagger$.
+\end{definition}
+
+\begin{definition}
+  \label{def:g_words}
+  \lean{TwoControl.Clifford.Lemma12.G1G2.g1Word}
+  \leanok
+  The $\{H,T\}$ words realizing the generators are
+  $w_1 = THTHT$ and $w_2 = (HT^4)\,w_1\,(T^4H)$.  They realize $G_1, G_2$ only
+  up to the scalar $e^{-3i\pi/8}$, which is harmless because the
+  Hilbert--Schmidt distance is phase blind (Lemma~\ref{lem:hs_smul}).
+\end{definition}
+
+\begin{lemma}
+  \label{lem:g_word_eval}
+  \lean{TwoControl.Clifford.Lemma12.G1G2.g1Word_eval}
+  \leanok
+  $\operatorname{eval}(w_1) = e^{3i\pi/8}\, G_1$ and
+  $\operatorname{eval}(w_2) = e^{3i\pi/8}\, G_2$.
+\end{lemma}
+
+\begin{proof}
+  \leanok
+  \uses{def:g1, def:g2, def:g_words}
+  Immediate from the definitions: the word evaluates to the raw matrix product,
+  and the generator is that product times the phase.
+\end{proof}
+
+\begin{lemma}
+  \label{lem:g_det}
+  \lean{TwoControl.Clifford.Lemma12.G1G2.g1_det}
+  \leanok
+  $\det G_1 = \det G_2 = 1$, and both are unitary.
+\end{lemma}
+
+\begin{proof}
+  \leanok
+  \uses{def:g1, def:g2}
+  $\det T = e^{i\pi/4}$ and $\det H = -1$, so the raw word $THTHT$ has
+  determinant $e^{3i\pi/4}$; the scalar $e^{-3i\pi/8}$ contributes its square,
+  and the two cancel.  For $G_2$ conjugation preserves the determinant.
+\end{proof}
+
+\begin{lemma}[Trace of the generators]
+  \label{lem:g_trace}
+  \lean{TwoControl.Clifford.Lemma12.G1G2.g1_trace_sq}
+  \leanok
+  $(\operatorname{Tr} G_1)^2 = (\operatorname{Tr} G_2)^2 = 1 + \tfrac{\sqrt 2}{2}$.
+\end{lemma}
+
+\begin{proof}
+  \leanok
+  \uses{def:g1, def:g2}
+  A finite computation in $\mathbb{Q}(i,\sqrt 2)$.  Note that the formalization
+  pins down the \emph{square} of the trace, never the sign: the paper's
+  $\operatorname{Tr} G_i = \sqrt{1 + 1/\sqrt2}$ is not needed, since every later
+  step consumes only the square.  Conjugation gives
+  $\operatorname{Tr} G_2 = \operatorname{Tr} G_1$.
+\end{proof}
+
+\begin{lemma}
+  \label{lem:g1g2_trace}
+  \lean{TwoControl.Clifford.Lemma12.G1G2.g1_g2_trace}
+  \leanok
+  $\operatorname{Tr}(G_1 G_2) = \dfrac{2 + \sqrt 2}{4}$.
+\end{lemma}
+
+\begin{proof}
+  \leanok
+  \uses{def:g1, def:g2}
+  A finite computation in $\mathbb{Q}(i,\sqrt 2)$.
+\end{proof}
+
+\subsection{The rotation angle is an irrational multiple of a full turn}
+
+\begin{lemma}
+  \label{lem:lambda_irrational}
+  \lean{TwoControl.Clifford.Lemma12.G1G2.irrational_div_two_pi_of_four_cos_sq}
+  \leanok
+  If $\alpha$ satisfies $(2\cos\alpha)^2 = 1 + \tfrac{\sqrt2}{2}$, then
+  $\alpha/(2\pi)$ is irrational.
+\end{lemma}
+
+\begin{proof}
+  \leanok
+  Suppose $\alpha/(2\pi) = p/q$.  Then $\zeta = e^{i\alpha}$ is a root of unity
+  and hence an algebraic integer, so $x = \zeta + \zeta^{-1} = 2\cos\alpha$ is
+  too, and therefore so is $(x^2-1)^2$.  The hypothesis gives
+  $x^2 - 1 = 1/\sqrt2$, hence $(x^2-1)^2 = 1/2$, which is not an algebraic
+  integer because $\mathbb{Z}$ is integrally closed in $\mathbb{Q}$.
+
+  This is the paper's Lemma \texttt{a-specific-lambda-is-irrational} in
+  sign-free form.  The paper's constant
+  $\lambda = \tfrac1\pi \arccos\!\big(\tfrac12\sqrt{1+1/\sqrt2}\big)$ is never
+  named and the sign of $\cos\alpha$ is never determined; the argument consumes
+  only the square.
+\end{proof}
+
+\begin{lemma}
+  \label{lem:g_axis_data}
+  \lean{TwoControl.Clifford.Lemma12.G1G2.g1_axis_data}
+  \leanok
+  There are a unit vector $n_1$ and an angle $\alpha_1$ with
+  $G_1 = R(n_1,\alpha_1)$, $\cos^2\alpha_1 = \tfrac{2+\sqrt2}{8}$,
+  $\sin\alpha_1 > 0$, and $\alpha_1/(2\pi)$ irrational; likewise for $G_2$ with
+  the same squared cosine.
+\end{lemma}
+
+\begin{proof}
+  \leanok
+  \uses{lem:su2_axis, lem:g_det, lem:g_trace, lem:trace_axis,
+        lem:lambda_irrational}
+  Lemmas~\ref{lem:g_det} and~\ref{lem:su2_axis} put $G_i$ in the form
+  $R(n_i,\alpha_i)$ with $\alpha_i \in [0,\pi]$, so $\sin\alpha_i \ge 0$.  By
+  Lemma~\ref{lem:trace_axis}, $\operatorname{Tr} G_i = 2\cos\alpha_i$, and
+  Lemma~\ref{lem:g_trace} pins $(2\cos\alpha_i)^2 = 1 + \sqrt2/2$, which is the
+  stated squared cosine and is not $4$, so $\sin\alpha_i > 0$.
+  Lemma~\ref{lem:lambda_irrational} supplies the irrationality.
+\end{proof}
+
+\begin{lemma}[The axes are orthogonal]
+  \label{lem:g_axes}
+  \lean{TwoControl.Clifford.Lemma12.G1G2.g_axes_data}
+  \leanok
+  With $G_1 = R(n_1,\alpha_1)$ and $G_2 = R(n_2,\alpha_2)$ as above,
+  $\langle n_1, n_2\rangle = 0$.
+\end{lemma}
+
+\begin{proof}
+  \leanok
+  \uses{lem:g_axis_data, lem:g1g2_trace, lem:trace_axis}
+  By Lemma~\ref{lem:trace_axis},
+  $\operatorname{Tr}(G_1G_2)
+   = 2(\cos\alpha_1\cos\alpha_2
+       - \sin\alpha_1\sin\alpha_2\langle n_1,n_2\rangle)$, and
+  Lemma~\ref{lem:g1g2_trace} evaluates the left side to $(2+\sqrt2)/4$.  The
+  squared cosines from Lemma~\ref{lem:g_axis_data} force
+  $\cos\alpha_1\cos\alpha_2 = \pm\tfrac{2+\sqrt2}{8}$.  In the $+$ case the
+  equation reduces to $\sin\alpha_1\sin\alpha_2\langle n_1,n_2\rangle = 0$ with
+  both sines positive, so $\langle n_1,n_2\rangle = 0$.  In the $-$ case the
+  equation forces $\lvert\langle n_1,n_2\rangle\rvert > 1$, contradicting
+  Cauchy--Schwarz for unit vectors.
+
+  This is the paper's Lemma \texttt{a1-and-a2-anticommute}.  It is obtained
+  from two trace computations rather than by exhibiting the Hermitian
+  generators, and it is the fact that makes the Euler step below valid.
+\end{proof}
+
+\subsection{Euler decomposition over two orthogonal axes}
+
+\begin{lemma}
+  \label{lem:euler_expansion}
+  \lean{TwoControl.Clifford.Lemma12.euler_product_expansion}
+  \leanok
+  For unit vectors $n_1 \perp n_2$ and angles $\alpha,\beta,\gamma$, the
+  product $R(n_1,\alpha)R(n_2,\beta)R(n_1,\gamma)$ equals the special unitary
+  with scalar part $\cos\beta\cos(\gamma+\alpha)$ and vector part
+  \[
+    \cos\beta\sin(\gamma{+}\alpha)\,n_1
+      + \sin\beta\cos(\gamma{-}\alpha)\,n_2
+      + \sin\beta\sin(\gamma{-}\alpha)\,(n_1\times n_2).
+  \]
+\end{lemma}
+
+\begin{proof}
+  \leanok
+  \uses{lem:axis_closed_form}
+  Multiply out the three closed forms of Lemma~\ref{lem:axis_closed_form}.
+  Orthogonality makes $(n_1, n_2, n_1\times n_2)$ an orthonormal frame, in
+  which the Pauli products simplify to the stated combination.
+\end{proof}
+
+\begin{lemma}[Generalized Euler decomposition]
+  \label{lem:euler_orthogonal}
+  \lean{TwoControl.Clifford.Lemma12.standardZ_axisRotation_orthogonal_euler}
+  \leanok
+  For unit vectors $n_1 \perp n_2$ and any $\varphi$, there exist
+  $a, b, c$ with
+  \[
+    R(e_z, \varphi) = R(n_1, a)\, R(n_2, b)\, R(n_1, c).
+  \]
+\end{lemma}
+
+\begin{proof}
+  \leanok
+  \uses{lem:euler_expansion, lem:axis_closed_form}
+  This is Nielsen--Chuang Exercise 4.11 for orthogonal axes.  Expand the
+  left-hand side in the orthonormal frame $(n_1,n_2,n_1\times n_2)$ and solve
+  for $a, b, c$ using Lemma~\ref{lem:euler_expansion}: $b$ is recovered from
+  the component along $n_1$, and $\gamma \pm \alpha$ from two argument
+  extractions.  No constraint on $\varphi$ is needed --- this is exactly the
+  step that fails for non-orthogonal axes.
+\end{proof}
+
+\subsection{Density of integer powers}
+
+\begin{definition}
+  \label{def:zpow_circuit}
+  \lean{TwoControl.Clifford.Lemma12.zpowCircuit}
+  \leanok
+  For an $\{H,T\}$ word $C$ and $k \in \mathbb{Z}$, the word $C^{k}$ is
+  $C$ repeated $\lvert k\rvert$ times, using the letterwise inverse word for
+  negative $k$.  Inverses stay inside $\{H,T\}$ because $T^{-1} = T^7$ and
+  $H^{-1} = H$; concretely $G_1^{-1}$ is realized by $T^7HT^7HT^7$.
+\end{definition}
+
+\begin{lemma}
+  \label{lem:zpow_eval}
+  \lean{TwoControl.Clifford.Lemma12.eval_zpowCircuit}
+  \leanok
+  $\operatorname{eval}(C^{k})$ is the $k$-th integer power of
+  $\operatorname{eval}(C)$.
+\end{lemma}
+
+\begin{proof}
+  \leanok
+  \uses{def:zpow_circuit}
+  Induct on $\lvert k \rvert$; the negative case uses that the letterwise
+  inverse word evaluates to the inverse matrix.
+\end{proof}
+
+\begin{lemma}
+  \label{lem:hs_smul}
+  \lean{TwoControl.Clifford.Lemma12.hsDistance_smul_right}
+  \leanok
+  $d(U, zV) = d(U,V)$ whenever $\lvert z\rvert = 1$.
+\end{lemma}
+
+\begin{proof}
+  \leanok
+  \uses{def:hs_distance}
+  Scaling by a unit scalar multiplies the trace by that scalar and so does not
+  change its modulus.
+\end{proof}
+
+\begin{lemma}[Density]
+  \label{lem:dense}
+  \lean{TwoControl.Clifford.Lemma12.axisRotation_powers_dense}
+  \leanok
+  Let $n$ be a unit vector and $\theta$ an angle with $\theta/(2\pi)$
+  irrational.  Then for every target angle $\alpha$ and every $\epsilon > 0$
+  there is $k \in \mathbb{Z}$ with
+  $d\big(R(n,\alpha), R(n,\theta)^{k}\big) < \epsilon$.
+\end{lemma}
+
+\begin{proof}
+  \leanok
+  \uses{lem:axis_closed_form, def:hs_distance}
+  $R(n,\theta)^k = R(n,k\theta)$, so the claim is that
+  $\{k\theta \bmod 2\pi\}$ comes arbitrarily close to $\alpha$.  Irrationality
+  of $\theta/(2\pi)$ makes the subgroup generated by $\theta$ and $2\pi$ dense
+  in $\mathbb{R}$ (Hardy--Wright; available in Mathlib as the density criterion
+  for the additive subgroup generated by two reals with irrational ratio), and
+  $\varphi \mapsto R(n,\varphi)$ is continuous.
+\end{proof}
+
+\begin{lemma}[Density, phased form]
+  \label{lem:dense_smul}
+  \lean{TwoControl.Clifford.Lemma12.axisRotation_powers_dense_smul}
+  \leanok
+  The same conclusion holds for $U = z\,R(n,\theta)$ with
+  $\lvert z\rvert = 1$: for every $\alpha$ and $\epsilon > 0$ there is
+  $k \in \mathbb{Z}$ with $d\big(R(n,\alpha), U^{k}\big) < \epsilon$.
+\end{lemma}
+
+\begin{proof}
+  \leanok
+  \uses{lem:dense, lem:hs_smul}
+  $U^k = z^k R(n,\theta)^k$ with $\lvert z^k\rvert = 1$; apply
+  Lemma~\ref{lem:hs_smul} and then Lemma~\ref{lem:dense}.  This is what lets
+  the argument use the $\{H,T\}$ words directly, phase and all.
+\end{proof}
+
+\begin{lemma}
+  \label{lem:hs_triple}
+  \lean{TwoControl.Clifford.Lemma12.hsDistance_triple_mul_le}
+  \leanok
+  For unitaries, $d(ABC, A'B'C') \le d(A,A') + d(B,B') + d(C,C')$.
+\end{lemma}
+
+\begin{proof}
+  \leanok
+  \uses{lem:hs_mul}
+  Apply Lemma~\ref{lem:hs_mul} twice.
+\end{proof}
+
+\subsection{Lemma 12}
+
+\begin{theorem}[$R_z$ approximation by $\{H,T\}$, core form]
+  \label{thm:lemma12_core}
+  \lean{TwoControl.Clifford.Lemma12.G1G2.HT_rz_dense_g1g2}
+  \leanok
+  For every $\theta$ and every $\epsilon > 0$ there is an $\{H,T\}$ word $C$
+  with $d\big(R_z(\theta), \operatorname{eval}(C)\big) < \epsilon$.
+\end{theorem}
+
+\begin{proof}
+  \leanok
+  \uses{lem:g_axes, lem:euler_orthogonal, lem:rz_axis, lem:dense_smul,
+        lem:hs_triple, lem:g_word_eval, lem:zpow_eval}
+  Take the axis data of Lemma~\ref{lem:g_axes}: unit axes $n_1 \perp n_2$,
+  irrational angles $\alpha_1, \alpha_2$, and $G_i = R(n_i,\alpha_i)$.
+
+  By Lemma~\ref{lem:rz_axis}, $R_z(\theta) = R(e_z, -\theta/2)$, and
+  Lemma~\ref{lem:euler_orthogonal} produces angles $a,b,c$ with
+  \[
+    R_z(\theta) = R(n_1,a)\,R(n_2,b)\,R(n_1,c),
+  \]
+  an \emph{exact} identity.  Lemma~\ref{lem:g_word_eval} shows the words $w_1,
+  w_2$ evaluate to $G_1, G_2$ up to a unit scalar, so
+  Lemma~\ref{lem:dense_smul} gives integers $k_1,k_2,k_3$ with each of
+  $w_1^{k_1}, w_2^{k_2}, w_1^{k_3}$ within $\epsilon/3$ of the corresponding
+  Euler factor, using Lemma~\ref{lem:zpow_eval} to identify the evaluation of a
+  power word with the matrix power.  Concatenating the three words and applying
+  Lemma~\ref{lem:hs_triple} bounds the total error by $\epsilon$.
+\end{proof}
+
+\begin{theorem}[Lemma 12]
+  \label{thm:lemma12}
+  \lean{TwoControl.Clifford.Lemma12.lemma12_rz_approximation_by_ht}
+  \leanok
+  For every $\theta$ and every $\epsilon > 0$ there is a list of $\{H,T\}$
+  primitives whose circuit matrix is within $\epsilon$ of $R_z(\theta)$ in
+  Hilbert--Schmidt distance.
+\end{theorem}
+
+\begin{proof}
+  \leanok
+  \uses{thm:lemma12_core, def:ht_primitive}
+  Restatement of Theorem~\ref{thm:lemma12_core} in the circuit vocabulary of
+  Definition~\ref{def:ht_primitive}, which is the interface the $n$-qubit
+  assembly consumes.
+\end{proof}

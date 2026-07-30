@@ -8,10 +8,35 @@ and from the Clifford+T universality work (`TwoControl/Clifford/`), though it
 depends on the latter (`TwoControl.Clifford.Universal.GateSets`, `.Distance`,
 `TwoControl.Clifford.Lemma12.Common.HTCircuit`).
 
-**Status: paused.** Not built by default — `RossSelinger` and `KMM` are
-`[[lean_lib]]` targets in `lakefile.toml` but are not in `defaultTargets`, so
-plain `lake build` and CI skip them. Build explicitly when picking this back
-up:
+**Status: paused.** None of this project's four libraries — `RossSelinger`,
+`KMM`, `DyadicCyclotomic`, `MatrixCompletion` — are registered as
+`[[lean_lib]]` targets in `lakefile.toml`, so nothing builds them.
+
+Registering them and merely leaving them out of `defaultTargets` does not
+work: `leanblueprint checkdecls` imports the root module of every `lean_lib`
+in the package, so a registered-but-unbuilt library makes the blueprint CI job
+fail with `object file ... does not exist` before it checks a single
+declaration. Nothing under `TwoControl/` imports any of the four, so leaving
+them unregistered costs the built library nothing.
+
+To pick this back up, add to `lakefile.toml`:
+
+```toml
+[[lean_lib]]
+name = "DyadicCyclotomic"
+
+[[lean_lib]]
+name = "MatrixCompletion"
+
+[[lean_lib]]
+name = "RossSelinger"
+
+[[lean_lib]]
+name = "KMM"
+```
+
+and add them to `defaultTargets` (or to the CI build step) so that they are
+built wherever `checkdecls` runs. Then:
 
 ```bash
 lake build RossSelinger KMM
