@@ -12,3 +12,4 @@ blueprint/print/
 *.toc
 .DS_Store
 /.agent-shell/
+.claude/worktrees/
