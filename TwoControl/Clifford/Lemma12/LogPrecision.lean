@@ -14,8 +14,9 @@ informal expressions like `ceil(log_2(1/epsilon))`.
 
 /-- Powers of two eventually dominate the inverse of any positive precision. -/
 theorem exists_nat_pow_two_inv_bound {epsilon : ℝ} (hepsilon : 0 < epsilon) :
-    ∃ k : ℕ, 1 / epsilon ≤ (2 : ℝ) ^ k := by
-  sorry
+    ∃ k : ℕ, 1 / epsilon ≤ (2 : ℝ) ^ k :=
+  (pow_unbounded_of_one_lt (1 / epsilon) (by norm_num : (1 : ℝ) < 2)).imp
+    fun _ h => h.le
 
 /-- A natural-number precision scale, morally `ceil(log_2(1/epsilon))`.
 
@@ -39,7 +40,9 @@ bound. -/
 theorem logPrecision_minimal {epsilon : ℝ} (hepsilon : 0 < epsilon)
     {k : ℕ} (hk : 1 / epsilon ≤ (2 : ℝ) ^ k) :
     logPrecision epsilon ≤ k := by
-  sorry
+  dsimp [logPrecision]
+  rw [dif_pos hepsilon]
+  exact Nat.find_min' (exists_nat_pow_two_inv_bound hepsilon) hk
 
 /-- Dividing the target precision by a fixed `C * 4^n + 1` budget increases
 logarithmic precision by at most `2*n` plus a constant depending only on `C`. -/
